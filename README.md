@@ -1,7 +1,5 @@
-Django starter template
+Saas food
 =====================
-
-My Django starter template. Going to change a little from time to time. But even now it saves a lot of time!
 
 **Install**
 ```
@@ -16,11 +14,5 @@ pip install -r requirements.txt
 ```
 
 Generate random secret key - https://djecrety.ir/
-
-Or do something like this:
-```
-from django.core.management.utils import get_random_secret_key  
-get_random_secret_key()
-```
 
 **In .gitingore dont forget to uncomment .env, local.py and media !!!**
