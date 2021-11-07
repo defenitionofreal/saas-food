@@ -31,7 +31,7 @@ class UserManager(BaseUserManager):
             raise ValueError("User must have a password")
 
         user = self.model(
-            phone=self.normalize_email(email)
+            email=self.normalize_email(email)
         )
         user.set_password(password)
         user.is_admin = True

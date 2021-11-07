@@ -24,7 +24,7 @@ class Product(models.Model):
     calories = models.CharField(max_length=255)
     additives = models.ManyToManyField("product.Additive", blank=True)
     #modifiers = models.ManyToManyField("product.Modifier", blank=True)
-    weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices)
+    weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices, default=WeightUnit.GRAM)
     weight = models.CharField(max_length=50, blank=True)
     cook_time = models.IntegerField()
     slug = models.SlugField()

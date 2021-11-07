@@ -6,7 +6,7 @@ class Image(models.Model):
     Image
     """
     title = models.CharField(max_length=255)
-    original_filename = models.BooleanField(default=False)
+    original_filename = models.CharField(max_length=255, blank=True)
     picture = models.ImageField()
 
     def __str__(self):
