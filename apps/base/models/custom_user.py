@@ -61,7 +61,7 @@ class CustomUser(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return self.id
+        return f"{self.email or self.phone or '-----'} [{self.id}]"
 
     class Meta:
         verbose_name = 'User'
