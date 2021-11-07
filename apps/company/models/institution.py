@@ -11,10 +11,10 @@ class Institution(SeoModel):
     Institution(company) model
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="institutions")
     logo = models.ImageField(upload_to='images/users/', blank=True)  # images/users/self.user/institution/
     title = models.CharField(max_length=255)
-    description = models.TextField(max_length=1000, blank=True)
+    description = models.TextField(max_length=1000)
     phone = models.CharField(max_length=255)  # возможность добавить доп номер еще
     domain = models.CharField(max_length=255, unique=True)
     address = models.ForeignKey("location.Address", on_delete=models.SET_NULL, null=True, related_name="+")
@@ -22,7 +22,3 @@ class Institution(SeoModel):
 
     def __str__(self):
         return self.title
-
-
-
-

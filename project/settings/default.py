@@ -42,7 +42,7 @@ INTERNAL_APPS = [
     'apps.payment',
     'apps.plan',
     'apps.product',
-    'apps.queue',
+    'apps.que',
 ]
 
 INSTALLED_APPS = CORE_APPS + THIRD_PART_APPS + INTERNAL_APPS
