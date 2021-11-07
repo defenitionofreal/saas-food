@@ -102,7 +102,7 @@ https://admin.restik.com/delivery/order-settings]]></comment>
 			<column name="phone" prior="phone_one" type="varchar" jt="12" >
 				<comment><![CDATA[Пользователь должен иметь возможность добавлять несколько номеров, если нужно!]]></comment>
 			</column>
-			<column name="domen" type="varchar" jt="12" >
+			<column name="domain" prior="domen" type="varchar" jt="12" >
 				<comment><![CDATA[Домен как слаг филд, по нему будет уникальный урл на каталог фелиала!]]></comment>
 			</column>
 			<column name="region" type="varchar" jt="12" />
@@ -444,7 +444,7 @@ WEEKDAYS = [
 		<entity schema="food" name="order" color="C1D8EE" x="144" y="1024" />
 		<entity schema="food" name="order_item" color="C1D8EE" x="336" y="1024" />
 		<entity schema="food" name="payment" color="C1D8EE" x="464" y="1024" />
-		<entity schema="food" name="product" color="C1D8EE" x="208" y="544" />
+		<entity schema="food" name="product" color="C1D8EE" x="208" y="560" />
 		<entity schema="food" name="promo_banner" color="C1D8EE" x="1056" y="64" />
 		<entity schema="food" name="promo_code" color="C1D8EE" x="1024" y="560" />
 		<entity schema="food" name="queue" color="C1D8EE" x="608" y="1024" />

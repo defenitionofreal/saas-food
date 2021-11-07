@@ -16,3 +16,7 @@ pip install -r requirements.txt
 Generate random secret key - https://djecrety.ir/
 
 **In .gitingore dont forget to uncomment .env, local.py and media !!!**
+
+
+****
+**Trello dashboard: https://trello.com/b/ya1yVd45/saas-food**
