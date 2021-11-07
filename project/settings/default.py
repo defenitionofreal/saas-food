@@ -28,12 +28,21 @@ CORE_APPS = [
 
 THIRD_PART_APPS = [
     'rest_framework',
-    'corsheaders', # https://github.com/adamchainz/django-cors-headers
+    'corsheaders',  # https://github.com/adamchainz/django-cors-headers
 
 ]
 
 INTERNAL_APPS = [
     'apps.base',
+    'apps.company',
+    'apps.delivery',
+    'apps.location',
+    'apps.media',
+    'apps.order',
+    'apps.payment',
+    'apps.plan',
+    'apps.product',
+    'apps.queue',
 ]
 
 INSTALLED_APPS = CORE_APPS + THIRD_PART_APPS + INTERNAL_APPS
