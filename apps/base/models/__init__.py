@@ -1,2 +1,2 @@
-from .custom_user import *
-from .seo import *
+from .custom_user import CustomUser
+from .seo import SeoModel
