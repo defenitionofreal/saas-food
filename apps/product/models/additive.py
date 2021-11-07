@@ -9,7 +9,7 @@ class Additive(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     images = models.ManyToManyField("media.Image", blank=True)
-    price = models.DecimalField(decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return self.title
