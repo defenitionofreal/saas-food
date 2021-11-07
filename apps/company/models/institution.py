@@ -17,7 +17,7 @@ class Institution(SeoModel):
     description = models.TextField(max_length=1000, blank=True)
     phone = models.CharField(max_length=255)  # возможность добавить доп номер еще
     domain = models.CharField(max_length=255, unique=True)
-    address = models.ForeignKey("apps.location.Address", on_delete=models.SET_NULL, null=True, related_name="+")
+    address = models.ForeignKey("location.Address", on_delete=models.SET_NULL, null=True, related_name="+")
     local_time = models.CharField(max_length=255)  # через что должно быть поле выбора местного времени, список?
 
     def __str__(self):

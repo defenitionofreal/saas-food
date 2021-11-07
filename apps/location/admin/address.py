@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from location.models import Address
+from apps.location.models import Address
 
 
 @admin.register(Address)

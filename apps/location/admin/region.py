@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from location.models import Region
+from apps.location.models import Region
 
 
 @admin.register(Region)

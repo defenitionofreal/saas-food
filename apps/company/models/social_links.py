@@ -5,7 +5,7 @@ class SocialLinks(models.Model):
     """
     Links to other web apps
     """
-    institution = models.ForeignKey("apps.company.Institution", on_delete=models.CASCADE, related_name="social_links")
+    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="social_links")
     instagram = models.URLField()
     vkontakte = models.URLField()
     facebook = models.URLField()

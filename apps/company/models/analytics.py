@@ -5,7 +5,7 @@ class Analytics(models.Model):
     """
     Analytics and metrics for institution
     """
-    institution = models.ForeignKey("apps.company.Institution", on_delete=models.CASCADE, related_name="analytics")
+    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="analytics")
     yandex_metrics = models.TextField()
     google_analytics = models.TextField()
     google_tags = models.TextField()

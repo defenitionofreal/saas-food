@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from location.models import Street
+from apps.location.models import Street
 
 
 @admin.register(Street)
