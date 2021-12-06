@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="food" id="Project-22da" database="PostgreSQL" >
+	<schema name="food" >
+		<table name="additives" prior="tbl" >
+			<comment><![CDATA[добавки к продукту]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="description" type="varchar" jt="12" />
+			<column name="image" type="varchar" jt="12" />
+			<column name="price" type="varchar" jt="12" />
+			<index name="pk_additives_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_additives_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="analytics" prior="tbl" >
+			<column name="institution" prior="tiktok_pixel" type="varchar" jt="12" />
+			<column name="yandex_metrika" prior="yandex" type="varchar" jt="12" />
+			<column name="google_analytics" prior="google" type="varchar" jt="12" />
+			<column name="google_tags" type="varchar" jt="12" />
+			<column name="facebook_pixel" prior="facebook" type="varchar" jt="12" />
+			<column name="vk_pixel" type="varchar" jt="12" />
+			<column name="tiktok_pixel" type="varchar" jt="12" />
+			<fk name="fk_analytics_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="category" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="is_active" type="boolean" length="1" jt="-7" >
+				<defo><![CDATA[True]]></defo>
+			</column>
+			<column name="order" type="integer" jt="4" >
+				<defo><![CDATA[0]]></defo>
+			</column>
+			<column name="slug" type="varchar" jt="12" />
+			<index name="pk_category_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_category_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="custom_user" prior="customuser" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="username" type="varchar" length="100" jt="12" />
+			<column name="email" type="varchar" length="100" jt="12" />
+			<column name="phone" type="varchar" length="100" jt="12" />
+			<column name="image" type="varchar" jt="12" />
+			<column name="is_customer" type="boolean" length="100" jt="-7" >
+				<defo><![CDATA[False]]></defo>
+			</column>
+			<column name="is_promo" type="boolean" jt="-7" >
+				<defo><![CDATA[False]]></defo>
+				<comment><![CDATA[If promo then all functionality for FREE]]></comment>
+			</column>
+			<index name="pk_custom_user_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="delivery" prior="tbl" >
+			<comment><![CDATA[У restik хорошо это реализовано
+https://admin.restik.com/delivery/order-settings]]></comment>
+			<column name="institution" type="varchar" jt="12" />
+			<column name="type" type="varchar" jt="12" >
+				<comment><![CDATA[типо (с собой/ в заведение/ самовывоз)]]></comment>
+			</column>
+			<column name="by_card" type="boolean" jt="-7" />
+			<column name="by_cash" type="boolean" jt="-7" />
+			<column name="by_cash_online" type="boolean" jt="-7" />
+			<column name="sale_type" type="varchar" jt="12" >
+				<comment><![CDATA[абсолютная в рублях или в %]]></comment>
+			</column>
+			<column name="sale_amount" type="integer" jt="4" />
+			<column name="choose_date" type="date" jt="91" >
+				<comment><![CDATA[выбор даты и врмени доставки]]></comment>
+			</column>
+			<fk name="fk_delivery_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="design" prior="tbl" >
+			<column name="institution" type="varchar" jt="12" />
+			<column name="color" type="varchar" jt="12" >
+				<comment><![CDATA[colorField для элементов на сайте]]></comment>
+			</column>
+			<fk name="fk_design_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="institution" prior="branch" >
+			<comment><![CDATA[Фелиал/Заведение]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="user" type="varchar" jt="12" />
+			<column name="logo" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="phone" prior="phone_one" type="varchar" jt="12" >
+				<comment><![CDATA[Пользователь должен иметь возможность добавлять несколько номеров, если нужно!]]></comment>
+			</column>
+			<column name="domen" type="varchar" jt="12" >
+				<comment><![CDATA[Домен как слаг филд, по нему будет уникальный урл на каталог фелиала!]]></comment>
+			</column>
+			<column name="region" type="varchar" jt="12" />
+			<column name="city" type="varchar" jt="12" />
+			<column name="address" type="varchar" length="100" jt="12" />
+			<column name="information" type="text" jt="12" />
+			<column name="timezone" prior="timezon" type="varchar" jt="12" >
+				<comment><![CDATA[Choicefield (По дефолту по мск)]]></comment>
+			</column>
+			<index name="pk_branch_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_branch_cutom_user" to_schema="food" to_table="custom_user" >
+				<fk_column name="user" pk="id" />
+			</fk>
+		</table>
+		<table name="modificator_price" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="product" type="integer" jt="4" />
+			<column name="modificator" type="integer" jt="4" />
+			<column name="price" type="integer" jt="4" />
+			<index name="pk_modificator_price_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_modificator_price_product" to_schema="food" to_table="product" >
+				<fk_column name="product" pk="id" />
+			</fk>
+			<fk name="fk_modificator_price_modifiers" to_schema="food" to_table="modifiers" >
+				<fk_column name="modificator" pk="id" />
+			</fk>
+		</table>
+		<table name="modifiers" prior="tbl" >
+			<comment><![CDATA[Сделать так чтобы цена задавалась индивидуально у товара]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" >
+				<comment><![CDATA[поле должно автоматом подставляться под нужный фелиал, тупо каждый раз его выбирать]]></comment>
+			</column>
+			<column name="title" type="varchar" jt="12" >
+				<comment><![CDATA[к примеру - 45 см.  или  0.3 мл]]></comment>
+			</column>
+			<index name="pk_modifiers_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_modifiers_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="order" prior="tbl" >
+			<comment><![CDATA[Заказ/Корзина/Чекаут
+
+поле user по идеи только для user.is_customer
+как сделать выбор между доставка и самовывоз?
+нужел ли транзкшен id тут? 
+
+У vsem-edu неплохой чекаут, ничего лишнего
+
+заглушки под транзакцию!]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="promocode" type="varchar" jt="12" />
+			<column name="user" type="varchar" jt="12" />
+			<column name="full_name" type="varchar" length="100" jt="12" />
+			<column name="phone" type="varchar" jt="12" />
+			<column name="city" type="varchar" jt="12" />
+			<column name="address" type="varchar" length="100" jt="12" />
+			<column name="paid_amount" type="integer" jt="4" />
+			<column name="comment" type="varchar" jt="12" />
+			<column name="date_time" type="date" jt="91" >
+				<comment><![CDATA[время доставки!]]></comment>
+			</column>
+			<column name="created_at" type="date" jt="91" />
+			<column name="updated_at" type="date" jt="91" />
+			<index name="pk_tbl_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_tbl_promo_code" to_schema="food" to_table="promo_code" >
+				<fk_column name="promocode" pk="id" />
+			</fk>
+		</table>
+		<table name="order_item" prior="tbl" >
+			<column name="order" type="varchar" jt="12" />
+			<column name="product" type="varchar" jt="12" />
+			<column name="price" type="varchar" jt="12" />
+			<column name="quantity" type="varchar" jt="12" />
+			<fk name="fk_order_item_order" to_schema="food" to_table="order" >
+				<fk_column name="order" pk="id" />
+			</fk>
+			<fk name="fk_order_item_product" to_schema="food" to_table="product" >
+				<fk_column name="product" pk="id" />
+			</fk>
+		</table>
+		<table name="payment" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="total" prior="summary" type="integer" jt="4" />
+			<column name="pay_date" type="date" jt="91" />
+			<column name="order" type="varchar" jt="12" />
+			<column name="user" type="varchar" jt="12" />
+			<column name="system" type="varchar" jt="12" >
+				<comment><![CDATA[система оплаты]]></comment>
+			</column>
+			<index name="pk_payment_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_payment_order" to_schema="food" to_table="order" >
+				<fk_column name="order" pk="id" />
+			</fk>
+			<fk name="fk_payment_custom_user" to_schema="food" to_table="custom_user" >
+				<fk_column name="user" pk="id" />
+			</fk>
+		</table>
+		<table name="product" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="category" type="varchar" jt="12" />
+			<column name="sticker" type="varchar" jt="12" />
+			<column name="is_active" type="boolean" jt="-7" >
+				<defo><![CDATA[True]]></defo>
+			</column>
+			<column name="order" type="integer" jt="4" >
+				<defo><![CDATA[0]]></defo>
+			</column>
+			<column name="title" type="varchar" jt="12" />
+			<column name="description" type="text" jt="12" >
+				<comment><![CDATA[только в detail view]]></comment>
+			</column>
+			<column name="images" prior="image" type="varchar" jt="12" >
+				<comment><![CDATA[Должна быть возможность добавления дополнительный картинок на плюсик.  Первая картинка главная, остальные в галерею]]></comment>
+			</column>
+			<column name="price" type="integer" jt="4" />
+			<column name="old_price" type="integer" jt="4" />
+			<column name="cost_price" type="integer" jt="4" />
+			<column name="protein" type="varchar" jt="12" />
+			<column name="fats" type="varchar" jt="12" />
+			<column name="carbohydrates" type="varchar" jt="12" />
+			<column name="calories" type="varchar" jt="12" >
+				<comment><![CDATA[kcal  (кк на 100 гр.)]]></comment>
+			</column>
+			<column name="additive" type="varchar" jt="12" >
+				<comment><![CDATA[возможность нажава на плюсик добавить допонтильные добавки]]></comment>
+			</column>
+			<column name="modifier" type="varchar" jt="12" >
+				<comment><![CDATA[поле дожно через js добавляться сколько хочешь раз и цену нужно еше указать допом]]></comment>
+			</column>
+			<column name="weight_units" type="varchar" jt="12" >
+				<comment><![CDATA[единицы измерения веса/объёма
+
+л.
+мл.
+г.
+кг.]]></comment>
+			</column>
+			<column name="weight" type="varchar" jt="12" />
+			<column name="cook_time" type="integer" jt="4" />
+			<column name="slug" type="varchar" jt="12" />
+			<index name="pk_product_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_product_sticker" to_schema="food" to_table="sticker" >
+				<fk_column name="sticker" pk="id" />
+			</fk>
+			<fk name="fk_product_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+			<fk name="fk_product_category" to_schema="food" to_table="category" >
+				<fk_column name="category" pk="id" />
+			</fk>
+			<fk name="fk_product_additives" to_schema="food" to_table="additives" >
+				<fk_column name="additive" pk="id" />
+			</fk>
+			<fk name="fk_product_modifiers" to_schema="food" to_table="modifiers" >
+				<fk_column name="modifier" pk="id" />
+			</fk>
+		</table>
+		<table name="promo_banner" prior="tbl" >
+			<comment><![CDATA[баннер на главной, при нажатии на баннер открывается подробное описание акции]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="image" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="description" type="text" jt="12" />
+			<column name="products" type="varchar" jt="12" >
+				<comment><![CDATA[товары участвующие в акции (возможность быстрого поиске по фильтру)]]></comment>
+			</column>
+			<column name="link" type="varchar" jt="12" >
+				<comment><![CDATA[кнопка (ссылка) 
+Если вдруг акции связана с подпиской в инсте]]></comment>
+			</column>
+			<column name="link_text" type="varchar" length="250" jt="12" >
+				<comment><![CDATA[текст на кнопке]]></comment>
+			</column>
+			<column name="promocode" type="varchar" jt="12" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="is_active" type="boolean" jt="-7" />
+			<index name="pk_promo_banner_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_promo_banner_promo_code" to_schema="food" to_table="promo_code" >
+				<fk_column name="promocode" pk="id" />
+			</fk>
+			<fk name="fk_promo_banner_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="promo_code" prior="promocode" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="type" type="varchar" jt="12" >
+				<comment><![CDATA[руб или %]]></comment>
+			</column>
+			<column name="code" type="varchar" jt="12" >
+				<comment><![CDATA[придумать код]]></comment>
+			</column>
+			<column name="sale" type="varchar" jt="12" />
+			<column name="total" type="varchar" jt="12" >
+				<comment><![CDATA[цифра в корзине меньше которой промокод не применяется]]></comment>
+			</column>
+			<column name="delivery" type="varchar" jt="12" >
+				<comment><![CDATA[возможность выбора бесплатной доставки]]></comment>
+			</column>
+			<column name="product" type="varchar" jt="12" >
+				<comment><![CDATA[возможность выбора нескольких продуктор к которым код применим]]></comment>
+			</column>
+			<column name="category" type="varchar" jt="12" >
+				<comment><![CDATA[возможность выбора нескольких каиегорий к которым код применим]]></comment>
+			</column>
+			<column name="date_start" type="date" jt="91" />
+			<column name="date_finish" type="date" jt="91" />
+			<column name="code_number" type="integer" jt="4" >
+				<comment><![CDATA[максимальное кол-во раз использования кода]]></comment>
+			</column>
+			<column name="code_number_user" type="integer" jt="4" >
+				<comment><![CDATA[максимальное кол-во раз использования кода одинм юзером]]></comment>
+			</column>
+			<column name="is_active" type="boolean" jt="-7" />
+			<index name="pk_promo_code_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_promo_code_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="queue" prior="tbl" >
+			<comment><![CDATA[Не доконца понимаю как применить эту модель и нужна ли она.  Но электронная очередб после оплаты это обязательно]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="user" type="varchar" jt="12" />
+			<column name="order" type="varchar" jt="12" />
+			<column name="number" type="varchar" jt="12" />
+			<column name="status" type="varchar" length="1" jt="12" />
+			<index name="pk_queue_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="requisites" prior="tbl" >
+			<column name="institution" type="varchar" jt="12" />
+			<column name="company_name" type="varchar" length="100" jt="12" />
+			<column name="inn" type="varchar" jt="12" />
+			<column name="kpp" type="varchar" jt="12" />
+			<column name="ogrn" type="varchar" jt="12" />
+			<column name="legal_address" type="varchar" length="100" jt="12" />
+			<column name="bank" type="varchar" jt="12" >
+				<comment><![CDATA[ПАО Сбербанк]]></comment>
+			</column>
+			<column name="bik" type="varchar" jt="12" />
+			<column name="correspondent_account" type="varchar" jt="12" />
+			<column name="checking_account" type="varchar" jt="12" />
+			<column name="phone" type="varchar" jt="12" />
+			<column name="email" type="varchar" jt="12" />
+			<fk name="fk_requisites_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="seo" prior="tbl" >
+			<comment><![CDATA[Seo модель (абстрактаная). От нее будет наследоваться большинство моделей.]]></comment>
+			<column name="title" type="varchar" jt="12" />
+			<column name="description" type="varchar" jt="12" />
+			<column name="keywords" type="varchar" jt="12" />
+			<column name="h1" type="varchar" jt="12" />
+		</table>
+		<table name="social_links" prior="tbl" >
+			<column name="institution" type="varchar" jt="12" />
+			<column name="vkontakte" type="varchar" jt="12" />
+			<column name="facebook" type="varchar" jt="12" />
+			<column name="instagram" type="varchar" jt="12" />
+			<column name="youtube" type="varchar" jt="12" />
+			<column name="tiktok" type="varchar" jt="12" />
+			<column name="tripadvisor" prior="tripadviser" type="varchar" jt="12" />
+			<fk name="fk_social_links_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="sticker" prior="ыешслке" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="institution" type="varchar" jt="12" />
+			<column name="title" type="varchar" jt="12" />
+			<column name="color" type="varchar" jt="12" >
+				<comment><![CDATA[django color field package]]></comment>
+			</column>
+			<column name="is_active" type="boolean" jt="-7" >
+				<defo><![CDATA[False]]></defo>
+			</column>
+			<index name="pk_sticker_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_sticker_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+		<table name="working_hours" prior="workin_hours" >
+			<column name="institution" type="varchar" jt="12" />
+			<column name="weekday" type="date" jt="91" >
+				<comment><![CDATA[choicefield  
+
+WEEKDAYS = [
+  (1, _("Monday")),
+  (2, _("Tuesday")),
+  (3, _("Wednesday")),
+  (4, _("Thursday")),
+  (5, _("Friday")),
+  (6, _("Saturday")),
+  (7, _("Sunday")),
+]]]></comment>
+			</column>
+			<column name="from_hour" type="time" jt="92" />
+			<column name="to_hour" type="time" jt="92" />
+			<fk name="fk_working_hours_institution" to_schema="food" to_table="institution" >
+				<fk_column name="institution" pk="id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-4e" show_relation="columns" >
+		<entity schema="food" name="additives" color="C1D8EE" x="832" y="576" />
+		<entity schema="food" name="analytics" color="C1D8EE" x="576" y="48" />
+		<entity schema="food" name="category" color="C1D8EE" x="48" y="544" />
+		<entity schema="food" name="custom_user" color="C1D8EE" x="80" y="272" />
+		<entity schema="food" name="delivery" color="C1D8EE" x="864" y="288" />
+		<entity schema="food" name="design" color="C1D8EE" x="256" y="48" />
+		<entity schema="food" name="institution" color="C1D8EE" x="320" y="272" />
+		<entity schema="food" name="modificator_price" color="C1D8EE" x="704" y="784" />
+		<entity schema="food" name="modifiers" color="C1D8EE" x="704" y="576" />
+		<entity schema="food" name="order" color="C1D8EE" x="144" y="1024" />
+		<entity schema="food" name="order_item" color="C1D8EE" x="336" y="1024" />
+		<entity schema="food" name="payment" color="C1D8EE" x="464" y="1024" />
+		<entity schema="food" name="product" color="C1D8EE" x="208" y="544" />
+		<entity schema="food" name="promo_banner" color="C1D8EE" x="1056" y="64" />
+		<entity schema="food" name="promo_code" color="C1D8EE" x="1024" y="560" />
+		<entity schema="food" name="queue" color="C1D8EE" x="608" y="1024" />
+		<entity schema="food" name="requisites" color="C1D8EE" x="544" y="272" />
+		<entity schema="food" name="seo" color="C1D8EE" x="1232" y="560" />
+		<entity schema="food" name="social_links" color="C1D8EE" x="768" y="48" />
+		<entity schema="food" name="sticker" color="C1D8EE" x="576" y="576" />
+		<entity schema="food" name="working_hours" color="C1D8EE" x="400" y="48" />
+	</layout>
+</project>
