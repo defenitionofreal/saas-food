@@ -5,7 +5,9 @@ class Additive(models.Model):
     """
     Additive of the product
     """
-    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="additives")
+    institution = models.ForeignKey("company.Institution",
+                                    on_delete=models.CASCADE,
+                                    related_name="additives")
     title = models.CharField(max_length=255)
     description = models.TextField()
     images = models.ManyToManyField("media.Image", blank=True)

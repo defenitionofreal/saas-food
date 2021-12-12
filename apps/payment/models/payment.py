@@ -9,6 +9,6 @@ class Payment(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment")
     order = models.ForeignKey("order.Order", on_delete=models.CASCADE, related_name="payment")
-    system = models.CharField()  # здесь нужен Choices с системами или что?
+    system = models.CharField(max_length=255)  # здесь нужен Choices с системами или что?
     payment_date = models.DateTimeField()
     total = models.DecimalField(max_digits=10, decimal_places=2)
