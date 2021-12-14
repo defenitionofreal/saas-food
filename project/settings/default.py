@@ -43,6 +43,9 @@ INTERNAL_APPS = [
     'apps.plan',
     'apps.product',
     'apps.que',
+    # devide clients
+    'apps.customer',
+    'apps.organization',
 ]
 
 INSTALLED_APPS = CORE_APPS + THIRD_PART_APPS + INTERNAL_APPS
