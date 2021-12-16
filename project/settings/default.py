@@ -155,31 +155,24 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
     # 'DEFAULT_FILTER_BACKENDS': [
     #     'django_filters.rest_framework.DjangoFilterBackend', # https://django-filter.readthedocs.io/en/stable/guide/install.html
     # ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication', #https://medium.com/django-rest/django-rest-framework-jwt-authentication-94bee36f2af8
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ]
-}
-
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
-    'ROTATE_REFRESH_TOKENS': True,
 }
 
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_CREDENTIALS = True  # to accept cookies via ajax request
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000'
-    # the domain for front-end app(you can add more than 1)
-]
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000'
+#     # the domain for front-end app(you can add more than 1)
+# ]
 
 AUTH_USER_MODEL = 'base.CustomUser'
 

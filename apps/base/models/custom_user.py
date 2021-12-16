@@ -46,15 +46,15 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     """ Custom User Model """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone = models.CharField(max_length=255, unique=True, null=True)  # как правильно создать это поле?
+    phone = models.CharField(max_length=255, unique=True, blank=True, null=True)  # как правильно создать это поле?
     username = models.CharField(max_length=255, unique=True, blank=True)
-    first_name = models.CharField(max_length=255, blank=True)
-    last_name = models.CharField(max_length=255, blank=True)
-    email = models.EmailField(unique=True, blank=True)
-    image = models.ImageField(upload_to='images/users/', blank=True)  # или пусть это будет charfield?
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    image = models.ImageField(upload_to='images/users/', blank=True, null=True)  # или пусть это будет charfield?
     is_customer = models.BooleanField(default=False)
     is_promo = models.BooleanField(default=False)
-
+    password = models.CharField(max_length=255)
     USERNAME_FIELD = 'email'  # админ должен входить через почту а юзеры через моб
     REQUIRED_FIELDS = []
 
