@@ -29,7 +29,7 @@ class InstitutionDetailAPIView(APIView):
 
     def put(self, request, pk):
         institution = self.get_object(pk)
-        serializer = InstitutionSerializer(institution, data=request.data)
+        serializer = InstitutionSerializer(institution, data=request.data, files=request.FILES)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

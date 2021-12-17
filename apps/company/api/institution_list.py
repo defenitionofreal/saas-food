@@ -13,6 +13,6 @@ class InstitutionListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        snippets = Institution.objects.filter(user=self.request.user)
-        serializer = InstitutionSerializer(snippets, many=True)
+        institution = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(institution, many=True)
         return Response(serializer.data)

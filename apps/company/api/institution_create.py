@@ -13,7 +13,7 @@ class InstitutionCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = InstitutionSerializer(data=request.data)
+        serializer = InstitutionSerializer(data=request.data, files=request.FILES)
         if serializer.is_valid():
             serializer.save(user=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

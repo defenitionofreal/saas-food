@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
-
+from phonenumber_field.modelfields import PhoneNumberField
 
 class UserManager(BaseUserManager):
     def create_user(self, phone, password=None):
@@ -46,15 +46,16 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     """ Custom User Model """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone = models.CharField(max_length=255, unique=True, blank=True, null=True)  # как правильно создать это поле?
+    phone = PhoneNumberField(unique=True, blank=True, null=True)  # как правильно создать это поле?
     username = models.CharField(max_length=255, unique=True, blank=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    image = models.ImageField(upload_to='images/users/', blank=True, null=True)  # или пусть это будет charfield?
+    image = models.ImageField(upload_to='images/users/', blank=True, null=True)
     is_customer = models.BooleanField(default=False)
     is_promo = models.BooleanField(default=False)
     password = models.CharField(max_length=255)
+
     USERNAME_FIELD = 'email'  # админ должен входить через почту а юзеры через моб
     REQUIRED_FIELDS = []
 
