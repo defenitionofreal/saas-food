@@ -29,7 +29,7 @@ CORE_APPS = [
 THIRD_PART_APPS = [
     'rest_framework',
     'corsheaders',  # https://github.com/adamchainz/django-cors-headers
-
+    'phonenumber_field',
 ]
 
 INTERNAL_APPS = [
@@ -153,6 +153,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+PHONENUMBER_DEFAULT_REGION = 'RU'
 
 REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': (
