@@ -6,7 +6,7 @@ class Design(models.Model):
     Color of buttons and elements
     """
     institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="design")
-    color = models.CharField(max_length=100)  # возможно использовать пакет для api colorfield?
+    color = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.institution}"
