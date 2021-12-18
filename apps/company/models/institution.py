@@ -1,5 +1,6 @@
 from django.db import models
 from apps.base.models.seo import SeoModel
+from apps.base.models.address import AddressModel
 from apps.company.models.enums.timezone_ru import RussianTimezone
 from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
@@ -9,7 +10,7 @@ import uuid
 User = get_user_model()
 
 
-class Institution(SeoModel):
+class Institution(SeoModel, AddressModel):
     """
     Institution(company) model
     """

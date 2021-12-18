@@ -6,7 +6,7 @@ from .api import (institution_create,
 app_name = 'company'
 
 urlpatterns = [
-    path('institution/new/', institution_create.InstitutionCreateAPIView.as_view()),
-    path('institution/list/', institution_list.InstitutionListAPIView.as_view()),
-    path('institution/<uuid:pk>', institution_detail.InstitutionDetailAPIView.as_view()),
+    path('new/', institution_create.InstitutionCreateAPIView.as_view()),
+    path('list/', institution_list.InstitutionListAPIView.as_view()),
+    path('<uuid:pk>', institution_detail.InstitutionDetailAPIView.as_view()),
 ]
