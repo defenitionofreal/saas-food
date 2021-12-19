@@ -15,7 +15,10 @@ from .api import (institution_create,
                   working_hours_detail,
                   extra_phone_create,
                   extra_phone_list,
-                  extra_phone_detail)
+                  extra_phone_detail,
+                  banner_create,
+                  banner_list,
+                  banner_detail)
 
 app_name = 'company'
 
@@ -44,5 +47,9 @@ urlpatterns = [
     path('<uuid:pk>/extra-phones/new/', extra_phone_create.ExtraPhoneCreateAPIView.as_view()),
     path('<uuid:pk>/extra-phones/list/', extra_phone_list.ExtraPhoneListAPIView.as_view()),
     path('<uuid:pk>/extra-phones/detail/<int:extra_phones_pk>/', extra_phone_detail.ExtraPhoneDetailAPIView.as_view()),
+    # banners
+    path('<uuid:pk>/banner/new/', banner_create.BannerCreateAPIView.as_view()),
+    path('<uuid:pk>/banner/list/', banner_list.BannerListAPIView.as_view()),
+    path('<uuid:pk>/banner/detail/<int:banner_pk>/', banner_detail.BannerDetailAPIView.as_view()),
 
 ]
