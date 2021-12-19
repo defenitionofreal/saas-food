@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from apps.company.models import Institution, Design, Analytics, SocialLinks, Requisites, WorkingHours, ExtraPhone
+from apps.company.models import Institution, Design, Analytics, SocialLinks, \
+    Requisites, WorkingHours, ExtraPhone, Banner
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
@@ -42,7 +43,6 @@ class RequisitesSerializer(serializers.ModelSerializer):
         exclude = ['institution']
 
 
-
 class WorkingHoursSerializer(serializers.ModelSerializer):
     """ Working Hours serializer """
 
@@ -58,3 +58,10 @@ class ExtraPhoneSerializer(serializers.ModelSerializer):
         model = ExtraPhone
         exclude = ['institution']
 
+
+class BannerSerializer(serializers.ModelSerializer):
+    """ Banner serializer """
+
+    class Meta:
+        model = Banner
+        exclude = ['institution']
