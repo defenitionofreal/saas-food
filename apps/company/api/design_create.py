@@ -8,10 +8,10 @@ from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 class DesignCreateAPIView(APIView):
-    """ Create new institution """
+    """ Create new design """
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-
+    # на фронте create or update
     def post(self, request, pk):
         serializer = DesignSerializer(data=request.data)
         institution = Institution.objects.get(pk=pk)
