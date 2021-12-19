@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.company.models import Institution, Design
+from apps.company.models import Institution, Design, Analytics
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
@@ -15,5 +15,13 @@ class DesignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Design
+        exclude = ['institution']
+
+
+class AnalyticsSerializer(serializers.ModelSerializer):
+    """ Analytics serializer """
+
+    class Meta:
+        model = Analytics
         exclude = ['institution']
 
