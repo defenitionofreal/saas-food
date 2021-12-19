@@ -5,7 +5,9 @@ from .api import (institution_create,
                   design_create,
                   design_detail,
                   analytics_create,
-                  analytics_detail)
+                  analytics_detail,
+                  socials_create,
+                  socials_detail)
 
 app_name = 'company'
 
@@ -20,4 +22,7 @@ urlpatterns = [
     # analytics
     path('<uuid:pk>/analytics/new/', analytics_create.AnalyticsCreateAPIView.as_view()),
     path('<uuid:pk>/analytics/detail/<int:analytics_pk>/', analytics_detail.AnalyticsDetailAPIView.as_view()),
+    # social links
+    path('<uuid:pk>/social-links/new/', socials_create.SocialsCreateAPIView.as_view()),
+    path('<uuid:pk>/social-links/detail/<int:socials_pk>/', socials_detail.SocialsDetailAPIView.as_view()),
 ]
