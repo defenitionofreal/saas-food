@@ -7,7 +7,9 @@ from .api import (institution_create,
                   analytics_create,
                   analytics_detail,
                   socials_create,
-                  socials_detail)
+                  socials_detail,
+                  requisites_create,
+                  requisites_detail)
 
 app_name = 'company'
 
@@ -25,4 +27,7 @@ urlpatterns = [
     # social links
     path('<uuid:pk>/social-links/new/', socials_create.SocialsCreateAPIView.as_view()),
     path('<uuid:pk>/social-links/detail/<int:socials_pk>/', socials_detail.SocialsDetailAPIView.as_view()),
+    # requisites
+    path('<uuid:pk>/requisites/new/', requisites_create.RequisitesCreateAPIView.as_view()),
+    path('<uuid:pk>/requisites/detail/<int:requisites_pk>/', requisites_detail.RequisitesDetailAPIView.as_view()),
 ]
