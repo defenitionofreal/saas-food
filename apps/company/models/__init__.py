@@ -5,3 +5,4 @@ from .working_hours import WorkingHours
 from .design import Design
 from .banner import Banner
 from .social_links import SocialLinks
+from .extra_phone import ExtraPhone
