@@ -1,5 +1,5 @@
 from django.db import models
-
+from phonenumber_field.modelfields import PhoneNumberField
 
 class Requisites(models.Model):
     """
@@ -15,7 +15,7 @@ class Requisites(models.Model):
     bik = models.IntegerField()
     correspondent_account = models.IntegerField()
     checking_account = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)  # списком
+    phone = PhoneNumberField()  # списком
     email = models.EmailField()
 
     def __str__(self):
