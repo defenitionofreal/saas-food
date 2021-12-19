@@ -3,7 +3,9 @@ from .api import (institution_create,
                   institution_list,
                   institution_detail,
                   design_create,
-                  design_detail)
+                  design_detail,
+                  analytics_create,
+                  analytics_detail)
 
 app_name = 'company'
 
@@ -15,4 +17,7 @@ urlpatterns = [
     # design
     path('<uuid:pk>/design/new/', design_create.DesignCreateAPIView.as_view()),
     path('<uuid:pk>/design/detail/<int:design_pk>/', design_detail.DesignDetailAPIView.as_view()),
+    # analytics
+    path('<uuid:pk>/analytics/new/', analytics_create.AnalyticsCreateAPIView.as_view()),
+    path('<uuid:pk>/analytics/detail/<int:analytics_pk>/', analytics_detail.AnalyticsDetailAPIView.as_view()),
 ]
