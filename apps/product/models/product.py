@@ -8,10 +8,10 @@ class Product(models.Model):
     Product of institution
     """
     institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="products")
-    category = models.ForeignKey("product.Category", on_delete=models.CASCADE, related_name="products")
-    sticker = models.ForeignKey("product.Sticker", on_delete=models.CASCADE, related_name="products", blank=True)
+    category = models.ForeignKey("product.Category", on_delete=models.PROTECT, related_name="products")
+    sticker = models.ForeignKey("product.Sticker", on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
     is_active = models.BooleanField(default=False)
-    order = models.PositiveIntegerField(default=1)
+    row = models.PositiveIntegerField(default=1)
     title = models.CharField(max_length=255)
     description = models.TextField()
     images = models.ManyToManyField("media.Image", blank=True)

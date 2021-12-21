@@ -8,7 +8,7 @@ class Category(models.Model):
     institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="categories")
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
-    order = models.PositiveIntegerField(default=1)
+    row = models.PositiveIntegerField(default=1)
     slug = models.SlugField()
 
     def __str__(self):
