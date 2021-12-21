@@ -46,7 +46,7 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     """ Custom User Model """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone = PhoneNumberField(unique=True, blank=True, null=True)  # как правильно создать это поле?
+    phone = PhoneNumberField(unique=True, blank=True, null=True)
     username = models.CharField(max_length=255, unique=True, blank=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
