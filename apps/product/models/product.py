@@ -18,15 +18,15 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     old_price = models.DecimalField(max_digits=10, decimal_places=2)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2)
-    protein = models.CharField(max_length=255)  # integer ?
-    fats = models.CharField(max_length=255)  # integer ?
-    carbohydrates = models.CharField(max_length=255)  # integer ?
-    calories = models.CharField(max_length=255)  # integer ?
+    protein = models.FloatField(blank=True)
+    fats = models.FloatField(blank=True)
+    carbohydrates = models.FloatField(blank=True)
+    calories = models.FloatField(blank=True)
     additives = models.ManyToManyField("product.Additive", blank=True)
     modifiers = models.ManyToManyField("product.Modifier", blank=True)
     weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices, default=WeightUnit.GRAM)
-    weight = models.CharField(max_length=50, blank=True)  # integer ?
-    cook_time = models.IntegerField()
+    weight = models.FloatField(max_length=50, blank=True)
+    cook_time = models.PositiveIntegerField()
     slug = models.SlugField()
 
     def __str__(self):
