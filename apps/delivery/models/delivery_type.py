@@ -1,7 +1,8 @@
 from django.db import models
 
 from apps.delivery.models.enums import (DeliveryType,
-                                        SaleType)
+                                        SaleType,
+                                        PaymentType)
 
 
 class Delivery(models.Model):
@@ -12,9 +13,7 @@ class Delivery(models.Model):
                                     on_delete=models.CASCADE,
                                     related_name="delivery")
     delivery_type = models.CharField(max_length=20, choices=DeliveryType.choices)
-    by_card = models.BooleanField(default=False)
-    by_cash = models.BooleanField(default=False)
-    by_card_online = models.BooleanField(default=False)
+    payment_type = models.CharField(max_length=20, choices=PaymentType.choices, default=PaymentType.ONLINE)
     sale_type = models.CharField(max_length=20, choices=SaleType.choices)
     sale_amount = models.IntegerField()
     date_when = models.DateTimeField()
