@@ -7,7 +7,7 @@ class ModifierPrice(models.Model):
     """
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
-                                    related_name="modifiers")
+                                    related_name="modifiers_price", null=True)
     product = models.ForeignKey("product.Product", on_delete=models.CASCADE,
                                 related_name="modifiers_price")
     modifier = models.ForeignKey("product.Modifier", on_delete=models.CASCADE,
