@@ -7,7 +7,10 @@ from .api import (category_create,
                   additive_detail,
                   sticker_create,
                   sticker_list,
-                  sticker_detail)
+                  sticker_detail,
+                  product_create,
+                  product_list,
+                  product_detail)
 
 
 app_name = 'product'
@@ -27,4 +30,8 @@ urlpatterns = [
    path('institution/<uuid:pk>/sticker/new/', sticker_create.StickerCreateAPIView.as_view()),
    path('institution/<uuid:pk>/sticker/list/', sticker_list.StickerListAPIView.as_view()),
    path('institution/<uuid:pk>/sticker/detail/<int:sticker_pk>/', sticker_detail.StickerDetailAPIView.as_view()),
+   # product
+   path('institution/<uuid:pk>/product/new/', product_create.ProductCreateAPIView.as_view()),
+   path('institution/<uuid:pk>/product/list/', product_list.ProductListAPIView.as_view()),
+   path('institution/<uuid:pk>/product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
 ]
