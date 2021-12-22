@@ -10,7 +10,13 @@ from .api import (category_create,
                   sticker_detail,
                   product_create,
                   product_list,
-                  product_detail)
+                  product_detail,
+                  modifier_create,
+                  modifier_list,
+                  modifier_detail,
+                  modifier_price_create,
+                  modifier_price_list,
+                  modifier_price_detail)
 
 
 app_name = 'product'
@@ -34,4 +40,12 @@ urlpatterns = [
    path('institution/<uuid:pk>/product/new/', product_create.ProductCreateAPIView.as_view()),
    path('institution/<uuid:pk>/product/list/', product_list.ProductListAPIView.as_view()),
    path('institution/<uuid:pk>/product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
+   # modifier
+   path('institution/<uuid:pk>/modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
+   path('institution/<uuid:pk>/modifier/list/', modifier_list.ModifierListAPIView.as_view()),
+   path('institution/<uuid:pk>/modifier/detail/<int:modifier_pk>/', modifier_detail.ModifierDetailAPIView.as_view()),
+   # modifier price
+   path('institution/<uuid:pk>/modifier/<int:modifier_pk>/price/new/', modifier_price_create.ModifierPriceCreateAPIView.as_view()),
+   path('institution/<uuid:pk>/modifier/price/list/', modifier_price_list.ModifierPriceListAPIView.as_view()),
+   path('institution/<uuid:pk>/modifier/<int:modifier_pk>/price/detail/<int:modifier_price_pk>/', modifier_price_detail.ModifierPriceDetailAPIView.as_view()),
 ]
