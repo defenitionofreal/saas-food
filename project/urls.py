@@ -11,6 +11,8 @@ urlpatterns = [
     # devide users
     path('api/customer/', include('apps.customer.urls', namespace='customer')),
     path('api/organization/', include('apps.organization.urls', namespace='organization')),
+    # showcase site
+    path('<str:domain>/', include('apps.showcase.urls', namespace='showcase')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
