@@ -21,5 +21,3 @@ class Delivery(models.Model):
     def __str__(self):
         return self.institution
 
-
-# сделать ЗОНУ ДОСТАВКИ  DeliveryZone
