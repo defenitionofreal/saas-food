@@ -30,6 +30,7 @@ THIRD_PART_APPS = [
     'rest_framework',
     'corsheaders',  # https://github.com/adamchainz/django-cors-headers
     'phonenumber_field',
+    'drf_yasg',
 ]
 
 INTERNAL_APPS = [
