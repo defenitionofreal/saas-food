@@ -31,6 +31,8 @@ THIRD_PART_APPS = [
     'corsheaders',  # https://github.com/adamchainz/django-cors-headers
     'phonenumber_field',
     'drf_yasg',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 INTERNAL_APPS = [
@@ -99,15 +101,17 @@ WSGI_APPLICATION = 'project.wsgi.application'
 #     }
 # }
 
+
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'food',
-        'USER': 'food',
-        'PASSWORD': 'food',
-        'HOST': 'localhost',
-        'PORT': 5432
-
+        'NAME': os.environ.get('POSTGRES_DB', default='food'),
+        'USER': os.environ.get('POSTGRES_USER', default='food'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', default='food'),
+        'HOST': os.environ.get('POSTGRES_HOST', default='localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', default=5432),
     }
 }
 
@@ -170,12 +174,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 PHONENUMBER_DEFAULT_REGION = 'RU'
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ),
-    # 'DEFAULT_FILTER_BACKENDS': [
-    #     'django_filters.rest_framework.DjangoFilterBackend', # https://django-filter.readthedocs.io/en/stable/guide/install.html
-    # ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ]
@@ -192,3 +190,16 @@ CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'base.CustomUser'
 
 SITE_ID = 1
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER')
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+CELERY_BROKER_CONNECTION_TIMEOUT = 20
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND')
+# CELERY BEAT
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

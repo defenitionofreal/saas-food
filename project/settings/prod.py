@@ -8,12 +8,11 @@ DEBUG = os.environ['DJANGO_DEBUG']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': os.environ['DATABASE_PORT']
-
+        'NAME': os.environ.get('POSTGRES_DB', 'food'),
+        'USER': os.environ.get('POSTGRES_USER', 'food'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'food'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', 5432),
     }
 }
 
@@ -21,9 +20,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [os.environ['REDIS_URI']],
+            'hosts': [os.environ['CELERY_BROKER_URL']],
         },
     },
 }
-
-CELERY_BROKER_URL = os.environ['BROKER_URL']
