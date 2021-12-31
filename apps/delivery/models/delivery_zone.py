@@ -43,7 +43,7 @@ class DeliveryZoneFile(models.Model):
                                     on_delete=models.CASCADE,
                                     related_name="dz_file_institution")
     file = models.FileField(upload_to=get_path_upload_map_file,
-                            validators=[[FileExtensionValidator(allowed_extensions=['kml'])]])
+                            validators=[FileExtensionValidator(allowed_extensions=['kml'])])
 
     def __str__(self):
         return f'{self.institution} -> {self.file}'
