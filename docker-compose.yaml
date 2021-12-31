@@ -3,11 +3,53 @@ version: '3'
 services:
   web:
     build: .
+    container_name: django
     restart: always
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/back_end
+      - .:/backend
     ports:
       - "0.0.0.0:8000:8000"
     env_file:
       - .env
+
+  celery:
+    build: .
+    container_name: celery
+    command: celery -A project worker -l INFO
+    volumes:
+      - .:/backend
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+      - pgdb
+
+  celery_beat:
+    build: .
+    container_name: celery_beat
+    command: celery -A project beat -l info
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+      - pgdb
+      - celery
+    volumes:
+      - .:/backend
+
+  pgdb:
+    image: postgres
+    container_name: pgdb
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+
+  redis:
+    image: "redis:alpine"
+
+volumes:
+  pgdata:
