@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.delivery.models import Delivery, DeliveryZoneFile
-from apps.delivery.services.delete_file import delete_old_file
+from apps.base.services.delete_file import delete_old_file
 
 
 class DeliverySerializer(serializers.ModelSerializer):
