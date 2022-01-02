@@ -8,6 +8,8 @@ from apps.delivery.serializers import DeliveryZoneFileSerializer
 from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
+from apps.delivery.tasks import google_map_file_upload_task
+
 
 class DeliveryZoneFileCreateAPIView(APIView):
     """ Create new delivery zone file """
@@ -21,4 +23,6 @@ class DeliveryZoneFileCreateAPIView(APIView):
         if serializer.is_valid():
             serializer.save(institution=institution)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        google_map_file_upload_task.delay(serializer.data['file'],
+                                          str(institution))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -3,7 +3,7 @@ from pykml.parser import Schema
 import re
 
 
-def file_upload(file):
+def google_file_to_dict(file):
     schema_gx = Schema("kml22gx.xsd")
     maps_dict = {}
     with open(file, 'rb') as f:
@@ -23,13 +23,3 @@ def file_upload(file):
                 return 'Wrong file...'
         except Exception as e:
             return 'Export a whole map, not a layout.'
-
-
-#print(file_upload('map.kml'))
-
-for k, v in file_upload('map.kml').items():
-    print(k)
-    #print(v[0])
-    for i in v[0]:
-        print(i)
-
