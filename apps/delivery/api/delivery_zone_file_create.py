@@ -23,7 +23,12 @@ class DeliveryZoneFileCreateAPIView(APIView):
         serializer = DeliveryZoneFileSerializer(data=request.data)
         institution = Institution.objects.get(pk=pk)
         if serializer.is_valid():
-            serializer.save(institution=institution)
-            google_map_file_upload_task.delay(serializer.data['file'], str(institution.id))
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save(institution=institution)
+                google_map_file_upload_task.delay(serializer.data['file'],
+                                                  str(institution.id))
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
+            except Exception as e:
+                raise {'Error': e}
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

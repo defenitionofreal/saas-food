@@ -14,6 +14,7 @@ def google_map_file_upload_task(file, pk):
     file = f'{os.getcwd()}{file}'
     institution = Institution.objects.get(pk=pk)
     map_data = google_file_to_dict(file)
+
     for title, coordinates in map_data.items():
         delivery_zone, delivery_zone_created = DeliveryZone.objects.get_or_create(
             institution=institution,
@@ -28,3 +29,5 @@ def google_map_file_upload_task(file, pk):
                 for i in coordinates[0]
             ]
             DeliveryZoneСoordinates.objects.bulk_create(objs)
+        else:
+            os.remove(file)
