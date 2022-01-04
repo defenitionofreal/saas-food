@@ -10,6 +10,8 @@ from apps.company.models import Institution
 
 from apps.delivery.tasks import google_map_file_upload_task
 
+from django.conf import settings
+import os
 
 class DeliveryZoneFileCreateAPIView(APIView):
     """ Create new delivery zone file """
@@ -22,7 +24,6 @@ class DeliveryZoneFileCreateAPIView(APIView):
         institution = Institution.objects.get(pk=pk)
         if serializer.is_valid():
             serializer.save(institution=institution)
+            google_map_file_upload_task.delay(serializer.data['file'], str(institution.id))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        google_map_file_upload_task.delay(serializer.data['file'],
-                                          str(institution))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
