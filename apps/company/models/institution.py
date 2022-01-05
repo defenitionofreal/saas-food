@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
 
 import uuid
+import os
 
 User = get_user_model()
 
@@ -29,4 +30,11 @@ class Institution(SeoModel, AddressModel):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        from apps.company.tasks import generate_qrcode_task
+        if not self.qrcode:
+            generate_qrcode_task.delay(f'{self.id}')
+            #os.remove(f'{self.id}.png')
+        super().save(*args, **kwargs)
 
