@@ -19,9 +19,9 @@ def create_qr_titles(title1, title2, title3, domain):
     qr_img = qrcode_generator(domain)
     qr_img_w, qr_img_h = qr_img.size
 
-    font_size = 50 * multiplier
+    font_size = 55 * multiplier
     font_style = ImageFont.truetype(
-        'static/fonts/montserrat-bold.ttf', (font_size + 30)
+        'static/fonts/montserrat-bold.ttf', font_size
     )
     font_domen_style = ImageFont.truetype(
         'static/fonts/montserrat-regular.ttf', font_size
@@ -37,29 +37,27 @@ def create_qr_titles(title1, title2, title3, domain):
     domain_w, domain_h = draw.textsize(text=domain, font=font_domen_style)
 
     # Place title1
-    draw.text(xy=(((width - title1_w) / 2), round(height / qr_img_h) + 80),
+    draw.text(xy=(((width - title1_w) / 2), round(height % (qr_img_h + title1_h))),
               text=title1, font=font_style, fill='black')
     # Place domain title
-    draw.text(xy=(((width - domain_w) / 2), round(height - qr_img_h) - 100),
+    draw.text(xy=(((width - domain_w) / 2), round(width - (qr_img_w + domain_h)) + 100),
               text=domain, font=font_domen_style, fill=theme_color)
 
     # create images for transparent bg and rotate titles
     # left side title
     image_rgba_left_side = Image.new('RGBA', (width, height), (0, 0, 0, 0))
     draw1 = ImageDraw.Draw(image_rgba_left_side)
-    draw1.text((round((width - title2_w) / 2), round(height / qr_img_h)),
+    draw1.text((round((width - title2_w) / 2), round(height % (qr_img_h + title2_h))),
                text=title2, font=font_style, fill='black')
     # right side title
     image_rgba_right_side = Image.new('RGBA', (width, height), (0, 0, 0, 0))
     draw2 = ImageDraw.Draw(image_rgba_right_side)
-    draw2.text((round((width - title3_w) / 2), round(height / qr_img_h)),
+    draw2.text((round((width - title3_w) / 2), round(height % (qr_img_h + title3_h))),
                text=title3, font=font_style, fill='black')
 
     # Place side titles
-    image.paste(image_rgba_left_side, box=(80, 0),
-                mask=image_rgba_left_side.rotate(90))
-    image.paste(image_rgba_right_side, box=(-80, 0),
-                mask=image_rgba_right_side.rotate(-90))
+    image.paste(image_rgba_left_side, mask=image_rgba_left_side.rotate(90))
+    image.paste(image_rgba_right_side, mask=image_rgba_right_side.rotate(-90))
 
     # add color border
     image = ImageOps.expand(image, border=50, fill=theme_color)
