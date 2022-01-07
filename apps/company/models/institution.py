@@ -5,9 +5,7 @@ from apps.company.models.enums.timezone_ru import RussianTimezone
 from apps.company.services.path_qr_code import get_path_qr_code
 from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
-from django.conf import settings
 import uuid
-import os
 
 User = get_user_model()
 
