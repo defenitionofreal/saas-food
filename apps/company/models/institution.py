@@ -2,9 +2,9 @@ from django.db import models
 from apps.base.models.seo import SeoModel
 from apps.base.models.address import AddressModel
 from apps.company.models.enums.timezone_ru import RussianTimezone
+from apps.company.services.path_qr_code import get_path_qr_code
 from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
-
 import uuid
 
 User = get_user_model()
@@ -24,7 +24,14 @@ class Institution(SeoModel, AddressModel):
     domain = models.CharField(max_length=255, unique=True)
     address = models.ForeignKey("location.Address", on_delete=models.SET_NULL, null=True, related_name="+")
     local_time = models.CharField(max_length=20, choices=RussianTimezone.choices, default=RussianTimezone.MOSCOW)
+    qrcode = models.ImageField(upload_to=get_path_qr_code, blank=True)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.qrcode:
+            from apps.company.tasks import generate_qrcode_task
+            generate_qrcode_task.delay(self.id)
+        super().save(*args, **kwargs)
 

@@ -33,6 +33,7 @@ THIRD_PART_APPS = [
     'drf_yasg',
     'django_celery_beat',
     'django_celery_results',
+    'django_cleanup',
 ]
 
 INTERNAL_APPS = [
