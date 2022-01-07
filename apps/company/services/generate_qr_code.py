@@ -6,7 +6,7 @@ def qrcode_generator(domain):
     qr = qrcode.QRCode(
         version=5,
         error_correction=qrcode.constants.ERROR_CORRECT_Q,
-        box_size=10,
+        box_size=7,
         border=0,
     )
     # Version 5 is 37x37

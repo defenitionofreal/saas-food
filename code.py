@@ -8,7 +8,7 @@ def qrcode_generator(domain):
     qr = qrcode.QRCode(
         version=5,
         error_correction=qrcode.constants.ERROR_CORRECT_Q,
-        box_size=10,
+        box_size=7,
         border=0,
     )
     # Version 5 is 37x37
@@ -42,7 +42,7 @@ def create_qr_label(title1, title2, title3, domain):
 
     font_size = 50 * multiplier
     font_style = ImageFont.truetype(
-        'static/fonts/montserrat-bold.ttf', font_size
+        'static/fonts/montserrat-bold.ttf', (font_size + 30)
     )
     font_domen_style = ImageFont.truetype(
         'static/fonts/montserrat-regular.ttf', font_size
@@ -58,10 +58,10 @@ def create_qr_label(title1, title2, title3, domain):
     domain_w, domain_h = draw.textsize(text=domain, font=font_domen_style)
 
     # Place title1
-    draw.text(xy=(((width - title1_w) / 2), round(height / qr_img_h) - 20),
+    draw.text(xy=(((width - title1_w) / 2), round(height / qr_img_h) + 80),
               text=title1, font=font_style, fill='black')
     # Place domain title
-    draw.text(xy=(((width - domain_w) / 2), round(height - qr_img_h) + 120),
+    draw.text(xy=(((width - domain_w) / 2), round(height - qr_img_h) - 100),
               text=domain, font=font_domen_style, fill=theme_color)
 
     # create images for transparent bg and rotate titles
@@ -77,13 +77,13 @@ def create_qr_label(title1, title2, title3, domain):
                text=title3, font=font_style, fill='black')
 
     # Place side titles
-    image.paste(image_rgba_left_side, box=(-20, 0),
+    image.paste(image_rgba_left_side, box=(80, 0),
                 mask=image_rgba_left_side.rotate(90))
-    image.paste(image_rgba_right_side, box=(20, 0),
+    image.paste(image_rgba_right_side, box=(-80, 0),
                 mask=image_rgba_right_side.rotate(-90))
 
     # add color border
-    image = ImageOps.expand(image, border=30, fill=theme_color)
+    image = ImageOps.expand(image, border=50, fill=theme_color)
 
     # Resize (for text anti-aliasing purposes)
     image = image.resize((int(width / multiplier), int(height / multiplier)))
