@@ -37,7 +37,7 @@ def create_qr_titles(title1, title2, title3, domain):
     domain_w, domain_h = draw.textsize(text=domain, font=font_domen_style)
 
     # Place title1
-    draw.text(xy=(((width - title1_w) / 2), round(height / qr_img_h) - 20),
+    draw.text(xy=(((width - title1_w) / 2), round(height / qr_img_h)),
               text=title1, font=font_style, fill='black')
     # Place domain title
     draw.text(xy=(((width - domain_w) / 2), round(height - qr_img_h) + 120),
@@ -56,9 +56,9 @@ def create_qr_titles(title1, title2, title3, domain):
                text=title3, font=font_style, fill='black')
 
     # Place side titles
-    image.paste(image_rgba_left_side, box=(-20, 0),
+    image.paste(image_rgba_left_side, box=(0, 0),
                 mask=image_rgba_left_side.rotate(90))
-    image.paste(image_rgba_right_side, box=(20, 0),
+    image.paste(image_rgba_right_side, box=(0, 0),
                 mask=image_rgba_right_side.rotate(-90))
 
     # add color border

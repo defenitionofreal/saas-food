@@ -5,7 +5,7 @@ from apps.company.models.enums.timezone_ru import RussianTimezone
 from apps.company.services.path_qr_code import get_path_qr_code
 from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
-
+from django.conf import settings
 import uuid
 import os
 
@@ -32,9 +32,8 @@ class Institution(SeoModel, AddressModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        from apps.company.tasks import generate_qrcode_task
         if not self.qrcode:
-            generate_qrcode_task.delay(f'{self.id}')
-            #os.remove(f'{self.id}.png')
+            from apps.company.tasks import generate_qrcode_task
+            generate_qrcode_task.delay(self.id)
         super().save(*args, **kwargs)
 
