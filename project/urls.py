@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/customer/', include('apps.customer.urls', namespace='customer')),
     path('api/organization/', include('apps.organization.urls', namespace='organization')),
     # showcase site
-    #path('<str:domain>/', include('apps.showcase.urls', namespace='showcase')),
+    path('api/showcase/<str:domain>/', include('apps.showcase.urls', namespace='showcase')),
 ]
 
 urlpatterns += doc_urls
