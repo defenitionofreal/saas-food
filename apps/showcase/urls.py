@@ -19,10 +19,14 @@ urlpatterns = [
     path('categories/', CategoriesClientListAPIView.as_view()),
     path('categories/<str:slug>/', CategoriesClientDetailAPIView.as_view()),
     path('banners/', BannersClientListAPIView.as_view()),
-    path('banners/<int:pk>/', BannersClientDetailAPIView.as_view()),
-    path('social-links/', SocialLinksClientListAPIView.as_view()),
     path('analytics/', AnalyticsClientListAPIView.as_view()),
     path('design/<int:pk>/', DesignClientDetailAPIView.as_view()),
+
+    # main page pop ups
+    # banner
+    path('banners/<int:pk>/', BannersClientDetailAPIView.as_view()),
+    # company info
+    path('social-links/', SocialLinksClientListAPIView.as_view()),
     path('extra-phones/', ExtraPhoneClientListAPIView.as_view()),
     path('working-hours/', WorkingHoursClientListAPIView.as_view()),
     path('requisites/', RequisitesClientListAPIView.as_view()),
