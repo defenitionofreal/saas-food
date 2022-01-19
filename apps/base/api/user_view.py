@@ -17,8 +17,4 @@ class UserAPIView(APIView):
     def get(self, request):
         user = request.user
         data = UserSerializer(user).data
-
-        # if 'api/customer' in request.path:
-        #     pass
-
         return Response(data)

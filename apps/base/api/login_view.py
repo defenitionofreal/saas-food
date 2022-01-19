@@ -22,7 +22,10 @@ class LoginAPIView(APIView):
         if user.check_password(password):
             raise exceptions.AuthenticationFailed("Incorrect password")
 
-        scope = 'customer' if 'api/customer' in request.path else 'api/organization'
+        if 'api/customer' in request.path:
+            scope = 'customer'
+        elif 'api/organization' in request.path:
+            scope = 'organization'
 
         if user.is_customer and scope == 'api/organization':
             raise exceptions.AuthenticationFailed('Unauthorized')

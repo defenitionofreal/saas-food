@@ -18,11 +18,13 @@ class JWTAuthentication(BaseAuthentication):
         if not token:
             return None
         try:
-            payload = jwt.decode(token, default.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, default.SECRET_KEY,
+                                 algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed("unauthenticated")
 
-        if (is_customer and payload['scope'] != 'api/organization') or (not is_customer and payload['scope'] != 'api/organization'):
+        if (is_customer and payload['scope'] == 'organization') or (
+                not is_customer and payload['scope'] == 'customer'):
             raise exceptions.AuthenticationFailed('Invalid scope')
 
         user = User.objects.get(pk=payload['user_id'])

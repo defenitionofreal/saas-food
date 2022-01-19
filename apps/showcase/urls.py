@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from apps.showcase.api.products_client_list import ProductsClientListAPIView
 from apps.showcase.api.categories_client_list import CategoriesClientListAPIView
 from apps.showcase.api.categories_client_detail import CategoriesClientDetailAPIView
@@ -30,4 +30,7 @@ urlpatterns = [
     path('extra-phones/', ExtraPhoneClientListAPIView.as_view()),
     path('working-hours/', WorkingHoursClientListAPIView.as_view()),
     path('requisites/', RequisitesClientListAPIView.as_view()),
+
+    # order (cart) detail/add/delete
+    path('order/', include('apps.order.urls', namespace='order')),
 ]

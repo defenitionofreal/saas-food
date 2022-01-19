@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'apps.base.middleware.JWTAuthenticationInMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -176,6 +177,7 @@ PHONENUMBER_DEFAULT_REGION = 'RU'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        #'apps.base.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ]
 }

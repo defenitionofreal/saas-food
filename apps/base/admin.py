@@ -1,3 +1,7 @@
-# from django.contrib import admin
+from django.contrib import admin
+from apps.base.models import CustomUser
 
-# Register your models here.
+
+@admin.register(CustomUser)
+class UserAdmin(admin.ModelAdmin):
+    search_fields = ("id",)
