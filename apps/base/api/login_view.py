@@ -22,12 +22,12 @@ class LoginAPIView(APIView):
         if user.check_password(password):
             raise exceptions.AuthenticationFailed("Incorrect password")
 
-        if 'api/customer' in request.path:
+        if 'customer' in request.path:
             scope = 'customer'
-        elif 'api/organization' in request.path:
+        elif 'organization' in request.path:
             scope = 'organization'
 
-        if user.is_customer and scope == 'api/organization':
+        if user.is_customer and scope == 'organization':
             raise exceptions.AuthenticationFailed('Unauthorized')
 
         token = JWTAuthentication.generate_jwt(user.id, scope)

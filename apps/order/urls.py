@@ -7,5 +7,5 @@ app_name = 'order'
 urlpatterns = [
     path('test/', CartAPIView.as_view()),
     # добавления в корзину /domain/add-to-cart/product-pk/
-    path('add-to-cart/<int:product_id>', AddToCartAPIView.as_view()),
+    path('customer/add-to-cart/<int:product_id>', AddToCartAPIView.as_view()),
 ]

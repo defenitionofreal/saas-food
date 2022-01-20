@@ -25,6 +25,7 @@ urlpatterns = [
     # main page pop ups
     # banner
     path('banners/<int:pk>/', BannersClientDetailAPIView.as_view()),
+
     # company info
     path('social-links/', SocialLinksClientListAPIView.as_view()),
     path('extra-phones/', ExtraPhoneClientListAPIView.as_view()),
