@@ -6,6 +6,6 @@ app_name = 'order'
 # cart достпуна по своему id
 urlpatterns = [
     path('test/', CartAPIView.as_view()),
-    # добавления в корзину /domain/add-to-cart/product-pk/
-    path('customer/add-to-cart/<int:product_id>', AddToCartAPIView.as_view()),
+    # добавления в корзину
+    path('customer/add-to-cart/<str:product_slug>', AddToCartAPIView.as_view()),
 ]

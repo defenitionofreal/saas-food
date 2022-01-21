@@ -16,71 +16,37 @@ from apps.base.authentication import JWTAuthentication
 class AddToCartAPIView(APIView):
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def post(self, request, domain, product_id):
-        user = self.request.user
+    def post(self, request, domain, product_slug):
+
         institution = Institution.objects.get(domain=domain)
-        item = get_object_or_404(Product, id=product_id)
-
-        # quantity = self.request.query_params.get('quantity')
+        item = get_object_or_404(Product, slug=product_slug)
+        user = self.request.user
         if user.is_authenticated and user.is_customer:
-            # scopes problem
-            # print(user)
-            cart_qs = Cart.objects.get_or_create(institution=institution,
-                                                 customer=self.request.user)
-            return Response({"detail": "we working"})
+            user = user
         else:
             # make it that guest user can create cart
-            # print(user)
-            return Response({"detail": "Authorize to add product to an order."})
+            # user = ?
+            return Response(
+                {"detail": "Authorize to add product to an order."})
 
-        # cart_item, created = CartItem.objects.get_or_create(
-        #     cart=cart_qs,
-        #     product=item,
-        #     quantity=quantity
-        # )
 
-        if cart_qs:
-            cart = cart_qs[0]
-            print(cart)
+        cart_item, cart_item_created = CartItem.objects.get_or_create(
+            customer=user,
+            product=item
+        )
+
+        cart = Cart.objects.filter(institution=institution, customer=user)
+        if cart.exists():
+            cart = cart[0]
+            if cart.items.filter(product__slug=item.slug).exists():
+                cart_item.quantity += 1
+                cart_item.save()
+                return Response({"detail": "product quantity updated"})
+            else:
+                cart.items.add(cart_item)
+                return Response({"detail": "new product added"})
         else:
-            return Response({"detail": "cart"})
-        #     if cart.items.filter(item__slug=item.slug).exists():
-        #         cart_item.quantity += 1
-        #         cart_item.save()
-        #         return Response(
-        #             {"detail": "This item quantity was updated."})
-        #     else:
-        #         cart.items.add(cart_item)
-        #         return Response(
-        #             {"detail": "This item was added to your cart."})
-        # else:
-        #     cart = Cart.objects.create(
-        #         institution=institution)
-        #     cart.items.add(cart_item)
-        #     return Response(
-        #         {"detail": "Cart created. This item was added to your cart."})
-        # serializer.save(cart=cart_qs,
-        #             product=item,
-        #             quantity=quantity)
-
-
-
-        # serializer = CartItemSerializer(data=request.data)
-        # if serializer.is_valid():
-        #
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        # if serializer.is_valid():
-        #     if item:
-        #         if item == item.product.slug:
-        #             serializer.save(product=item)
-        #             return Response(serializer.data,
-        #                             status=status.HTTP_201_CREATED)
-        #         else:
-        #             raise ValidationError({"error": "wrong product."})
-        #     else:
-        #         raise ValidationError({"error": "product was not provided."})
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            cart = Cart.objects.create(institution=institution, customer=user)
+            cart.items.add(cart_item)
+            return Response({"detail": "new cart created and product added"})
