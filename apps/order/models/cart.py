@@ -29,7 +29,7 @@ class Cart(models.Model):
     #delivery_cost = models.
     min_amount = models.DecimalField(max_digits=10, decimal_places=2,
                                      blank=True, null=True)
-    items = models.ManyToManyField("order.CartItem")
+    items = models.ManyToManyField("order.CartItem", related_name="cart_items")
 
     def __str__(self):
         return f'Cart: {self.institution} -> {self.customer}'

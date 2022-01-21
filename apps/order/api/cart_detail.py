@@ -13,6 +13,12 @@ class CartAPIView(APIView):
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
         user = self.request.user
-        query = Cart.objects.get(institution=institution, customer=user)
-        serializer = CartSerializer(query)
-        return Response(serializer.data)
+        try:
+            cart = Cart.objects.get(institution=institution, customer=user)
+            if cart.items.exists():
+                serializer = CartSerializer(cart)
+                return Response(serializer.data)
+            else:
+                return Response({"detail": "Cart is empty."})
+        except Exception:
+            return Response({"detail": "Cart does not exist."})

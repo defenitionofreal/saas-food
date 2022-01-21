@@ -1,5 +1,4 @@
 from django.db import models
-from apps.order.models import Cart
 from apps.product.models import Product
 from django.contrib.auth import get_user_model
 
@@ -15,6 +14,8 @@ class CartItem(models.Model):
         null=True,
         blank=True
     )
+    cart = models.ForeignKey("order.Cart", on_delete=models.CASCADE, null=True,
+                             blank=True, related_name="products_cart")
     product = models.ForeignKey(
         Product,
         related_name='items',
