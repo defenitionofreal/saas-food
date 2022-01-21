@@ -12,17 +12,20 @@ User = get_user_model()
 class JWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        is_customer = 'api/customer' in request.path
+        is_customer = 'customer' in request.path
 
         token = request.COOKIES.get('jwt')
         if not token:
             return None
         try:
-            payload = jwt.decode(token, default.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, default.SECRET_KEY,
+                                 algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed("unauthenticated")
 
-        if (is_customer and payload['scope'] != 'api/organization') or (not is_customer and payload['scope'] != 'api/organization'):
+        # what to do if both of them should have access to showcase
+        if (is_customer and payload['scope'] == 'organization') or (
+                not is_customer and payload['scope'] == 'customer'):
             raise exceptions.AuthenticationFailed('Invalid scope')
 
         user = User.objects.get(pk=payload['user_id'])

@@ -7,7 +7,9 @@ class WorkingHours(models.Model):
     """
     Working time of institution
     """
-    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="working_hours")
+    institution = models.ForeignKey("company.Institution",
+                                    on_delete=models.CASCADE,
+                                    related_name="working_hours")
     weekday = models.CharField(max_length=20, choices=WeekDay.choices)
     from_hour = models.TimeField()
     to_hour = models.TimeField()
