@@ -23,5 +23,10 @@ class CartItem(models.Model):
     )
     quantity = models.PositiveIntegerField(default=1)
 
+    @property
+    def get_single_item_total(self):
+        total = self.product.price * self.quantity
+        return total
+
     def __str__(self):
-        return f'{self.product.title}, {self.quantity}'
+        return f'{self.product.title}, {self.quantity}, {self.get_single_item_total}'

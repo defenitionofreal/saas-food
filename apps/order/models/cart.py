@@ -31,5 +31,12 @@ class Cart(models.Model):
                                      blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
 
+    @property
+    def get_total_cart(self):
+        total = 0
+        for i in self.items.all():
+            total += i.get_single_item_total
+        return total
+
     def __str__(self):
-        return f'Cart: {self.institution} -> {self.customer}'
+        return f'Cart: {self.institution} -> {self.customer}, {self.get_total_cart}'

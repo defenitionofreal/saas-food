@@ -15,7 +15,7 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = (
             'id', 'customer', 'created_at', 'updated_at', 'items',
-            'promo_code', 'customer_bonus', 'min_amount'
+            'promo_code', 'customer_bonus', 'min_amount', 'get_total_cart'
         )
 
 class CartItemSerializer(serializers.ModelSerializer):
