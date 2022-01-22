@@ -24,4 +24,4 @@ class PromoCode(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.institution
+        return self.title
