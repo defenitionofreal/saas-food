@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.product.serializers import ProductSerializer
-from apps.order.models import OrderItem, Order, Cart, CartItem, PromoCode
+from apps.order.models import OrderItem, Order, Cart, CartItem, PromoCode, Bonus
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -38,4 +38,12 @@ class PromoCodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PromoCode
+        exclude = ['institution']
+
+
+class BonusSerializer(serializers.ModelSerializer):
+    """Serializer for the Bonus"""
+
+    class Meta:
+        model = Bonus
         exclude = ['institution']

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from apps.order.models import Cart, CartItem, Order, OrderItem, PromoCode, \
-    Bonus, PromoCodeUser
+    Bonus, PromoCodeUser, UserBonus
 
 
 @admin.register(Cart)
@@ -36,4 +36,9 @@ class PromoCodeUserAdmin(admin.ModelAdmin):
 
 @admin.register(Bonus)
 class BonusAdmin(admin.ModelAdmin):
+    search_fields = ("id",)
+
+
+@admin.register(UserBonus)
+class UserBonusAdmin(admin.ModelAdmin):
     search_fields = ("id",)
