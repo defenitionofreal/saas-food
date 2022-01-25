@@ -45,15 +45,15 @@ class Cart(models.Model):
 
         if self.promo_code.code_type == 'absolute':
 
-            if self.promo_code.categories.all():
-                cat_total = 0
-                for i in self.items.all():
-                    if i.product.category in self.promo_code.categories.all():
-                        print(i)
-                        cat_total += i.product.price * i.quantity
-                print(cat_total)
-                print(sale)
-                return cat_total
+            # if self.promo_code.categories.all():
+            #     cat_total = 0
+            #     for i in self.items.all():
+            #         if i.product.category in self.promo_code.categories.all():
+            #             print(i)
+            #             cat_total += i.product.price * i.quantity
+            #     print(cat_total)
+            #     print(sale)
+            #     return cat_total
             #
             # if self.promo_code.products.all():
             #     products_total = 0
@@ -61,7 +61,7 @@ class Cart(models.Model):
             #         if i.product in self.promo_code.products.all():
             #             products_total += i.product.price * i.quantity
             #     return products_total - sale
-
+            sale = sale if sale >= 0.0 else 0.0
             return sale
 
         if self.promo_code.code_type == 'percent':
