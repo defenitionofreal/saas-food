@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from apps.order.models import Bonus
 
 User = get_user_model()
 
@@ -89,6 +90,16 @@ class Cart(models.Model):
         # if self.promo_code.code_type == 'absolute':
         #     return sale
         return total - sale
+
+    @property
+    def get_bonus_accrual(self):
+        bonus = Bonus.objects.get(institution=self.institution)
+        if bonus.is_active:
+            if bonus.is_promo_code:
+                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
+            else:
+                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
+            return total_accrual
 
     def __str__(self):
         return f'Cart: {self.institution} -> {self.customer}, {self.get_total_cart}'
