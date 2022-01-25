@@ -20,5 +20,5 @@ class CartAPIView(APIView):
                 return Response(serializer.data)
             else:
                 return Response({"detail": "Cart is empty."})
-        except Exception:
-            return Response({"detail": "Cart does not exist."})
+        except Exception as e:
+            return Response({"detail": f"Cart does not exist. {e}"})

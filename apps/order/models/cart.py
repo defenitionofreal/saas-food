@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from decimal import Decimal
 
 User = get_user_model()
 
@@ -37,6 +38,57 @@ class Cart(models.Model):
         for i in self.items.all():
             total += i.get_single_item_total
         return total
+
+    @property
+    def get_sale(self):
+        sale = self.promo_code.sale
+
+        if self.promo_code.code_type == 'absolute':
+
+            if self.promo_code.categories.all():
+                cat_total = 0
+                for i in self.items.all():
+                    if i.product.category in self.promo_code.categories.all():
+                        print(i)
+                        cat_total += i.product.price * i.quantity
+                print(cat_total)
+                print(sale)
+                return cat_total
+            #
+            # if self.promo_code.products.all():
+            #     products_total = 0
+            #     for i in self.items.all():
+            #         if i.product in self.promo_code.products.all():
+            #             products_total += i.product.price * i.quantity
+            #     return products_total - sale
+
+            return sale
+
+        if self.promo_code.code_type == 'percent':
+
+            if self.promo_code.categories.all():
+                cat_total = 0
+                for i in self.items.all():
+                    if i.product.category in self.promo_code.categories.all():
+                        cat_total += i.product.price * i.quantity
+                return round((sale / Decimal('100')) * cat_total)
+
+            if self.promo_code.products.all():
+                products_total = 0
+                for i in self.items.all():
+                    if i.product in self.promo_code.products.all():
+                        products_total += i.product.price * i.quantity
+                return round((sale / Decimal('100')) * products_total)
+
+            return round((sale / Decimal('100')) * self.get_total_cart)
+
+    @property
+    def get_total_cart_after_sale(self):
+        total = self.get_total_cart
+        sale = self.get_sale
+        # if self.promo_code.code_type == 'absolute':
+        #     return sale
+        return total - sale
 
     def __str__(self):
         return f'Cart: {self.institution} -> {self.customer}, {self.get_total_cart}'

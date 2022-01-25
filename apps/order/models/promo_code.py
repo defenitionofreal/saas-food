@@ -1,5 +1,8 @@
 from django.db import models
 from apps.delivery.models.enums import SaleType
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class PromoCode(models.Model):
@@ -12,16 +15,30 @@ class PromoCode(models.Model):
     title = models.CharField(max_length=100)
     code_type = models.CharField(max_length=20, choices=SaleType.choices)
     code = models.CharField(max_length=10)
-    sale = models.IntegerField()
-    cart_total = models.IntegerField(blank=True, null=True)  # цифра в корзине меньше которой код не применяется
+    sale = models.PositiveIntegerField()
+    cart_total = models.PositiveIntegerField(blank=True, null=True)
     delivery_free = models.BooleanField(default=False, blank=True, null=True)
     products = models.ManyToManyField("product.Product", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)
     date_start = models.DateField(blank=True, null=True)
     date_finish = models.DateField(blank=True, null=True)
-    code_use = models.IntegerField(blank=True, null=True)
-    code_use_by_user = models.IntegerField(blank=True, null=True)
+    code_use = models.PositiveIntegerField(blank=True, null=True)
+    code_use_by_user = models.PositiveIntegerField(blank=True, null=True)
+    num_uses = models.PositiveIntegerField(default=0, editable=False)
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+
+class PromoCodeUser(models.Model):
+    """
+    Model to tie coupon and a user together.
+    So we can check how many times coupon have been used by user.
+    """
+    code = models.ForeignKey(PromoCode, related_name='users', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    num_uses = models.PositiveIntegerField(default=0, editable=False)
+
+    def __str__(self):
+        return f'{self.user.email}: {self.code}'
