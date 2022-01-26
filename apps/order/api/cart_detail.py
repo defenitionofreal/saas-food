@@ -19,6 +19,7 @@ class CartAPIView(APIView):
             cart_cost = MinCartCost.objects.filter(institution=institution).first()
             if cart_cost:
                 cart.min_amount = cart_cost.cost
+                cart.save()
 
             if cart.items.exists():
                 serializer = CartSerializer(cart)

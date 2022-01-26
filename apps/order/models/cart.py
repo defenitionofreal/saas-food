@@ -26,9 +26,7 @@ class Cart(models.Model):
     promo_code = models.ForeignKey("order.PromoCode", on_delete=models.SET_NULL,
                                    related_name="cart_promo_code", null=True,
                                    blank=True)
-    customer_bonus = models.ForeignKey("order.Bonus", on_delete=models.SET_NULL,
-                                       blank=True, null=True,
-                                       related_name="cart_bonus")
+    customer_bonus = models.PositiveIntegerField(blank=True, null=True)
     #delivery_cost = models.
     min_amount = models.PositiveIntegerField(blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
@@ -38,6 +36,12 @@ class Cart(models.Model):
         total = 0
         for i in self.items.all():
             total += i.get_single_item_total
+
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.get(institution=self.institution)
+            if bonus.is_active and bonus.is_promo_code is False:
+                return total - self.customer_bonus
+
         return total
 
     @property
@@ -89,13 +93,18 @@ class Cart(models.Model):
         sale = self.get_sale
         # if self.promo_code.code_type == 'absolute':
         #     return sale
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.get(institution=self.institution)
+            if bonus.is_active and bonus.is_promo_code is True:
+                return total - (sale + self.customer_bonus)
+
         return total - sale
 
     @property
     def get_bonus_accrual(self):
         bonus = Bonus.objects.get(institution=self.institution)
         if bonus.is_active:
-            if bonus.is_promo_code:
+            if bonus.is_promo_code is True:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
             else:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
