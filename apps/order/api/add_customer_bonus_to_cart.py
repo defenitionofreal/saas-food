@@ -63,6 +63,6 @@ class AddBonusAPIView(APIView):
                     return Response(
                         {"detail": "Loyalty program is not active"})
             else:
-                return Response({"detail": "You can not use bonuses twice."})
+                return Response({"detail": "Bonuses already applied."})
         except Exception as e:
             return Response({"detail": f"{e}"})
