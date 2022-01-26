@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from apps.order.models import Bonus
+from apps.company.models import MinCartCost
 
 User = get_user_model()
 
@@ -29,8 +30,7 @@ class Cart(models.Model):
                                        blank=True, null=True,
                                        related_name="cart_bonus")
     #delivery_cost = models.
-    min_amount = models.DecimalField(max_digits=10, decimal_places=2,
-                                     blank=True, null=True)
+    min_amount = models.PositiveIntegerField(blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
 
     @property
