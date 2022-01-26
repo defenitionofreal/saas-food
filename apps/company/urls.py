@@ -18,7 +18,9 @@ from .api import (institution_create,
                   extra_phone_detail,
                   banner_create,
                   banner_list,
-                  banner_detail)
+                  banner_detail,
+                  min_cart_cost_update_create,
+                  min_cart_cost_delete)
 
 app_name = 'company'
 
@@ -51,5 +53,8 @@ urlpatterns = [
     path('<uuid:pk>/banner/new/', banner_create.BannerCreateAPIView.as_view()),
     path('<uuid:pk>/banner/list/', banner_list.BannerListAPIView.as_view()),
     path('<uuid:pk>/banner/detail/<int:banner_pk>/', banner_detail.BannerDetailAPIView.as_view()),
+    # min cart cost
+    path('<uuid:pk>/cart/rule/', min_cart_cost_update_create.MinCartCostCreateAPIView.as_view()),
+    path('<uuid:pk>/cart/rule/<int:rule_pk>/', min_cart_cost_delete.MinCartCostDeleteAPIView.as_view()),
 
 ]
