@@ -36,6 +36,7 @@ class PromoCodeUserAdmin(admin.ModelAdmin):
 
 @admin.register(Bonus)
 class BonusAdmin(admin.ModelAdmin):
+    #list_display = ['id']
     search_fields = ("id",)
 
 

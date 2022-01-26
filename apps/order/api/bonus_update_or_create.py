@@ -20,29 +20,36 @@ class BonusCreateAPIView(APIView):
             institution = Institution.objects.get(pk=pk)
 
             if serializer.is_valid():
-                if serializer.is_valid():
-                    serializer.save(institution=institution)
+                bonus, created = Bonus.objects.update_or_create(
+                    institution=institution,
+                    defaults={
+                        "is_active": serializer.validated_data['is_active'],
+                        "write_off": serializer.validated_data['write_off'],
+                        "accrual": serializer.validated_data['accrual'],
+                        "is_promo_code": serializer.validated_data[
+                            'is_promo_code'],
+                        "is_registration_bonus": serializer.validated_data[
+                            'is_registration_bonus'],
+                        "registration_bonus": serializer.validated_data[
+                            'registration_bonus']
+                    })
+
+                bonus.is_active = serializer.validated_data['is_active']
+                bonus.write_off = serializer.validated_data['write_off']
+                bonus.accrual = serializer.validated_data['accrual']
+                bonus.is_promo_code = serializer.validated_data[
+                    'is_promo_code']
+                bonus.is_registration_bonus = serializer.validated_data[
+                    'is_registration_bonus']
+                bonus.registration_bonus = serializer.validated_data[
+                    'registration_bonus']
+                bonus.save()
+
+                if created:
                     return Response(serializer.data,
                                     status=status.HTTP_201_CREATED)
-                # bonus, created = Bonus.objects.update_or_create(
-                #     institution=institution)
-                #
-                # bonus.is_active = serializer.validated_data['is_active']
-                # bonus.write_off = serializer.validated_data['write_off']
-                # bonus.accrual = serializer.validated_data['accrual']
-                # bonus.is_promo_code = serializer.validated_data[
-                #     'is_promo_code']
-                # bonus.is_registration_bonus = serializer.validated_data[
-                #     'is_registration_bonus']
-                # bonus.registration_bonus = serializer.validated_data[
-                #     'registration_bonus']
-                # bonus.save()
-                # #serializer.save(institution=institution)
-                # if created:
-                #     return Response(serializer.data,
-                #                     status=status.HTTP_201_CREATED)
-                # else:
-                #     return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
