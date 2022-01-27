@@ -4,6 +4,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from phonenumber_field.modelfields import PhoneNumberField
+from apps.base.services.path_profile_img import get_path_profile
+from django.core.validators import FileExtensionValidator
+
 
 class UserManager(BaseUserManager):
     def create_user(self, phone, password=None):
@@ -51,7 +54,10 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    image = models.ImageField(upload_to='images/users/', blank=True, null=True)
+    image = models.ImageField(upload_to=get_path_profile,
+                              blank=True, null=True,
+                              validators=[FileExtensionValidator(
+                                  allowed_extensions=['jpg', 'jpeg', 'png'])])
     is_customer = models.BooleanField(default=False)
     is_promo = models.BooleanField(default=False)
     password = models.CharField(max_length=255)
