@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from apps.company.models import Institution
+from apps.company.models import Institution, MinCartCost
 from apps.order.models import Cart
 from apps.order.serializers import CartSerializer
 from apps.base.authentication import JWTAuthentication
@@ -15,10 +15,16 @@ class CartAPIView(APIView):
         user = self.request.user
         try:
             cart = Cart.objects.get(institution=institution, customer=user)
+
+            cart_cost = MinCartCost.objects.filter(institution=institution).first()
+            if cart_cost:
+                cart.min_amount = cart_cost.cost
+                cart.save()
+
             if cart.items.exists():
                 serializer = CartSerializer(cart)
                 return Response(serializer.data)
             else:
                 return Response({"detail": "Cart is empty."})
-        except Exception:
-            return Response({"detail": "Cart does not exist."})
+        except Exception as e:
+            return Response({"detail": f"Cart does not exist. {e}"})

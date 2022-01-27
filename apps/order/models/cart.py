@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from decimal import Decimal
+from apps.order.models import Bonus
+from apps.company.models import MinCartCost
 
 User = get_user_model()
 
@@ -23,13 +26,89 @@ class Cart(models.Model):
     promo_code = models.ForeignKey("order.PromoCode", on_delete=models.SET_NULL,
                                    related_name="cart_promo_code", null=True,
                                    blank=True)
-    customer_bonus = models.ForeignKey("order.Bonus", on_delete=models.SET_NULL,
-                                       blank=True, null=True,
-                                       related_name="cart_bonus")
+    customer_bonus = models.PositiveIntegerField(blank=True, null=True)
     #delivery_cost = models.
-    min_amount = models.DecimalField(max_digits=10, decimal_places=2,
-                                     blank=True, null=True)
+    min_amount = models.PositiveIntegerField(blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
 
+    @property
+    def get_total_cart(self):
+        total = 0
+        for i in self.items.all():
+            total += i.get_single_item_total
+
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.get(institution=self.institution)
+            if bonus.is_active and bonus.is_promo_code is False:
+                return total - self.customer_bonus
+
+        return total
+
+    @property
+    def get_sale(self):
+        sale = self.promo_code.sale
+
+        if self.promo_code.code_type == 'absolute':
+
+            # if self.promo_code.categories.all():
+            #     cat_total = 0
+            #     for i in self.items.all():
+            #         if i.product.category in self.promo_code.categories.all():
+            #             print(i)
+            #             cat_total += i.product.price * i.quantity
+            #     print(cat_total)
+            #     print(sale)
+            #     return cat_total
+            #
+            # if self.promo_code.products.all():
+            #     products_total = 0
+            #     for i in self.items.all():
+            #         if i.product in self.promo_code.products.all():
+            #             products_total += i.product.price * i.quantity
+            #     return products_total - sale
+            sale = sale if sale >= 0.0 else 0.0
+            return sale
+
+        if self.promo_code.code_type == 'percent':
+
+            if self.promo_code.categories.all():
+                cat_total = 0
+                for i in self.items.all():
+                    if i.product.category in self.promo_code.categories.all():
+                        cat_total += i.product.price * i.quantity
+                return round((sale / Decimal('100')) * cat_total)
+
+            if self.promo_code.products.all():
+                products_total = 0
+                for i in self.items.all():
+                    if i.product in self.promo_code.products.all():
+                        products_total += i.product.price * i.quantity
+                return round((sale / Decimal('100')) * products_total)
+
+            return round((sale / Decimal('100')) * self.get_total_cart)
+
+    @property
+    def get_total_cart_after_sale(self):
+        total = self.get_total_cart
+        sale = self.get_sale
+        # if self.promo_code.code_type == 'absolute':
+        #     return sale
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.get(institution=self.institution)
+            if bonus.is_active and bonus.is_promo_code is True:
+                return total - (sale + self.customer_bonus)
+
+        return total - sale
+
+    @property
+    def get_bonus_accrual(self):
+        bonus = Bonus.objects.get(institution=self.institution)
+        if bonus.is_active:
+            if bonus.is_promo_code is True:
+                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
+            else:
+                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
+            return total_accrual
+
     def __str__(self):
-        return f'Cart: {self.institution} -> {self.customer}'
+        return f'Cart: {self.institution} -> {self.customer}, {self.get_total_cart}'

@@ -48,6 +48,21 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data/
 
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    depends_on:
+      - pgdb
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 8080:80
+    volumes:
+      - .pgadmin-data:/var/lib/pgadmin
+    links:
+      - "pgdb:pgsql-server"
+
   redis:
     image: "redis:alpine"
 

@@ -6,3 +6,4 @@ from .design import Design
 from .banner import Banner
 from .social_links import SocialLinks
 from .extra_phone import ExtraPhone
+from .min_cart_cost import MinCartCost

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.company.models import Institution, Design, Analytics, SocialLinks, \
-    Requisites, WorkingHours, ExtraPhone, Banner
+    Requisites, WorkingHours, ExtraPhone, Banner, MinCartCost
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
@@ -64,4 +64,12 @@ class BannerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Banner
+        exclude = ['institution']
+
+
+class MinCartCostSerializer(serializers.ModelSerializer):
+    """ Min Cart Cost serializer """
+
+    class Meta:
+        model = MinCartCost
         exclude = ['institution']
