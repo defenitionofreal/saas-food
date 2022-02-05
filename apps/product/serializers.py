@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.product.models import Category, Additive, Sticker, Modifier, \
-    ModifierPrice, Product
+    ModifierPrice, Product, CategoryAdditive
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -16,6 +16,14 @@ class AdditiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Additive
+        exclude = ['institution']
+
+
+class CategoryAdditiveSerializer(serializers.ModelSerializer):
+    """ Category Additive serializer """
+
+    class Meta:
+        model = CategoryAdditive
         exclude = ['institution']
 
 
