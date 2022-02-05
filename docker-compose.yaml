@@ -5,13 +5,17 @@ services:
     build: .
     container_name: django
     restart: always
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000  # python backend/manage.py ?
     volumes:
       - .:/backend
     ports:
-      - "0.0.0.0:8000:8000"
+      - "0.0.0.0:8000:8000"  # 8000:8000 ?
     env_file:
       - .env
+#    depends_on:
+#      - pgdb
+#      - celery
+#      - redis
 
   celery:
     build: .
