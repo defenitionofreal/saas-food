@@ -50,10 +50,10 @@ class CustomUser(AbstractUser):
     """ Custom User Model """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone = PhoneNumberField(unique=True, blank=True, null=True)
-    username = models.CharField(max_length=255, unique=True, blank=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
     image = models.ImageField(upload_to=get_path_profile,
                               blank=True, null=True,
                               validators=[FileExtensionValidator(
@@ -61,6 +61,7 @@ class CustomUser(AbstractUser):
     is_customer = models.BooleanField(default=False)
     is_promo = models.BooleanField(default=False)
     password = models.CharField(max_length=255)
+    session_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
 
     USERNAME_FIELD = 'email'  # админ должен входить через почту а юзеры через моб
     REQUIRED_FIELDS = []
