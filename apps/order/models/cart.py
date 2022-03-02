@@ -30,6 +30,7 @@ class Cart(models.Model):
     #delivery_cost = models.
     min_amount = models.PositiveIntegerField(blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
+    session_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
 
     @property
     def get_total_cart(self):
@@ -111,4 +112,4 @@ class Cart(models.Model):
             return total_accrual
 
     def __str__(self):
-        return f'Cart: {self.institution} -> {self.customer}, {self.get_total_cart}'
+        return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'

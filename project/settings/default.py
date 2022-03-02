@@ -63,7 +63,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'apps.base.middleware.JWTAuthenticationInMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -90,7 +89,6 @@ TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__), 'templates'),
 )
 
-
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
@@ -102,9 +100,6 @@ WSGI_APPLICATION = 'project.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-
-
-
 
 DATABASES = {
     'default': {
@@ -207,6 +202,25 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND')
 # CELERY BEAT
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
+
+# SESSIONS
+CART_SESSION_ID = 'cart_id'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  #.cache
+# 2 weeks
+SESSION_COOKIE_AGE = 12000 #60 * 60 * 24 * 7 * 2
+# if window closed session still live
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SECURE = False
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://redis:6379/0',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
 
 LOGGING = {
     'version': 1,

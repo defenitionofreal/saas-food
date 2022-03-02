@@ -11,7 +11,7 @@ import datetime
 
 
 class AddPromoCodeAPIView(APIView):
-    authentication_classes = [JWTAuthentication]
+    #authentication_classes = [JWTAuthentication]
 
     def post(self, request, domain):
         today = datetime.datetime.now().date()
@@ -19,6 +19,7 @@ class AddPromoCodeAPIView(APIView):
         code = self.request.query_params.get("code")
         coupon = get_object_or_404(PromoCode, code=code)
         institution = Institution.objects.get(domain=domain)
+
         cart = Cart.objects.get(institution=institution, customer=user)
 
         try:
@@ -43,7 +44,7 @@ class AddPromoCodeAPIView(APIView):
                     # if delivery_free
 
                     if coupon.date_start is not None:
-                        if coupon.date_start > today:
+                        if coupon.date_start > today:  # <
                             return Response({"detail": f"Code period not started yet"})
 
                     if coupon.date_finish is not None:
