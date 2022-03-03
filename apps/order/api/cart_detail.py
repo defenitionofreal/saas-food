@@ -36,7 +36,6 @@ class CartAPIView(APIView):
                     for item in session_cart.items.all():
                         item.cart = cart
                         item.save()
-
                         product_filter = cart.items.filter(product__slug=item.product.slug)
                         if product_filter.exists():
                             for v in product_filter:
@@ -47,6 +46,9 @@ class CartAPIView(APIView):
                         else:
                             cart.items.add(item)
                             cart.save()
+                    if session_cart.promo_code:
+                        cart.promo_code = session_cart.promo_code
+                        cart.save()
                     session_cart.delete()
                     del session[settings.CART_SESSION_ID]
                     #session.flush()

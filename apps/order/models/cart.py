@@ -37,68 +37,62 @@ class Cart(models.Model):
         total = 0
         for i in self.items.all():
             total += i.get_single_item_total
-
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is False:
                 return total - self.customer_bonus
-
         return total
 
     @property
     def get_sale(self):
         sale = self.promo_code.sale
-
+        # if absolute sale type
         if self.promo_code.code_type == 'absolute':
-
-            # if self.promo_code.categories.all():
-            #     cat_total = 0
-            #     for i in self.items.all():
-            #         if i.product.category in self.promo_code.categories.all():
-            #             print(i)
-            #             cat_total += i.product.price * i.quantity
-            #     print(cat_total)
-            #     print(sale)
-            #     return cat_total
-            #
-            # if self.promo_code.products.all():
-            #     products_total = 0
-            #     for i in self.items.all():
-            #         if i.product in self.promo_code.products.all():
-            #             products_total += i.product.price * i.quantity
-            #     return products_total - sale
+            # categories participate coupon
+            if self.promo_code.categories.all():
+                for i in self.items.all():
+                    if i.product.category in self.promo_code.categories.all():
+                        sale = sale
+                sale = sale if sale >= 0.0 else 0.0
+                return sale
+            # products participate coupon
+            if self.promo_code.products.all():
+                for i in self.items.all():
+                    if i.product in self.promo_code.products.all():
+                        sale = sale
+                sale = sale if sale >= 0.0 else 0.0
+                return sale
             sale = sale if sale >= 0.0 else 0.0
             return sale
-
+        # if percent sale type
         if self.promo_code.code_type == 'percent':
-
+            # categories participate coupon
             if self.promo_code.categories.all():
                 cat_total = 0
                 for i in self.items.all():
                     if i.product.category in self.promo_code.categories.all():
                         cat_total += i.product.price * i.quantity
+                cat_total = cat_total if cat_total >= 0.0 else 0.0
                 return round((sale / Decimal('100')) * cat_total)
-
+            # products participate coupon
+            print(self.promo_code.products.all())
             if self.promo_code.products.all():
                 products_total = 0
                 for i in self.items.all():
                     if i.product in self.promo_code.products.all():
                         products_total += i.product.price * i.quantity
+                products_total = products_total if products_total >= 0.0 else 0.0
                 return round((sale / Decimal('100')) * products_total)
-
             return round((sale / Decimal('100')) * self.get_total_cart)
 
     @property
     def get_total_cart_after_sale(self):
         total = self.get_total_cart
         sale = self.get_sale
-        # if self.promo_code.code_type == 'absolute':
-        #     return sale
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is True:
                 return total - (sale + self.customer_bonus)
-
         return total - sale
 
     @property
