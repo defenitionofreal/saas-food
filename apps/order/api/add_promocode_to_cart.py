@@ -2,17 +2,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
-from apps.product.models import Product
 from apps.company.models import Institution
-from apps.order.models import Cart, CartItem, PromoCode, PromoCodeUser, Bonus
+from apps.order.models import Cart, PromoCode, PromoCodeUser, Bonus
 
 from apps.base.authentication import JWTAuthentication
 from django.conf import settings
-from decimal import Decimal
 import datetime
 
 
 class AddPromoCodeAPIView(APIView):
+    """ Add coupon to cart """
     authentication_classes = [JWTAuthentication]
 
     def post(self, request, domain):
@@ -59,15 +58,19 @@ class AddPromoCodeAPIView(APIView):
                         if coupon.date_finish >= today:
                             return Response({"detail": f"Code period expired"})
 
-                    # if coupon.categories.all():
-                    #     for i in cart.items.all():
-                    #         if not i.product.category in coupon.categories.all():
-                    #             return Response({"detail": "No categories linked to the code."})
-                    #
-                    # if coupon.products.all():
-                    #     for i in cart.items.all():
-                    #         if not i.product in coupon.products.all():
-                    #             return Response({"detail": "No products linked to the code."})
+                    if coupon.categories.all():
+                        x = set(cart.items.values_list('product__category', flat=True))
+                        y = set(coupon.categories.values_list('promocode__categories', flat=True))
+                        if not x.intersection(y):
+                            return Response(
+                                {"detail": "No categories tied with coupon."})
+
+                    if coupon.products.all():
+                        x = set(cart.items.values_list('product', flat=True))
+                        y = set(coupon.products.values_list('promocode__products', flat=True))
+                        if not x.intersection(y):
+                            return Response(
+                                {"detail": "No products tied with coupon."})
 
                     if coupon.code_use is not None:
                         if coupon.num_uses >= coupon.code_use:
