@@ -19,5 +19,5 @@ class Delivery(models.Model):
     date_when = models.DateTimeField()
 
     def __str__(self):
-        return self.institution
+        return f"{self.institution.domain}: {self.delivery_type}"
 
