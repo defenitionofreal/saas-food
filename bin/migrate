@@ -1,0 +1,6 @@
+#!/bin/bash
+set -eou pipefail
+args="$*"
+
+docker exec -it efood_backend python3 manage.py migrate $(if [ -n "$args" ]; then echo $args; fi)
+

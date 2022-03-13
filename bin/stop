@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eo pipefail
+args="$1"
+
+docker-compose down $(if [ -n "$args" ]; then echo $args; fi)

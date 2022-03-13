@@ -36,6 +36,7 @@ class CartAPIView(APIView):
                     for item in session_cart.items.all():
                         item.cart = cart
                         item.save()
+                        # TODO: count and add products not correctly. fix it!
                         product_filter = cart.items.filter(product__slug=item.product.slug)
                         if product_filter.exists():
                             for v in product_filter:

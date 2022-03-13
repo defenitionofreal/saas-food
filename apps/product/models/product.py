@@ -22,7 +22,7 @@ class Product(models.Model):
     fats = models.FloatField(blank=True, null=True)
     carbohydrates = models.FloatField(blank=True, null=True)
     calories = models.FloatField(blank=True, null=True)
-    additives = models.ManyToManyField("product.Additive", blank=True)
+    additives = models.ManyToManyField("product.CategoryAdditive", blank=True)
     modifiers = models.ManyToManyField("product.Modifier", blank=True)
     weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices, default=WeightUnit.GRAM)
     weight = models.FloatField(max_length=50)
