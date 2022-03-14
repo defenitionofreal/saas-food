@@ -58,7 +58,21 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         exclude = ['institution']
 
+    def validate_sticker(self, value):
+        """
+        Check that product could have
+        only not more than 3 stickers
+        """
+        if len(value) > 3:
+            raise serializers.ValidationError("Maximum number should be 3")
+        return value
+
     def to_representation(self, instance):
+        """
+        Return additives with nested dict of a
+        additive category and additives in it.
+        Also modifiers with the same logic.
+        """
         rep = super(ProductSerializer, self).to_representation(instance)
         rep['additives'] = [{cat.title: {i.title: i.price
                                          for i in cat.category_additive.all()

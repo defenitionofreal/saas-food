@@ -7,24 +7,30 @@ class Product(models.Model):
     """
     Product of institution
     """
-    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="products")
-    category = models.ForeignKey("product.Category", on_delete=models.PROTECT, related_name="products")
-    sticker = models.ForeignKey("product.Sticker", on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
+    institution = models.ForeignKey("company.Institution",
+                                    on_delete=models.CASCADE,
+                                    related_name="products")
+    category = models.ForeignKey("product.Category", on_delete=models.PROTECT,
+                                 related_name="products")
+    sticker = models.ManyToManyField("product.Sticker", blank=True)
     is_active = models.BooleanField(default=False)
     row = models.PositiveIntegerField(default=1)
     title = models.CharField(max_length=255)
     description = models.TextField()
     images = models.ManyToManyField("media.Image", blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    old_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    cost_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    old_price = models.DecimalField(max_digits=10, decimal_places=2,
+                                    blank=True, null=True)
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2,
+                                     blank=True, null=True)
     protein = models.FloatField(blank=True, null=True)
     fats = models.FloatField(blank=True, null=True)
     carbohydrates = models.FloatField(blank=True, null=True)
     calories = models.FloatField(blank=True, null=True)
     additives = models.ManyToManyField("product.CategoryAdditive", blank=True)
     modifiers = models.ManyToManyField("product.Modifier", blank=True)
-    weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices, default=WeightUnit.GRAM)
+    weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices,
+                                   default=WeightUnit.GRAM)
     weight = models.FloatField(max_length=50)
     cook_time = models.PositiveIntegerField()
     slug = models.SlugField(unique=True)
