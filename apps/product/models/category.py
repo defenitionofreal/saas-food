@@ -9,7 +9,7 @@ class Category(models.Model):
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     row = models.PositiveIntegerField(default=1)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.title

@@ -10,7 +10,10 @@ from apps.product.serializers import CategorySerializer
 class CategoriesClientDetailAPIView(APIView):
 
     def get(self, request, domain, slug):
-        institution = Institution.objects.get(domain=domain)
+        try:
+            institution = Institution.objects.get(domain=domain)
+        except Exception as e:
+            return Response({"detail": f"{e}"})
         query = get_object_or_404(Category.objects, institution=institution,
                                   slug=slug)
         serializer = CategorySerializer(query)

@@ -57,3 +57,15 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         exclude = ['institution']
+
+    def to_representation(self, instance):
+        rep = super(ProductSerializer, self).to_representation(instance)
+        rep['additives'] = [{cat.title: {i.title: i.price
+                                         for i in cat.category_additive.all()
+                                         if i.category.id == cat.id}}
+                            for cat in instance.additives.all()]
+        rep['modifiers'] = [
+            {mod.title: p.price for p in mod.modifiers_price.all()
+             if p.product.id == instance.id and p.modifier.id == mod.id}
+            for mod in instance.modifiers.all()]
+        return rep

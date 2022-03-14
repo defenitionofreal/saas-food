@@ -5,12 +5,12 @@ services:
     build: .
     container_name: efood_backend
     #hostname: efood_backend
-    restart: always
-    command: python manage.py runserver 0.0.0.0:8000  # python backend/manage.py ?
+    #restart: always
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./efood-backend/:/home/user/app/
+      - .:/efood
     ports:
-      - "0.0.0.0:8000:8000"  # 8000:8000 ?
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
@@ -23,7 +23,7 @@ services:
     container_name: efood_celery
     command: celery -A project worker -l INFO
     volumes:
-      - ./efood-backend/:/home/user/app/
+      - .:/efood
     env_file:
       - .env
     depends_on:
@@ -41,7 +41,7 @@ services:
       - pgdb
       - celery
     volumes:
-      - ./efood-backend/:/home/user/app/
+      - .:/efood
 
   pgdb:
     image: postgres
@@ -60,7 +60,7 @@ services:
     env_file:
       - .env
     ports:
-      - 8080:80
+      - "8080:80"
     volumes:
       - efood-pgadmin-data:/var/lib/pgadmin
     links:

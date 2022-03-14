@@ -9,9 +9,12 @@ from apps.product.serializers import ProductSerializer
 
 class ProductClientDetailAPIView(APIView):
 
-    def get(self, request, domain, pk):
-        institution = Institution.objects.get(domain=domain)
+    def get(self, request, domain, slug):
+        try:
+            institution = Institution.objects.get(domain=domain)
+        except Exception as e:
+            return Response({"detail": f"{e}"})
         query = get_object_or_404(Product.objects, institution=institution,
-                                  pk=pk)
+                                  slug=slug)
         serializer = ProductSerializer(query)
         return Response(serializer.data)

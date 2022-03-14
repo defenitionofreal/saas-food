@@ -27,7 +27,7 @@ class Product(models.Model):
     weight_unit = models.CharField(max_length=50, choices=WeightUnit.choices, default=WeightUnit.GRAM)
     weight = models.FloatField(max_length=50)
     cook_time = models.PositiveIntegerField()
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.title
