@@ -59,6 +59,17 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
         a_price = int(additive.price)
         product_dict = product_with_options["product"]
 
+        product_sticker = [i for i in product.sticker.filter(
+                           is_active=True).order_by("id")]
+        if product_sticker:
+            product_dict[product.slug]["stickers"] = {
+                sticker.id: {"title": sticker.title,
+                             "bg_color": sticker.color,
+                             "text_color": sticker.text_color}
+                for sticker in product_sticker}
+        else:
+            product_dict[product.slug]["stickers"] = {}
+
         if any(additive in cat.category_additive.filter(is_active=True)
                for cat in product_additive_cat):
             if "additives" in product_dict[product.slug]:
