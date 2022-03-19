@@ -42,5 +42,5 @@ urlpatterns = [
     path('order/', include('apps.order.urls', namespace='order')),
 
     # add or remove modifiers and additives to a product
-    path('menu/<str:product_slug>/additive/add/<int:additive_pk>/', create_or_delete_additives_product.CreateOrDeleteAdditivesClientAPIView.as_view()),
+    path('menu/<str:product_slug>/additive/<int:additive_pk>/', create_or_delete_additives_product.CreateOrDeleteAdditivesClientAPIView.as_view()),
 ]
