@@ -10,7 +10,8 @@ from apps.showcase.api import (products_client_list,
                                extra_phone_client_list,
                                working_hours_client_list,
                                requisites_client_list,
-                               products_client_detail)
+                               products_client_detail,
+                               create_or_delete_additives_product)
 
 app_name = 'showcase'
 
@@ -40,6 +41,6 @@ urlpatterns = [
     # order (cart) detail/add/delete
     path('order/', include('apps.order.urls', namespace='order')),
 
-    # add modifiers and additives to a product
-    #path('product/<str:slug>/',),
+    # add or remove modifiers and additives to a product
+    path('menu/<str:product_slug>/additive/add/<int:additive_pk>/', create_or_delete_additives_product.CreateOrDeleteAdditivesClientAPIView.as_view()),
 ]
