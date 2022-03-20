@@ -1,10 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
-from rest_framework import status
 
 from apps.company.models import Institution
-from apps.product.models import Product, Modifier
+from apps.product.models import Product, ModifierPrice
 from apps.base.authentication import JWTAuthentication
 from apps.showcase.services.product_session_class import ProductSessionClass
 
@@ -23,12 +22,10 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
         institution = Institution.objects.get(domain=domain)
         product = Product.objects.get(institution=institution,
                                       slug=product_slug)
-        modifier = get_object_or_404(Modifier.objects,
-                                     id=modifier_pk,
-                                     institution=institution)
-        modifier_price = modifier.modifiers_price.select_related(
-            'modifier').filter(product=product,
-                               institution=institution)
+        modifier_qs = get_object_or_404(ModifierPrice.objects,
+                                        id=modifier_pk,
+                                        product=product,
+                                        institution=institution)
 
         session = self.request.session
         product_session = ProductSessionClass(session, "product_with_options")
@@ -38,18 +35,14 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
         product_session.check_product_stickers(product)
         product_dict = product_session.product_dict()
 
-        if not modifier_price:
-            return Response({
-                "detail": f"{product.title} doesn't have this modifier"},
-                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            if not "modifiers" in product_dict[product.slug]:
-                product_dict[product.slug]["modifiers"] = {}
-            for mod in modifier_price:
-                product_dict[product.slug]["modifiers"] = {
-                    mod.modifier.id: {"title": mod.modifier.title,
-                                      "price": int(mod.price)}}
-                product_dict[product.slug]["price"] = int(mod.price)
+        if not "modifiers" in product_dict[product.slug]:
+            product_dict[product.slug]["modifiers"] = {}
+
+        product_dict[product.slug]["modifiers"] = {
+            modifier_qs.id: {"title": modifier_qs.modifier.title,
+                             "price": int(modifier_qs.price)}}
+        product_dict[product.slug]["price"] = int(modifier_qs.price)
 
         session.modified = True
-        return Response({"product_with_options": product_session.check_product_with_options_obj()})
+        response = product_session.check_product_with_options_obj()
+        return Response({"product_with_options": response})
