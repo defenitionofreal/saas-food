@@ -13,11 +13,11 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
     Customer can add additives to a product
     - products total price rises
     - can add multiple additives
-    - if additive adready exists than delete it
+    - if additive already exists than delete it
+      if not than update an array with it
     """
     authentication_classes = [JWTAuthentication]
     # TODO: detail product/cart view with options if exists
-    # TODO: add sticker dict to a product array
 
     def post(self, request, domain, product_slug, additive_pk):
         institution = Institution.objects.get(domain=domain)
@@ -47,13 +47,13 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
             product_with_options["product"] = {
                 product.slug: {"title": product.title,
                                "price": int(product.price),
-                               "total": int(product.price)}}
+                               "additives_price": 0}}
 
         if not str(product.slug) in product_with_options["product"].keys():
             product_with_options["product"].update({
                 product.slug: {"title": product.title,
                                "price": int(product.price),
-                               "total": int(product.price)}})
+                               "additives_price": 0}})
 
         a_id = str(additive.id)
         a_price = int(additive.price)
@@ -74,20 +74,20 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
                for cat in product_additive_cat):
             if "additives" in product_dict[product.slug]:
                 if a_id in product_dict[product.slug]["additives"].keys():
-                    product_dict[product.slug]["total"] -= a_price
+                    product_dict[product.slug]["additives_price"] -= a_price
                     del product_dict[product.slug]["additives"][a_id]
                 else:
                     product_dict[product.slug]["additives"].update(
-                        {additive.id: {"name": additive.title,
+                        {additive.id: {"title": additive.title,
                                        "price": a_price,
                                        "counter": 1}})
-                    product_dict[product.slug]["total"] += a_price
+                    product_dict[product.slug]["additives_price"] += a_price
             else:
                 product_dict[product.slug]["additives"] = {
-                    additive.id: {"name": additive.title,
+                    additive.id: {"title": additive.title,
                                   "price": a_price,
                                   "counter": 1}}
-                product_dict[product.slug]["total"] += a_price
+                product_dict[product.slug]["additives_price"] += a_price
             session.modified = True
             return Response(
                 {"product_with_options": product_with_options})
