@@ -6,14 +6,16 @@ from rest_framework import status
 from apps.company.models import Institution
 from apps.product.models import Product, Modifier
 from apps.base.authentication import JWTAuthentication
+from apps.showcase.services.product_session_class import ProductSessionClass
 
 
 class CreateOrDeleteModifiersClientAPIView(APIView):
     """
-    Customer can add modifiers to a product
-    - product total price rises
-    - can add multiple additives
-    - if modifier already exists than delete it
+    Customer can add modifier to a product
+    - product price changes to a modifier price
+    - can add only one modifier:
+     - if modifier already exists than do nothing
+     - if select new modifier than change old one to a new
     """
     authentication_classes = [JWTAuthentication]
 
@@ -29,36 +31,12 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
                                institution=institution)
 
         session = self.request.session
-        product_with_options = session.get('product_with_options')
-
-        if not product_with_options:
-            product_with_options = session['product_with_options'] = {}
-        product_with_options = product_with_options
-
-        if not "product" in product_with_options:
-            product_with_options["product"] = {
-                product.slug: {"title": product.title,
-                               "price": int(product.price),
-                               "additives_price": 0}}
-
-        if not str(product.slug) in product_with_options["product"].keys():
-            product_with_options["product"].update({
-                product.slug: {"title": product.title,
-                               "price": int(product.price),
-                               "additives_price": 0}})
-
-        product_dict = product_with_options["product"]
-
-        product_sticker = [i for i in product.sticker.filter(
-            is_active=True).order_by("id")]
-        if product_sticker:
-            product_dict[product.slug]["stickers"] = {
-                sticker.id: {"title": sticker.title,
-                             "bg_color": sticker.color,
-                             "text_color": sticker.text_color}
-                for sticker in product_sticker}
-        else:
-            product_dict[product.slug]["stickers"] = {}
+        product_session = ProductSessionClass(session, "product_with_options")
+        product_session.check_product_with_options_obj()
+        product_session.check_product_obj(product)
+        product_session.check_product_slug_obj(product)
+        product_session.check_product_stickers(product)
+        product_dict = product_session.product_dict()
 
         if not modifier_price:
             return Response({
@@ -74,4 +52,4 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
                 product_dict[product.slug]["price"] = int(mod.price)
 
         session.modified = True
-        return Response({"product_with_options": product_with_options})
+        return Response({"product_with_options": product_session.check_product_with_options_obj()})
