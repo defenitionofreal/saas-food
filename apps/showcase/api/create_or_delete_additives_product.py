@@ -39,12 +39,7 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
 
         session = self.request.session
         product_session = ProductSessionClass(session, "product_with_options")
-        # product_session.del_product_in_session()
-        # product_session.del_session()
-        product_session.check_product_with_options_obj()
-        product_session.check_product_obj(product)
-        product_session.check_product_slug_obj(product)
-        product_session.check_product_stickers(product)
+        product_session.main(product)
         product_dict = product_session.product_dict()
 
         a_id = str(additive.id)
@@ -58,14 +53,12 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
                 else:
                     product_dict[product.slug]["additives"].update(
                         {additive.id: {"title": additive.title,
-                                       "price": a_price,
-                                       "counter": 1}})
+                                       "price": a_price}})
                     product_dict[product.slug]["additives_price"] += a_price
             else:
                 product_dict[product.slug]["additives"] = {
                     additive.id: {"title": additive.title,
-                                  "price": a_price,
-                                  "counter": 1}}
+                                  "price": a_price}}
                 product_dict[product.slug]["additives_price"] += a_price
             session.modified = True
             return Response(

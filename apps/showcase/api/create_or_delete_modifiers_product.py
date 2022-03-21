@@ -29,10 +29,7 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
 
         session = self.request.session
         product_session = ProductSessionClass(session, "product_with_options")
-        product_session.check_product_with_options_obj()
-        product_session.check_product_obj(product)
-        product_session.check_product_slug_obj(product)
-        product_session.check_product_stickers(product)
+        product_session.main(product)
         product_dict = product_session.product_dict()
 
         if not "modifiers" in product_dict[product.slug]:

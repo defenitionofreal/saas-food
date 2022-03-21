@@ -43,6 +43,13 @@ class ProductSessionClass:
     def product_dict(self):
         return self.product_with_options["product"]
 
+    def main(self, product):
+        self.check_product_with_options_obj()
+        self.check_product_obj(product)
+        self.check_product_slug_obj(product)
+        self.check_product_stickers(product)
+        return self.product_dict()
+
     def del_product_in_session(self):
         del self.product_with_options
 
