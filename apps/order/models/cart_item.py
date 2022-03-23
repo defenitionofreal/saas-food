@@ -28,5 +28,12 @@ class CartItem(models.Model):
         total = self.product.price * self.quantity
         return total
 
+    @staticmethod
+    def check_if_product_in_session(session):
+        products = session.get("product_with_options")
+        if products:
+            return True
+        return False
+
     def __str__(self):
         return f'{self.product.title}, {self.quantity}, {self.get_single_item_total}'

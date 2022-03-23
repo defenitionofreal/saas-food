@@ -39,12 +39,5 @@ class Product(models.Model):
     cook_time = models.PositiveIntegerField()
     slug = models.SlugField(unique=True)
 
-    # @property
-    # def product_total(self, request):
-    #     if self.additives:
-    #         if request.session.get('product_with_options'):
-    #             return request.session.get('product_with_options')
-    #     return self.price
-
     def __str__(self):
         return self.title

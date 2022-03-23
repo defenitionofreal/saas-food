@@ -105,5 +105,15 @@ class Cart(models.Model):
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
             return total_accrual
 
+    @property
+    def items_dict(self):
+        dic = {}
+        for i in self.items.all():
+            dic.update({i.product.slug: {
+                "price": i.product.price,
+                "quantity": i.quantity
+            }})
+        return dic
+
     def __str__(self):
         return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'

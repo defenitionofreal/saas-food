@@ -29,13 +29,16 @@ class CartAPIView(APIView):
         if user.is_authenticated:
             if settings.CART_SESSION_ID in session:
                 session_cart = Cart.objects.filter(
-                    institution=institution, session_id=session[settings.CART_SESSION_ID]).first()
+                    institution=institution,
+                    session_id=session[settings.CART_SESSION_ID]).first()
                 if session_cart:
                     cart, cart_created = Cart.objects.get_or_create(
                         institution=institution, customer=user)
+
                     for item in session_cart.items.all():
                         item.cart = cart
                         item.save()
+
                         # TODO: count and add products not correctly. fix it!
                         product_filter = cart.items.filter(product__slug=item.product.slug)
                         if product_filter.exists():
@@ -47,6 +50,7 @@ class CartAPIView(APIView):
                         else:
                             cart.items.add(item)
                             cart.save()
+
                     if session_cart.promo_code:
                         cart.promo_code = session_cart.promo_code
                         cart.save()
@@ -54,6 +58,7 @@ class CartAPIView(APIView):
                     del session[settings.CART_SESSION_ID]
                     #session.flush()
                 else:
+                    # if no session cart
                     cart, cart_created = Cart.objects.get_or_create(
                         institution=institution, customer=user)
             else:
@@ -64,6 +69,7 @@ class CartAPIView(APIView):
         else:
             if not settings.CART_SESSION_ID in session:
                 return Response({"detail": "Cart does not exist. (session cart)"})
+
             cart = Cart.objects.get(institution=institution,
                                     session_id=session[settings.CART_SESSION_ID])
 
@@ -71,8 +77,9 @@ class CartAPIView(APIView):
             if cart_cost:
                 cart.min_amount = cart_cost.cost
                 cart.save()
+
             if cart.items.exists():
-                serializer = CartSerializer(cart)
+                serializer = CartSerializer(cart, context={"request": request})
                 return Response(serializer.data)
             else:
                 return Response({"detail": "Cart is empty."})
