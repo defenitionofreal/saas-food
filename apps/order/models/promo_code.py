@@ -17,6 +17,7 @@ class PromoCode(models.Model):
     code = models.CharField(max_length=10)
     sale = models.PositiveIntegerField()
     cart_total = models.PositiveIntegerField(blank=True, null=True)
+    # TODO: поле delivery_free если выбранно, то доставка бесплатная в корзине
     delivery_free = models.BooleanField(default=False, blank=True, null=True)
     products = models.ManyToManyField("product.Product", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)
