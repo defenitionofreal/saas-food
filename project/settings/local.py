@@ -12,6 +12,7 @@ TIME_ZONE = 'Europe/Moscow'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+# test
 
 DATABASES = {
     'default': {
