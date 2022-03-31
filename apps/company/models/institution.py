@@ -30,8 +30,8 @@ class Institution(SeoModel, AddressModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.qrcode:
-            from apps.company.tasks import generate_qrcode_task
-            generate_qrcode_task.delay(self.id)
+        # if not self.qrcode:
+        #     from apps.company.tasks import generate_qrcode_task
+        #     generate_qrcode_task.delay(self.id)
         super().save(*args, **kwargs)
 

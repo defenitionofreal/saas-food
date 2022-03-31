@@ -9,7 +9,7 @@ app_name = 'order'
 
 urlpatterns = [
     # customer добавленно в пути из-за проблем аунтентификации
-    path('customer/cart/', cart_detail.CartAPIView.as_view()),  # нужно ли cart определять по своему id ?
+    path('/customer/cart/<str:domain>/', cart_detail.CartAPIView.as_view()),  # нужно ли cart определять по своему id ?
     path('customer/cart/add/<str:product_slug>/', add_to_cart.AddToCartAPIView.as_view()),
     path('customer/cart/remove/<str:product_slug>/', remove_from_cart.RemoveFromCartAPIView.as_view()),
     # add promo code

@@ -1,30 +1,48 @@
-from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
-
-from apps.company.models import Institution, MinCartCost
 from apps.order.models import Cart
-from apps.order.serializers import CartSerializer
-
+from apps.company.models import Institution, MinCartCost
 from django.conf import settings
-from apps.base.authentication import JWTAuthentication
-from order.services import CartService
+
+class CartServiceException(Exception):
+    """Cart service exception."""
 
 
-class CartAPIView(APIView):
-    """
-    Cart Detail View:
-    - if auth than check for session
-     - if session cart than create user cart and move items from one to another
-     - if no session cart or session than check for user cart or create one
-    - if not auth
-     - check for session cart but if no cart than raise it
-    """
-    authentication_classes = [JWTAuthentication]
+class CartService:
+    """Service for works with cart."""
+    def get_cart(self, request: Request, domain: str) -> Cart:
+        institution = Institution.objects.get(domain=domain)
+        cart_cost = MinCartCost.objects.filter(institution=institution).first()
+        min_amount = cart_cost.cost if cart_cost else None
 
-    def get(self, request, domain):
-        cart = CartService().get_cart(request, domain)
-        return Response(CartSerializer(instance=cart, context={"request": request}).data)
+        # User is authorized
+        if request.user and request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(
+                institution=institution,
+                customer=request.user,
+                defaults={"min_amount": min_amount},
+            )
+            return cart
 
+        # User is not authorized
+        if settings.CART_SESSION_ID not in request.session:
+            raise CartServiceException("Cart does not exist. (session cart)")
+
+        cart, _ = Cart.objects.get_or_create(
+            institution=institution,
+            session_id=request.session[settings.CART_SESSION_ID],
+            defaults={"min_amount": min_amount},
+        )
+        return cart
+
+    def update_cart(self, request: Request, domain: str) -> Cart:
+        cart = self.get_cart(request, domain)
+
+
+
+        return cart
+
+"""
         institution = Institution.objects.get(domain=domain)
         user = self.request.user
         session = self.request.session
@@ -89,3 +107,5 @@ class CartAPIView(APIView):
                 return Response({"detail": "Cart is empty."})
         except Exception as e:
             return Response({"detail": f"{e}"})
+
+"""

@@ -1,11 +1,10 @@
-import random
+from django.utils.baseconv import BASE62_ALPHABET
+from django.utils.crypto import get_random_string
+
+CHARACTERS = f"{BASE62_ALPHABET}!@#$%^&*()"
 
 
 def _generate_cart_key():
     """ function for generating random cart key values """
-    cart_key = ''
-    characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
-    cart_id_length = 50
-    for y in range(cart_id_length):
-        cart_key += characters[random.randint(0, len(characters) - 1)]
-    return cart_key
+    cart_key_length = 50
+    return get_random_string(cart_key_length, CHARACTERS)
