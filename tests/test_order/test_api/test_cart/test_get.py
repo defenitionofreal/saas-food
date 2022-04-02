@@ -10,7 +10,7 @@ from apps.base.authentication import JWTAuthentication
 from http.cookies import SimpleCookie
 from http import HTTPStatus
 
-TEST_USER_PASSWORD = "AaBbCc123"
+TEST_USER_PASSWORD = "AaBbCc1234"
 
 User = get_user_model()
 
@@ -24,7 +24,7 @@ class GetCartTestCase(TestCase):
         cls.user.save()
 
         cls.client = APIClient(defaults={"content_type": "application/json"})
-        #cls.client.cookies.load({"jwt": JWTAuthentication.generate_jwt(cls.user.id, scope="")})
+        # cls.client.cookies.load({"jwt": JWTAuthentication.generate_jwt(cls.user.id, scope="")})
 
     def setUp(self):
         self.institution = Institution.objects.create(
@@ -34,6 +34,12 @@ class GetCartTestCase(TestCase):
         )
 
     def test_get_as_auth(self):
+        # headers = {"jwt": JWTAuthentication.generate_jwt(self.user.id, scope="")}
+
+        session = self.client.session
+        session["jwt"] = JWTAuthentication.generate_jwt(self.user.id, scope="")
+        session.save()
+
         response = self.client.get(
             "/api/order/{0}/customer/cart/".format(self.institution.domain),
         )

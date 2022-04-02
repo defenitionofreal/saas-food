@@ -7,7 +7,7 @@ from apps.order.serializers import CartSerializer
 
 from django.conf import settings
 from apps.base.authentication import JWTAuthentication
-from order.services import CartService
+from apps.order.services import CartService
 
 
 class CartAPIView(APIView):
