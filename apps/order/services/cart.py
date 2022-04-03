@@ -1,8 +1,11 @@
 from rest_framework.request import Request
-from rest_framework.response import Response
-from apps.order.models import Cart
+from apps.order.models import Cart, CartProduct
 from apps.company.models import Institution, MinCartCost
 from django.conf import settings
+from django.db import models
+from apps.order.services.generate_cart_key import _generate_cart_key
+import typing
+
 
 class CartServiceException(Exception):
     """Cart service exception."""
@@ -10,37 +13,71 @@ class CartServiceException(Exception):
 
 class CartService:
     """Service for works with cart."""
+
     def get_cart(self, request: Request, domain: str) -> Cart:
+        """Get user or anonymous cart."""
         institution = Institution.objects.get(domain=domain)
-        cart_cost = MinCartCost.objects.filter(institution=institution).first()
-        min_amount = cart_cost.cost if cart_cost else None
+        user = request.user if (request.user and request.user.is_authenticated) else None
 
-        # User is authorized
-        if request.user and request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(
-                institution=institution,
-                customer=request.user,
-                defaults={"min_amount": min_amount},
-            )
-            return cart
-
-        # User is not authorized
-        if settings.CART_SESSION_ID not in request.session:
-            raise CartServiceException("Cart does not exist. (session cart)")
-
-        cart, _ = Cart.objects.get_or_create(
+        session_cart_id = request.session.get(settings.CART_SESSION_ID)
+        session_cart = Cart.objects.filter(
             institution=institution,
-            session_id=request.session[settings.CART_SESSION_ID],
-            defaults={"min_amount": min_amount},
-        )
-        return cart
+            session_id=session_cart_id,
+        ).first()
 
-    def update_cart(self, request: Request, domain: str) -> Cart:
-        cart = self.get_cart(request, domain)
+        if user:
+            user_cart = Cart.objects.filter(
+                institution=institution,
+                customer=user
+            ).first()
+            if user_cart:
+                return user_cart
 
+        if not session_cart:
+            cart_cost = MinCartCost.objects.filter(institution=institution).first()
+            min_amount = cart_cost.cost if cart_cost else None
+            return Cart.objects.create(
+                institution=institution,
+                session_id=_generate_cart_key(),
+                customer=user,
+                min_amount=min_amount,
+            )
 
+        if session_cart and user:
+            session_cart.customer = user
+            session_cart.save()
 
-        return cart
+        return session_cart
+
+    def add_product(self, cart: Cart, product_data: typing.Dict[str, typing.Any]) -> None:
+        return None
+
+    def calculate_cart_coast(self, cart: Cart) -> None:
+        if not cart.customer:
+            raise CartServiceException("Cart customer not found")
+
+        for cart_product in cart.cart_products.all():
+            self._calculate_cart_product_coast(cart_product)
+
+        # apply bonus
+        # promo
+        # delivery
+
+        cart.total_coast = cart.cart_products.aggregate(total=models.Sum("total_coast"))["total"]
+
+        cart.save()
+
+    def _calculate_cart_product_coast(self, cart_product: CartProduct) -> None:
+        sum_additives = cart_product.additives.aggregate(total=models.Sum("price"))["total"]
+        sum_modifiers = 0
+        # for modifier in cart_product.modifiers.all():
+        #     sum_modifiers += modifier
+
+        cart_product.price = cart_product.product.price + sum_additives + sum_modifiers
+        cart_product.discount = 0
+
+        cart_product.total_coast = cart_product.quantity * cart_product.price - cart_product.discount
+        cart_product.save()
 
 """
         institution = Institution.objects.get(domain=domain)

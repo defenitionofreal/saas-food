@@ -6,6 +6,7 @@ from apps.company.models import Institution, MinCartCost
 class InstitutionAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     autocomplete_fields = ("address",)
+    ordering = ("title", "pk")
 
 
 @admin.register(MinCartCost)

@@ -23,6 +23,11 @@ class CartAPIView(APIView):
 
     def get(self, request, domain):
         cart = CartService().get_cart(request, domain)
+
+        cart_session_id = request.session.get(settings.CART_SESSION_ID)
+        if cart_session_id != cart.session_id:
+            request.session[settings.CART_SESSION_ID] = cart.session_id
+            request.session.modified = True
         return Response(CartSerializer(instance=cart, context={"request": request}).data)
 
         institution = Institution.objects.get(domain=domain)

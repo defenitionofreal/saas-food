@@ -32,6 +32,7 @@ class Cart(models.Model):
     min_amount = models.PositiveIntegerField(blank=True, null=True)
     items = models.ManyToManyField("order.CartItem", related_name="cart_items")
     session_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
+    total_coast = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
 
     @property
     def get_total_cart(self):

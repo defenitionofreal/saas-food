@@ -1,14 +1,11 @@
+from contextlib import suppress
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from apps.company.models import Institution
+from apps.order.models import Cart
 from tests.mixins import ApiTestMixin
-
-TEST_USER_PASSWORD = "AaBbCc1234"
-
-User = get_user_model()
 
 
 class GetCartTestCase(ApiTestMixin, TestCase):
@@ -31,10 +28,41 @@ class GetCartTestCase(ApiTestMixin, TestCase):
 
         assert response.status_code == HTTPStatus.OK
         assert response.data["id"] == self.user.cart_customer.id
+        assert self._user_cart()
+
+    def test_get_as_not_auth_twice(self):
+        api_url = "/api/order/{0}/customer/cart/".format(self.institution.domain)
+        responses = (self.api_client.get(api_url), self.api_client.get(api_url))
+
+        assert Cart.objects.count() == 1
+        cart = Cart.objects.first()
+
+        for response in responses:
+            assert response.status_code == HTTPStatus.OK
+            assert response.data["id"] == cart.id
+
+    def test_after_auth(self):
+        api_url = "/api/order/{0}/customer/cart/".format(self.institution.domain)
+
+        response_not_auth = self.api_client.get(api_url)
+        assert response_not_auth.status_code == HTTPStatus.OK
+
+        self.login_user()
+        assert self._user_cart() is None
+
+        response_auth = self.api_client.get(api_url)
+        self.user.refresh_from_db()
+
+        assert response_auth.status_code == HTTPStatus.OK
+        assert Cart.objects.count() == 1
+        assert self._user_cart()
+
+        response_auth_twice = self.api_client.get(api_url)
+
+        assert response_auth_twice.status_code == HTTPStatus.OK
+        assert Cart.objects.count() == 1
+        assert self._user_cart()
 
     def _user_cart(self, user=None):
-        user = user or self.user
-        try:
-            return user.cart_customer
-        except Exception:
-            return None
+        with suppress(Exception):
+            return (user or self.user).cart_customer
