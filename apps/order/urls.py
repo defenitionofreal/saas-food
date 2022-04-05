@@ -12,6 +12,7 @@ urlpatterns = [
     path('customer/cart/', cart_detail.CartAPIView.as_view()),  # нужно ли cart определять по своему id ?
     path('customer/cart/add/', add_to_cart.AddToCartAPIView.as_view()),
     path('customer/cart/remove/<str:product_slug>/', remove_from_cart.RemoveFromCartAPIView.as_view()),
+    path('customer/cart/product/<int:product_cart_id>/', remove_from_cart.RemoveFromCartAPIView.as_view()),
     # add promo code
     path('customer/cart/code/', add_promocode_to_cart.AddPromoCodeAPIView.as_view()),
     # write off bonuses
