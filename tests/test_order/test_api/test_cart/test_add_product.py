@@ -70,3 +70,15 @@ class GetCartTestCase(ApiTestMixin, TestCase):
         assert cart_product.quantity == 2
         assert not cart_product.modifiers.exists()
         assert not cart_product.additives.exists()
+
+    def test_add_product_modifier(self):
+        raise NotImplementedError()
+
+    def test_add_product_addative(self):
+        raise NotImplementedError()
+
+    def test_add_product_modifier_and_addative(self):
+        raise NotImplementedError()
+
+    def test_merge_products(self):
+        raise NotImplementedError()
