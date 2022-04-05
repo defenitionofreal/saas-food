@@ -1,5 +1,6 @@
 from rest_framework.request import Request
 from apps.order.models import Cart, CartProduct
+from apps.product.models import Modifier, Additive, Product
 from apps.company.models import Institution, MinCartCost
 from django.conf import settings
 from django.db import models
@@ -50,12 +51,23 @@ class CartService:
         return session_cart
 
     def add_product(self, cart: Cart, product_data: typing.Dict[str, typing.Any]) -> None:
-        return None
+        """Validate and add product data to current cart."""
+        validated_product_data = self._validate_product_data(cart, product_data)
+
+        cart_product = CartProduct.objects.create(
+            cart=cart,
+            product=validated_product_data["product"],
+            quantity=validated_product_data["quantity"],
+        )
+
+        cart_product.modifiers.set(validated_product_data["modifiers"])
+        cart_product.additives.set(validated_product_data["additives"])
+
+        # TODO: merge products
+
+        return cart
 
     def calculate_cart_coast(self, cart: Cart) -> None:
-        if not cart.customer:
-            raise CartServiceException("Cart customer not found")
-
         for cart_product in cart.cart_products.all():
             self._calculate_cart_product_coast(cart_product)
 
@@ -68,16 +80,46 @@ class CartService:
         cart.save()
 
     def _calculate_cart_product_coast(self, cart_product: CartProduct) -> None:
-        sum_additives = cart_product.additives.aggregate(total=models.Sum("price"))["total"]
+        sum_additives = cart_product.additives.aggregate(total=models.Sum("price"))["total"] or 0
         sum_modifiers = 0
-        # for modifier in cart_product.modifiers.all():
-        #     sum_modifiers += modifier
+
+        # TODO: implement subquery for getting modifier price
+        for modifier in cart_product.modifiers.all():
+            sum_modifiers += modifier.modifiers_price.first().price
 
         cart_product.price = cart_product.product.price + sum_additives + sum_modifiers
+
+        # TODO: apply discount if exists it
         cart_product.discount = 0
 
         cart_product.total_coast = cart_product.quantity * cart_product.price - cart_product.discount
         cart_product.save()
+
+    def _validate_product_data(self, cart: Cart, product_data: typing.Dict[str, typing.Any]) -> typing.Dict[str, typing.Any]:
+        if any((
+                product_data["product"].institution != cart.institution,
+                not product_data["product"].is_active,
+                not product_data["product"].category.is_active,
+        )):
+            self._raise_not_found(Product)
+
+        if product_data["quantity"] < 1:
+            raise CartServiceException("Product quantity must be more 0.")
+
+        for modifier in product_data["modifiers"]:
+            if modifier.institution != cart.institution:
+                self._raise_not_found(Modifier)
+
+        for additive in product_data["additives"]:
+            if additive.institution != cart.institution:
+                self._raise_not_found(Additive)
+
+        return product_data
+
+    def _raise_not_found(self, model: models.Model) -> typing.NoReturn:
+        raise model.DoesNotExist(
+            "{0} matching query does not exist.".format(model.__class__._meta.object_name),
+        )
 
 """
         institution = Institution.objects.get(domain=domain)

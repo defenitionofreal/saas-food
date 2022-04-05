@@ -5,6 +5,10 @@ class ModifierPrice(models.Model):
     """
     Modifier price of the product
     """
+
+    class Meta:
+        unique_together = ("institution", "product", "modifier")
+
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
                                     related_name="modifiers_price", null=True)

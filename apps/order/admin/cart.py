@@ -9,8 +9,9 @@ from apps.order.services import CartService
 class CartAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     inlines = (CartProductInline,)
-    autocomplete_fields = ("institution", "customer", "promo_code")
+    autocomplete_fields = ("institution", "customer", "promo_code", "delivery")
     list_display = ("id", "total_coast")
+    list_filter = ("institution",)
 
     actions = ("calculate_cart_coast",)
 

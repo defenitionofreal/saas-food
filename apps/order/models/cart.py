@@ -27,10 +27,11 @@ class Cart(models.Model):
                                    related_name="cart_promo_code", null=True,
                                    blank=True)
     customer_bonus = models.PositiveIntegerField(blank=True, null=True)
-    # TODO: добавить поле стоимости доставки в корзине
-    #delivery_cost = models.
+
+    delivery = models.ForeignKey("delivery.Delivery", on_delete=models.RESTRICT,
+                                 related_name="carts", null=True, blank=True)
     min_amount = models.PositiveIntegerField(blank=True, null=True)
-    items = models.ManyToManyField("order.CartItem", related_name="cart_items")
+    items = models.ManyToManyField("order.CartItem", related_name="cart_items", blank=True)
     session_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
     total_coast = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
 
