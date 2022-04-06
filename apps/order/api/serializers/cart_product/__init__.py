@@ -1,0 +1,1 @@
+from .input_delete import CartProductDeleteInputSerializer

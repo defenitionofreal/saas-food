@@ -1,7 +1,7 @@
 import factory
 
 from apps.company.models import Institution
-from tests.test_base.factories.custom_user import UserFactory
+from tests.test_base.factories import UserFactory
 
 
 class InstitutionFactory(factory.django.DjangoModelFactory):

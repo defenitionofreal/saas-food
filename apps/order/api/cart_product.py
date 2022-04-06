@@ -1,16 +1,19 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, GenericAPIView
 
 from apps.product.models import Product
 from apps.company.models import Institution
 from apps.order.models import Cart, CartItem
-
+from rest_framework import mixins
 from apps.base.authentication import JWTAuthentication
 from django.conf import settings
 from http import HTTPStatus
 
-from order.models import CartProduct
+from apps.order.api.serializers.cart_product import CartProductDeleteInputSerializer
+from apps.order.models import CartProduct
+from apps.order.serializers import CartSerializer
+from apps.order.services import CartService
 
 
 class CartProductAPIView(APIView):
@@ -22,10 +25,16 @@ class CartProductAPIView(APIView):
     """
     authentication_classes = [JWTAuthentication]
 
-    def destroy(self, request, domain, product_cart_id):
-        CartProduct.objects.filter(id=product_cart_id, cart__institution__domain=domain).delete()
+    def delete(self, request, domain):
+        cart_service = CartService()
+        cart = cart_service.get_cart(request, domain)
 
-        return Response(status=HTTPStatus.NO_CONTENT)
+        serializer = CartProductDeleteInputSerializer(data=request.data, context={"cart": cart})
+        serializer.is_valid(raise_exception=True)
+
+        CartProduct.objects.filter(id=serializer.validated_data["cart_product"].id).delete()
+
+        return Response(CartSerializer(instance=cart, context={"request": request}).data)
 
 
     def _get_institution(self, domain):

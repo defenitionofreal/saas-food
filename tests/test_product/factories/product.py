@@ -4,7 +4,7 @@ from factory import fuzzy
 from apps.product.models import Product
 from apps.product.models.enums import WeightUnit
 from tests.test_company.factories import InstitutionFactory
-from tests.test_product.factories.category import CategoryFactory
+from tests.test_product.factories import CategoryFactory
 
 
 class ProductFactory(factory.django.DjangoModelFactory):

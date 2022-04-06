@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIClient as BaseAPIClient
 
-from base.authentication import JWTAuthentication
+from apps.base.authentication import JWTAuthentication
 
 
 class APIClient(BaseAPIClient):

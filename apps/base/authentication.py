@@ -1,5 +1,6 @@
-import jwt, datetime
-from project.settings import default
+import jwt
+import datetime
+from django.conf import settings
 
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
@@ -18,8 +19,7 @@ class JWTAuthentication(BaseAuthentication):
         if not token:
             return None
         try:
-            payload = jwt.decode(token, default.SECRET_KEY,
-                                 algorithms=['HS256'])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed("unauthenticated")
 
@@ -42,4 +42,4 @@ class JWTAuthentication(BaseAuthentication):
             'iat': datetime.datetime.utcnow()
         }
 
-        return jwt.encode(payload, default.SECRET_KEY, algorithm='HS256')
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
