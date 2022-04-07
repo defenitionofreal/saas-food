@@ -21,3 +21,13 @@ class ProductFactory(factory.django.DjangoModelFactory):
     weight = fuzzy.FuzzyFloat(100, 600)
     cook_time = fuzzy.FuzzyInteger(3, 59)
     slug = factory.Faker("word")
+
+    @factory.post_generation
+    def modifiers(self, create, extracted, **kwargs):
+        if create and extracted:
+            self.modifiers.set(extracted)
+
+    @factory.post_generation
+    def additives(self, create, extracted, **kwargs):
+        if create and extracted:
+            self.additives.set(extracted)

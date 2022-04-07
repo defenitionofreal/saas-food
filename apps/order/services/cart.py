@@ -118,7 +118,7 @@ class CartService:
 
     def _raise_not_found(self, model: models.Model) -> typing.NoReturn:
         raise model.DoesNotExist(
-            "{0} matching query does not exist.".format(model.__class__._meta.object_name),
+            "{0} matching query does not exist.".format(model.__name__),
         )
 
 """

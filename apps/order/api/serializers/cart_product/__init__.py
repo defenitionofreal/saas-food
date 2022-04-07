@@ -1,1 +1,2 @@
+from .input_add import CartProductAddInputSerializer
 from .input_delete import CartProductDeleteInputSerializer
