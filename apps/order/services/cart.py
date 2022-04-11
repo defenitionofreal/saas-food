@@ -52,20 +52,29 @@ class CartService:
 
     def add_product(self, cart: Cart, product_data: typing.Dict[str, typing.Any]) -> None:
         """Validate and add product data to current cart."""
-        validated_product_data = self._validate_product_data(cart, product_data)
+        product = product_data["product"]
+        modifiers = product_data["modifiers"]
+        additives = product_data["additives"]
+        exists_cart_products = CartProduct.objects.filter(cart=cart, product=product)
+
+        if exists_cart_products.exists():
+            # merge products
+            current_product_hash = self._get_hash_cart_product(product, modifiers, additives)
+            for exists_cart_product in exists_cart_products:
+                exists_hash = self._get_hash_cart_product(exists_cart_product.product, list(exists_cart_product.modifiers.all()), list(exists_cart_product.additives.all()))
+                if exists_hash == current_product_hash:
+                    exists_cart_product.quantity += product_data["quantity"]
+                    exists_cart_product.save()
+                    return None
 
         cart_product = CartProduct.objects.create(
             cart=cart,
-            product=validated_product_data["product"],
-            quantity=validated_product_data["quantity"],
+            product=product,
+            quantity=product_data["quantity"],
         )
-
-        cart_product.modifiers.set(validated_product_data["modifiers"])
-        cart_product.additives.set(validated_product_data["additives"])
-
-        # TODO: merge products
-
-        return cart
+        cart_product.modifiers.set(modifiers)
+        cart_product.additives.set(additives)
+        return None
 
     def calculate_cart_coast(self, cart: Cart) -> None:
         for cart_product in cart.cart_products.all():
@@ -95,31 +104,21 @@ class CartService:
         cart_product.total_coast = cart_product.quantity * cart_product.price - cart_product.discount
         cart_product.save()
 
-    def _validate_product_data(self, cart: Cart, product_data: typing.Dict[str, typing.Any]) -> typing.Dict[str, typing.Any]:
-        if any((
-                product_data["product"].institution != cart.institution,
-                not product_data["product"].is_active,
-                not product_data["product"].category.is_active,
-        )):
-            self._raise_not_found(Product)
+    def _get_hash_cart_product(self, product: Product, modifiers: typing.List[Modifier], additives: typing.List[Additive]) -> str:
+        ids = [product.id]
 
-        if product_data["quantity"] < 1:
-            raise CartServiceException("Product quantity must be more 0.")
+        for modifier in modifiers:
+            ids.append(modifier.id)
+        else:
+            ids.append(0)
 
-        for modifier in product_data["modifiers"]:
-            if modifier.institution != cart.institution:
-                self._raise_not_found(Modifier)
+        for additive in additives:
+            ids.append(additive.id)
+        else:
+            ids.append(0)
 
-        for additive in product_data["additives"]:
-            if additive.institution != cart.institution:
-                self._raise_not_found(Additive)
+        return ":".join((str(item_id for item_id in ids)))
 
-        return product_data
-
-    def _raise_not_found(self, model: models.Model) -> typing.NoReturn:
-        raise model.DoesNotExist(
-            "{0} matching query does not exist.".format(model.__name__),
-        )
 
 """
         institution = Institution.objects.get(domain=domain)

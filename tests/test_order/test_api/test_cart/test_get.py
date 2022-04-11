@@ -1,68 +1,66 @@
 from contextlib import suppress
 from http import HTTPStatus
 
-from django.test import TestCase
+import pytest
 
-from apps.company.models import Institution
 from apps.order.models import Cart
-from tests.mixins import ApiTestMixin
+from tests.test_company.factories import InstitutionFactory
 
 
-class GetCartTestCase(ApiTestMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.institution = Institution.objects.create(
-            user=self.user,
-            title="institution",
-            domain="domain1",
-        )
+@pytest.fixture()
+def institution(user):
+    return InstitutionFactory.create(user=user)
 
-    def test_get_as_auth(self):
-        assert self._user_cart() is None
 
-        self.login_user()
-        response = self.api_client.get(
-            "/api/order/{0}/customer/cart/".format(self.institution.domain),
-        )
-        self.user.refresh_from_db()
+def test_get_as_auth(institution, user, api_client):
+    assert _user_cart(user) is None
 
+    api_client.login_user(user)
+    response = api_client.get(
+        "/api/order/{0}/customer/cart/".format(institution.domain),
+    )
+    user.refresh_from_db()
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.data["id"] == user.cart_customer.id
+    assert _user_cart(user)
+
+
+def test_get_as_not_auth_twice(institution, user, api_client):
+    api_url = "/api/order/{0}/customer/cart/".format(institution.domain)
+    responses = (api_client.get(api_url), api_client.get(api_url))
+
+    assert Cart.objects.count() == 1
+    cart = Cart.objects.first()
+
+    for response in responses:
         assert response.status_code == HTTPStatus.OK
-        assert response.data["id"] == self.user.cart_customer.id
-        assert self._user_cart()
+        assert response.data["id"] == cart.id
 
-    def test_get_as_not_auth_twice(self):
-        api_url = "/api/order/{0}/customer/cart/".format(self.institution.domain)
-        responses = (self.api_client.get(api_url), self.api_client.get(api_url))
 
-        assert Cart.objects.count() == 1
-        cart = Cart.objects.first()
+def test_after_auth(institution, user, api_client):
+    api_url = "/api/order/{0}/customer/cart/".format(institution.domain)
 
-        for response in responses:
-            assert response.status_code == HTTPStatus.OK
-            assert response.data["id"] == cart.id
+    response_not_auth = api_client.get(api_url)
+    assert response_not_auth.status_code == HTTPStatus.OK
 
-    def test_after_auth(self):
-        api_url = "/api/order/{0}/customer/cart/".format(self.institution.domain)
+    api_client.login_user(user)
+    assert _user_cart(user) is None
 
-        response_not_auth = self.api_client.get(api_url)
-        assert response_not_auth.status_code == HTTPStatus.OK
+    response_auth = api_client.get(api_url)
+    user.refresh_from_db()
 
-        self.login_user()
-        assert self._user_cart() is None
+    assert response_auth.status_code == HTTPStatus.OK
+    assert Cart.objects.count() == 1
+    assert _user_cart(user)
 
-        response_auth = self.api_client.get(api_url)
-        self.user.refresh_from_db()
+    response_auth_twice = api_client.get(api_url)
 
-        assert response_auth.status_code == HTTPStatus.OK
-        assert Cart.objects.count() == 1
-        assert self._user_cart()
+    assert response_auth_twice.status_code == HTTPStatus.OK
+    assert Cart.objects.count() == 1
+    assert _user_cart(user)
 
-        response_auth_twice = self.api_client.get(api_url)
 
-        assert response_auth_twice.status_code == HTTPStatus.OK
-        assert Cart.objects.count() == 1
-        assert self._user_cart()
-
-    def _user_cart(self, user=None):
-        with suppress(Exception):
-            return (user or self.user).cart_customer
+def _user_cart(user):
+    with suppress(Exception):
+        return user.cart_customer
