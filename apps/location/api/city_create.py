@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.location.serializers import CitySerializer
-from apps.base.authentication import JWTAuthentication
 
 #  ошибка:  module 'apps.location.models.city' has no attribute '_meta'
 #  поэтому решил сделать абстрактуню модель адресcа!
 class CityCreateAPIView(APIView):
     """ Create new сity """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

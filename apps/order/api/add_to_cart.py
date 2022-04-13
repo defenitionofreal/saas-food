@@ -8,7 +8,6 @@ from apps.order.models import Cart, CartItem
 
 from apps.order.services.generate_cart_key import _generate_cart_key
 from django.conf import settings
-from apps.base.authentication import JWTAuthentication
 
 
 class AddToCartAPIView(APIView):
@@ -20,7 +19,6 @@ class AddToCartAPIView(APIView):
      - than get or create cart tied to a session id
     - bottom logic check products, counts quantity, adds to cart
     """
-    authentication_classes = [JWTAuthentication]
 
     def post(self, request, domain, product_slug):
 

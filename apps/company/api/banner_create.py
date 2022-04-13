@@ -4,12 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import BannerSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
+
 
 class BannerCreateAPIView(APIView):
     """ Create new banner """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

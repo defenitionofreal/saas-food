@@ -5,18 +5,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.delivery.serializers import DeliveryZoneFileSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 from apps.delivery.tasks import google_map_file_upload_task
 
-from django.conf import settings
-import os
 
 class DeliveryZoneFileCreateAPIView(APIView):
     """ Create new delivery zone file """
     parser_classes = (parsers.MultiPartParser,)
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

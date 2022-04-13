@@ -5,12 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.delivery.models import Delivery
 from apps.delivery.serializers import DeliverySerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class DeliveryListAPIView(APIView):
     """ List Delivery """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):

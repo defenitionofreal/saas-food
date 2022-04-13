@@ -6,14 +6,12 @@ from django.http import Http404
 
 from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class InstitutionDetailAPIView(APIView):
     """
     Retrieve, update or delete a Institution instance.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):

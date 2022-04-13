@@ -4,15 +4,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import WorkingHoursSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
+
 
 class WorkingHoursCreateAPIView(APIView):
     """ Create new working hours """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    # на фронте или на беке нужно сделать так, что максимум можно создать 7 объектов
-    # и чтобы choiсes не повторялись
+
+    # TODO:на фронте или на беке нужно сделать так,
+    #  что максимум можно создать 7 объектов
+    #  и чтобы choiсes не повторялись
     def post(self, request, pk):
         serializer = WorkingHoursSerializer(data=request.data)
         institution = Institution.objects.get(pk=pk)

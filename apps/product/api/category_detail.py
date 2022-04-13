@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.product.serializers import CategorySerializer
-from apps.base.authentication import JWTAuthentication
 from apps.product.models import Category
 
 
@@ -13,7 +12,6 @@ class CategoryDetailAPIView(APIView):
     """
     Retrieve, update or delete a category.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, category_pk):

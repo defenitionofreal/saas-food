@@ -4,13 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import RequisitesSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
+
 
 class RequisitesCreateAPIView(APIView):
     """ Create new requisites """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     # на фронте create or update
     def post(self, request, pk):
         serializer = RequisitesSerializer(data=request.data)

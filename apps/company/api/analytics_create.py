@@ -4,12 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import AnalyticsSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 class AnalyticsCreateAPIView(APIView):
     """ Create new analytics """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     # на фронте create or update
     def post(self, request, pk):

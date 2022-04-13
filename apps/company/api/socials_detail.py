@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.company.serializers import SocialLinksSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import SocialLinks
 
 
@@ -13,7 +12,6 @@ class SocialsDetailAPIView(APIView):
     """
     Retrieve, update or delete a design socials.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, socials_pk):

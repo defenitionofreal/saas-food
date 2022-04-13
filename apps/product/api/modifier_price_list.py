@@ -5,12 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.product.models import ModifierPrice
 from apps.product.serializers import ModifierPriceSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class ModifierPriceListAPIView(APIView):
     """ List modifiers prices """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):

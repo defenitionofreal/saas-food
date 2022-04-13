@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.product.serializers import AdditiveSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 
 class AdditiveCreateAPIView(APIView):
     """ Create new additive """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

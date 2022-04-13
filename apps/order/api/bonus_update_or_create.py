@@ -4,14 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.order.serializers import BonusSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 from apps.order.models import Bonus
 
 
 class BonusCreateAPIView(APIView):
     """ Create new or update old rule for a bonus """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

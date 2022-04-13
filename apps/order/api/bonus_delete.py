@@ -5,15 +5,12 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.order.models import Bonus
-from apps.order.serializers import BonusSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class BonusDetailAPIView(APIView):
     """
     Retrieve, update or delete bonus.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     # def get(self, request, pk, bonus_pk):

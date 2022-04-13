@@ -4,13 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import DesignSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
+
 
 class DesignCreateAPIView(APIView):
     """ Create new design """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     # на фронте create or update
     def post(self, request, pk):
         serializer = DesignSerializer(data=request.data)

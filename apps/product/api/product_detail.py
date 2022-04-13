@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.product.serializers import ProductSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.product.models import Product
 
 
@@ -13,7 +12,6 @@ class ProductDetailAPIView(APIView):
     """
     Retrieve, update or delete a product.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, product_pk):

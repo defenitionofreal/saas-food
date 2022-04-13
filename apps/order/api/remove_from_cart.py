@@ -6,7 +6,6 @@ from apps.product.models import Product
 from apps.company.models import Institution
 from apps.order.models import Cart, CartItem
 
-from apps.base.authentication import JWTAuthentication
 from django.conf import settings
 
 
@@ -17,7 +16,7 @@ class RemoveFromCartAPIView(APIView):
     - if not auth look for a cart tied to a session cart id
     - bottom logic looks for a product and rm it
     """
-    authentication_classes = [JWTAuthentication]
+    # TODO: ?? какой permission_class
 
     def post(self, request, domain, product_slug):
 

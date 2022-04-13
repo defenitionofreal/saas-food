@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.order.serializers import PromoCodeSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 
 class PromoCodeCreateAPIView(APIView):
     """ Create new promo code """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

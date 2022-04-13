@@ -6,7 +6,6 @@ from apps.order.models import Cart
 from apps.order.serializers import CartSerializer
 
 from django.conf import settings
-from apps.base.authentication import JWTAuthentication
 
 
 class CartAPIView(APIView):
@@ -18,7 +17,7 @@ class CartAPIView(APIView):
     - if not auth
      - check for session cart but if no cart than raise it
     """
-    authentication_classes = [JWTAuthentication]
+    # TODO: ?? если авторизованный и нет, то какой permission_class ??
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)

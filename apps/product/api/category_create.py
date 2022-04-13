@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.product.serializers import CategorySerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 
 class CategoryCreateAPIView(APIView):
     """ Create new category """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

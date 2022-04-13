@@ -5,14 +5,12 @@ from rest_framework.generics import get_object_or_404
 from apps.company.models import Institution
 from apps.order.models import Cart, PromoCode, PromoCodeUser, Bonus
 
-from apps.base.authentication import JWTAuthentication
 from django.conf import settings
 import datetime
 
 
 class AddPromoCodeAPIView(APIView):
     """ Add coupon to cart """
-    authentication_classes = [JWTAuthentication]
 
     def post(self, request, domain):
         today = datetime.datetime.now().date()

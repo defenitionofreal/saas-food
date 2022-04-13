@@ -4,13 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import SocialLinksSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 class SocialsCreateAPIView(APIView):
     """ Create new socials """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     # на фронте create or update
     def post(self, request, pk):
         serializer = SocialLinksSerializer(data=request.data)

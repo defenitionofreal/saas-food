@@ -6,14 +6,12 @@ from django.shortcuts import get_object_or_404
 
 from apps.order.models import PromoCode
 from apps.order.serializers import PromoCodeSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class PromoCodeDetailAPIView(APIView):
     """
     Retrieve, update or delete promo codes.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, promo_code_pk):

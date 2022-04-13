@@ -5,12 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.product.models import Additive
 from apps.product.serializers import AdditiveSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class AdditiveListAPIView(APIView):
     """ List Additive """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):

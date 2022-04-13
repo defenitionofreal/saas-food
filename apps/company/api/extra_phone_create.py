@@ -4,12 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import ExtraPhoneSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 class ExtraPhoneCreateAPIView(APIView):
     """ Create new phone """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

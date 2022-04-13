@@ -2,19 +2,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from apps.company.serializers import DesignSerializer
-from apps.base.authentication import JWTAuthentication
-from apps.company.models import Design, Institution
+from apps.company.models import Design
 
 
 class DesignDetailAPIView(APIView):
     """
     Retrieve, update or delete a design instance.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, design_pk):

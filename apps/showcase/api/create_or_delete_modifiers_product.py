@@ -4,7 +4,6 @@ from rest_framework.generics import get_object_or_404
 
 from apps.company.models import Institution
 from apps.product.models import Product, ModifierPrice
-from apps.base.authentication import JWTAuthentication
 from apps.showcase.services.product_session_class import ProductSessionClass
 
 
@@ -16,7 +15,7 @@ class CreateOrDeleteModifiersClientAPIView(APIView):
      - if modifier already exists than do nothing
      - if select new modifier than change old one to a new
     """
-    authentication_classes = [JWTAuthentication]
+    # TODO: какой permission class
 
     def post(self, request, domain, product_slug, modifier_pk):
         institution = Institution.objects.get(domain=domain)

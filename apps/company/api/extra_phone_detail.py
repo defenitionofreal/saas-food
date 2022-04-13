@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.company.serializers import ExtraPhoneSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import ExtraPhone
 
 
@@ -13,7 +12,6 @@ class ExtraPhoneDetailAPIView(APIView):
     """
     Retrieve, update or delete a phones.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, extra_phones_pk):

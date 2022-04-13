@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.company.serializers import AnalyticsSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Analytics
 
 
@@ -13,7 +12,6 @@ class AnalyticsDetailAPIView(APIView):
     """
     Retrieve, update or delete a design analytics.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, analytics_pk):

@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import MinCartCostSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution, MinCartCost
 
 
 class MinCartCostCreateAPIView(APIView):
     """ Create new or update old rule for a minimal cart cost """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

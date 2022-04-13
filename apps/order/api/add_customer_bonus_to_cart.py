@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.order.models import Cart, Bonus, UserBonus
 
-from apps.base.authentication import JWTAuthentication
 from decimal import Decimal
 
 
@@ -15,7 +14,6 @@ class AddBonusAPIView(APIView):
     Customer can write off his bonuses
     from a total cart cost or total cost after promocode
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, domain):

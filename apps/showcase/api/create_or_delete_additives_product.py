@@ -5,7 +5,6 @@ from rest_framework import status
 
 from apps.company.models import Institution
 from apps.product.models import Product, Additive
-from apps.base.authentication import JWTAuthentication
 from apps.showcase.services.product_session_class import ProductSessionClass
 
 
@@ -17,8 +16,8 @@ class CreateOrDeleteAdditivesClientAPIView(APIView):
     - if additive already exists than delete it
       if not than update an additives array with it
     """
-    authentication_classes = [JWTAuthentication]
     # TODO: detail product/cart view with options if exists
+    #  какой permission class если и гость и авторизованный
 
     def post(self, request, domain, product_slug, additive_pk):
         institution = Institution.objects.get(domain=domain)

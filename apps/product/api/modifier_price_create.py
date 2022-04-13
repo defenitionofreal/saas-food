@@ -4,14 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.product.serializers import ModifierPriceSerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 from apps.product.models import Modifier
 
 
 class ModifierPriceCreateAPIView(APIView):
     """ Create new modifier price """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk, modifier_pk):

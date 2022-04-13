@@ -5,12 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.order.models import PromoCode
 from apps.order.serializers import PromoCodeSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class PromoCodeListAPIView(APIView):
     """ List promo codes """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):

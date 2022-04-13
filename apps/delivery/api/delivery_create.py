@@ -4,13 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.delivery.serializers import DeliverySerializer
-from apps.base.authentication import JWTAuthentication
 from apps.company.models import Institution
 
 
 class DeliveryCreateAPIView(APIView):
     """ Create new delivery """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):

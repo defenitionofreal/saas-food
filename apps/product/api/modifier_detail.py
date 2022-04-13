@@ -6,15 +6,12 @@ from django.shortcuts import get_object_or_404
 
 from apps.product.models import Modifier
 from apps.product.serializers import ModifierSerializer
-from apps.base.authentication import JWTAuthentication
-
 
 
 class ModifierDetailAPIView(APIView):
     """
     Retrieve, update or delete a modifier.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, modifier_pk):

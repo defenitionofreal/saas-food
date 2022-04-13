@@ -5,7 +5,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from apps.delivery.serializers import DeliverySerializer
-from apps.base.authentication import JWTAuthentication
 from apps.delivery.models import Delivery
 
 
@@ -13,7 +12,6 @@ class DeliveryDetailAPIView(APIView):
     """
     Retrieve, update or delete a delivery.
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, delivery_pk):
