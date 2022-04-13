@@ -4,12 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.company.serializers import InstitutionSerializer
-from apps.base.authentication import JWTAuthentication
 
 
 class InstitutionCreateAPIView(APIView):
     """ Create new institution """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

@@ -1,31 +1,38 @@
-product_with_options = {
-        "product": {
-            "slug": "margarita",
-            "title": "margarita",
-            "price": 350,
-            "total": 350,
-            "additives": {
-                1: {
-                "title": "mozarella",
-                "price": 30,
-                "counter": 1},
-                2: {
-                "title": "margarita",
-                "price": 20,
-                "counter": 1}
-            }
-        }}
+from django.conf import settings
+from random import randint
+import requests
 
-id = 3
+active_codes = []
 
-if "additives" in product_with_options["product"]:
-    if id in product_with_options["product"]["additives"].keys():
-        product_with_options["product"]["additives"][id]["counter"] += 1
-        product_with_options["product"]["total"] += product_with_options["product"]["additives"][id]["price"]
-    else:
-        product_with_options["product"]["additives"].update(
-            {id: {'new': 'new'}})
-else:
-    product_with_options["product"]["additives"] = {id:{"new": "new"}}
 
-print(product_with_options["product"])
+def _create_authentication_code():
+    attempts_count = 0
+
+    generated_code = None
+    while attempts_count < 10 and not generated_code:
+        code = randint(1000, 9999)
+        if str(code) not in active_codes:
+            active_codes.append(str(code))
+            generated_code = code
+        attempts_count += 1
+
+    if attempts_count >= 10 or not generated_code:
+        raise f"Exceeded max count of generate code attemts {settings.MAX_GENERATE_ATTEMPTS_COUNT}"
+
+    return generated_code
+
+
+def _validation_request_url():
+    request_url = "https://{email}:{api_key}@{api_url}sms/send?number={phone}&text={text}&sign={sign}&channel={channel}".format(
+        email="flavors@inbox.ru",
+        api_key="5bTsLKFrFdxkIhneppvWCIg6gU",
+        api_url="gate.smsaero.ru/v2/",
+        phone=str("79184333353").replace(' ', '').replace('-', '').replace('+', '').replace('(', '').replace(')', ''),
+        text=f"{_create_authentication_code()}",
+        sign="SMS Aero",
+        channel="FREE SIGN",
+    )
+    return request_url
+
+
+requests.get(_validation_request_url())

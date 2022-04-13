@@ -4,22 +4,36 @@ from . import views
 from .api import (user_view,
                   register_view,
                   login_view,
-                  logout_view)
+                  logout_view,
+                  login_by_code,
+                  send_auth_code)
 
-from rest_framework import routers
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+)
 
 app_name = 'base'
 
-router = routers.DefaultRouter()
-
-#router.register(r'api/v1/user', user_view.UserViewSet, basename='user')
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('register', register_view.RegisterAPIView.as_view()),
-    path('login', login_view.LoginAPIView.as_view()),
+
+    # organization
+    path('register/', register_view.RegisterAPIView.as_view()),
+    path('login/', login_view.LoginOrganizationTokenView.as_view()),
+    # customer
+    path('reset-code/', send_auth_code.SendAuthCodeView.as_view()),
+    path('login/phone/', login_by_code.AuthCustomerAPIView.as_view()),
+
+    path('token/refresh/', TokenRefreshView.as_view()),
+
+    # при jwt токенах логаут нету,
+    # планируется удалять токены на фронт-енде
+    # ну или дописать logout и заносить токены в blacklist
     path('logout', logout_view.LogoutAPIView.as_view()),
-    path('user', user_view.UserAPIView.as_view())
+
+    # TODO: дописать get/put на прифили пользователей для смены паролей и т.д.
+    path('user', user_view.UserAPIView.as_view()),
 ]
 
-urlpatterns += router.urls
+

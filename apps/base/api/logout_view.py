@@ -16,7 +16,7 @@ class LogoutAPIView(APIView):
 
     def post(self, request):
         response = Response()
-        response.delete_cookie(key='jwt')
+        del response["Token"]
 
         # delete cart session
         session = self.request.session

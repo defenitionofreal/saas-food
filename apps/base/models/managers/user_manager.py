@@ -1,0 +1,41 @@
+from django.contrib.auth.base_user import BaseUserManager
+
+
+class UserManager(BaseUserManager):
+    def create_user(self, phone, email, password=None):
+        if phone and email is None:
+            user = self.model(phone=phone)
+        elif email and phone is None:
+            user = self.model(email=self.normalize_email(email))
+        elif phone and email:
+            user = self.model(phone=phone,
+                              email=self.normalize_email(email))
+        else:
+            raise ValueError("User must have a phone or email")
+
+        if not password:
+            raise ValueError("User must have a password")
+
+        user.set_password(password)
+        user.is_admin = False
+        user.is_staff = False
+        user.is_superuser = False
+        user.is_customer = False
+        user.is_promo = False
+        user.is_active = True
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, phone, password=None):
+        if not password:
+            raise ValueError("User must have a password")
+        user = self.model(phone=phone)
+        user.set_password(password)
+        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.is_customer = False
+        user.is_promo = False
+        user.is_active = True
+        user.save(using=self._db)
+        return user

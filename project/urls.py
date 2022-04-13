@@ -1,15 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
-
 from django.conf import settings
 from django.conf.urls.static import static
-
 from .yasg import urlpatterns as doc_urls
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', include('apps.base.urls', namespace='base')),
+    # path('', include('apps.base.urls', namespace='base')),
     # devide users
     path('api/customer/', include('apps.customer.urls', namespace='customer')),
     path('api/organization/', include('apps.organization.urls', namespace='organization')),

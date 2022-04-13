@@ -1,40 +1,15 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import exceptions
+from rest_framework import permissions
 
-from apps.base.authentication import JWTAuthentication
+from rest_framework_simplejwt.views import TokenObtainPairView
+from apps.base.serializers import LoginObtainPairSerializer
 
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 
-class LoginAPIView(APIView):
+class LoginOrganizationTokenView(TokenObtainPairView):
+    """ Login endpoint to get JWT token """
+    permission_classes = [permissions.AllowAny]
+    serializer_class = LoginObtainPairSerializer
 
-    def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
-        user = User.objects.filter(email=email).first()
-
-        if user is None:
-            raise exceptions.AuthenticationFailed("User not found")
-
-        if user.check_password(password):
-            raise exceptions.AuthenticationFailed("Incorrect password")
-
-        if 'customer' in request.path:
-            scope = 'customer'
-        elif 'organization' in request.path:
-            scope = 'organization'
-
-        if user.is_customer and scope == 'organization':
-            raise exceptions.AuthenticationFailed('Unauthorized')
-
-        token = JWTAuthentication.generate_jwt(user.id, scope)
-
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'message': "success"
-        }
-        return response

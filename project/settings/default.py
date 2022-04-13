@@ -28,12 +28,16 @@ CORE_APPS = [
 
 THIRD_PART_APPS = [
     'rest_framework',
+    #'rest_framework.authtoken',
     'corsheaders',  # https://github.com/adamchainz/django-cors-headers
     'phonenumber_field',
     'drf_yasg',
     'django_celery_beat',
     'django_celery_results',
     'django_cleanup',
+    # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 INTERNAL_APPS = [
@@ -126,9 +130,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'  # or UTC?
 
 USE_I18N = True
 
@@ -165,18 +169,51 @@ PHONENUMBER_DEFAULT_REGION = 'RU'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        #'apps.base.authentication.JWTAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        #'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
     ]
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=90),
 }
 
 # https://pypi.org/project/django-cors-headers/
 CORS_ALLOW_CREDENTIALS = True  # to accept cookies via ajax request
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = [
-#     'http://localhost:3000'
-#     # the domain for front-end app(you can add more than 1)
-# ]
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://127.0.0.1:8080',
+    'https://example-frontend.com',
+]
 
 AUTH_USER_MODEL = 'base.CustomUser'
 
@@ -205,15 +242,15 @@ SESSION_COOKIE_AGE = 12000 #60 * 60 * 24 * 7 * 2
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_SECURE = False
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://redis:6379/0',
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/0',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 LOGGING = {
     'version': 1,
@@ -245,3 +282,22 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
+# Authentication
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend",
+                           "apps.base.backends.AuthBackend"]
+
+AUTHENTICATION_CODE_EXPIRED = 5 * 60
+AUTHENTICATION_SEND_CODE_WINDOW = 30
+AUTHENTICATION_PHONE_NUMBERS_COUNT_FROM_IP = 10
+AUTHENTICATION_PHONE_NUMBERS_EXPIRED_FROM_IP = 10 * 60
+MAX_GENERATE_ATTEMPTS_COUNT = 100
+
+# SMS AERO API
+SMS_AERO_API_URL = os.environ.get('SMS_AERO_API_URL')
+SMS_AERO_API_EMAIL = os.environ.get('SMS_AERO_API_EMAIL')
+SMS_AERO_API_KEY = os.environ.get('SMS_AERO_API_KEY')
+
+# чтобы зарегать свою подпись вместо SMS Aero
+# нужно оставить заявку
+SMS_AERO_API_SIGN = "SMS Aero"

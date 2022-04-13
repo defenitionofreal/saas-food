@@ -17,6 +17,10 @@ services:
       - pgdb
       - celery
       - redis
+    links:
+      - pgdb:pgdb
+#    networks:
+#      - djangonetwork
 
   celery:
     build: .
@@ -50,6 +54,8 @@ services:
       - .env
     volumes:
       - efood-pgdata:/var/lib/postgresql/data/
+#    networks:
+#      - djangonetwork
 
   pgadmin:
     container_name: efood_pgadmin
@@ -73,3 +79,6 @@ services:
 volumes:
   efood-pgdata:
   efood-pgadmin-data:
+#networks:
+#      djangonetwork:
+#        driver: bridge
