@@ -19,9 +19,7 @@ class LoginOrganizationTokenView(TokenObtainPairView):
         access = serializer.validated_data.get("access", None)
         refresh = serializer.validated_data.get("refresh", None)
         if access is not None:
-            response = Response(
-                {"access": access, "refresh": refresh},
-                status=200)
+            response = Response({"access": access}, status=200)
             response.set_cookie('refresh', refresh,
                                 httponly=True,
                                 samesite="Lax")
