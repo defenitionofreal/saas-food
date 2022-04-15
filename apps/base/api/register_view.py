@@ -14,9 +14,11 @@ class RegisterAPIView(APIView):
     def post(self, request):
         data = request.data
         if data['email'] == '' or data['email'] is None:
-            raise exceptions.APIException('Некорректная почта')
+            raise exceptions.APIException('Введите почту')
         if data['phone'] == '' or data['phone'] is None:
-            raise exceptions.APIException('Некорректный телефон')
+            raise exceptions.APIException('Введите телефон')
+        if data['password'] == '' or data['password'] is None:
+            raise exceptions.APIException('Введите пароль')
         if data['password'] != data['password_confirm']:
             raise exceptions.APIException('Неверный пароль')
 
