@@ -6,15 +6,6 @@ from phonenumber_field.serializerfields import PhoneNumberField
 User = get_user_model()
 
 
-class LoginObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['phone'] = str(user.phone)
-        token['email'] = user.email
-        return token
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -27,6 +18,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+
+class LoginObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['phone'] = str(user.phone)
+        token['email'] = user.email
+        return token
 
 
 class AuthSendCodeSerializer(serializers.Serializer):

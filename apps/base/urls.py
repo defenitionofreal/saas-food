@@ -33,7 +33,7 @@ urlpatterns = [
     path('logout', logout_view.LogoutAPIView.as_view()),
 
     # TODO: дописать get/put на прифили пользователей для смены паролей и т.д.
-    path('user', user_view.UserAPIView.as_view()),
+    path('user/', user_view.UserAPIView.as_view()),
 ]
 
 
