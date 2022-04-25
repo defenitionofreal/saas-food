@@ -20,27 +20,26 @@ class LoginOrganizationTokenView(TokenObtainPairView):
         access = serializer.validated_data.get("access", None)
         refresh = serializer.validated_data.get("refresh", None)
         if access is not None:
-            response = Response({"access": access,
-                                 "user": self.get_user_from_access_token(
-                                     access)},
+            response = Response({"access": access},
                                 status=200)
             response.set_cookie('refresh',
                                 refresh,
                                 httponly=True,
-                                samesite="Lax")
+                                samesite="None",
+                                secure="false")
             return response
         return Response({"Error": "Something went wrong"}, status=400)
 
-    @staticmethod
-    def get_user_from_access_token(access_token_str):
-        access_token_obj = AccessToken(access_token_str)
-        user_id = access_token_obj['user_id']
-        user = User.objects.get(id=user_id)
-        content = {"id": user.id,
-                   "phone": str(user.phone),
-                   "email": user.email,
-                   "username": user.username,
-                   "first_name": user.first_name,
-                   "middle_name": user.middle_name,
-                   "last_name": user.last_name}
-        return content
+    # @staticmethod
+    # def get_user_from_access_token(access_token_str):
+    #     access_token_obj = AccessToken(access_token_str)
+    #     user_id = access_token_obj['user_id']
+    #     user = User.objects.get(id=user_id)
+    #     content = {"id": user.id,
+    #                "phone": str(user.phone),
+    #                "email": user.email,
+    #                "username": user.username,
+    #                "first_name": user.first_name,
+    #                "middle_name": user.middle_name,
+    #                "last_name": user.last_name}
+    #     return content
