@@ -5,7 +5,7 @@ from rest_framework import status
 
 from apps.company.serializers import DesignSerializer
 from apps.company.models import Institution
-from apps.company.services.compare_institution import _compare_inst
+from apps.company.services.compare_institution import _find_wrong_inst_id
 
 
 class DesignCreateAPIView(APIView):
@@ -17,8 +17,8 @@ class DesignCreateAPIView(APIView):
         serializer = DesignSerializer(data=request.data)
         institution = Institution.objects.filter(user=self.request.user)
 
-        if not _compare_inst(request.data["institution"],
-                             institution.values_list('id', flat=True)):
+        if _find_wrong_inst_id(request.data["institution"],
+                               institution.values_list('id', flat=True)):
             return Response({"detail": f"wrong institution id"},
                             status=status.HTTP_400_BAD_REQUEST)
 
