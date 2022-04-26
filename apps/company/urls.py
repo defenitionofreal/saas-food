@@ -32,7 +32,7 @@ urlpatterns = [
     path('list/', institution_list.InstitutionListAPIView.as_view()),
     path('<uuid:pk>/', institution_detail.InstitutionDetailAPIView.as_view()),
     # design
-    path('<uuid:pk>/design/new/', design_create.DesignCreateAPIView.as_view()),
+    path('design/new/', design_create.DesignCreateAPIView.as_view()),
     path('<uuid:pk>/design/detail/<int:design_pk>/', design_detail.DesignDetailAPIView.as_view()),
     # analytics
     path('<uuid:pk>/analytics/new/', analytics_create.AnalyticsCreateAPIView.as_view()),

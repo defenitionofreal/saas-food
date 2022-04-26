@@ -14,9 +14,15 @@ class InstitutionSerializer(serializers.ModelSerializer):
 class DesignSerializer(serializers.ModelSerializer):
     """ Design serializer """
 
+    def get_institution(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
     class Meta:
         model = Design
-        exclude = ['institution']
+        fields = ['id', 'institution', 'color']
+        #exclude = ['institution']
 
 
 class AnalyticsSerializer(serializers.ModelSerializer):
