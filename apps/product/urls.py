@@ -48,11 +48,11 @@ urlpatterns = [
    path('product/list/', product_list.ProductListAPIView.as_view()),
    path('product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
    # modifier
-   path('institution/<uuid:pk>/modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/modifier/list/', modifier_list.ModifierListAPIView.as_view()),
-   path('institution/<uuid:pk>/modifier/detail/<int:modifier_pk>/', modifier_detail.ModifierDetailAPIView.as_view()),
+   path('modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
+   path('modifier/list/', modifier_list.ModifierListAPIView.as_view()),
+   path('modifier/detail/<int:modifier_pk>/', modifier_detail.ModifierDetailAPIView.as_view()),
    # modifier price
-   path('institution/<uuid:pk>/modifier/<int:modifier_pk>/price/new/', modifier_price_create.ModifierPriceCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/modifier/price/list/', modifier_price_list.ModifierPriceListAPIView.as_view()),
-   path('institution/<uuid:pk>/modifier/<int:modifier_pk>/price/detail/<int:modifier_price_pk>/', modifier_price_detail.ModifierPriceDetailAPIView.as_view()),
+   path('modifier/<int:modifier_pk>/price/new/', modifier_price_create.ModifierPriceCreateAPIView.as_view()),
+   path('modifier/price/list/', modifier_price_list.ModifierPriceListAPIView.as_view()),
+   path('modifier/<int:modifier_pk>/price/detail/<int:modifier_price_pk>/', modifier_price_detail.ModifierPriceDetailAPIView.as_view()),
 ]

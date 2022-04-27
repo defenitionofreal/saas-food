@@ -48,7 +48,7 @@ class ModifierPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ModifierPrice
-        exclude = ['user', 'institution', 'modifier']
+        exclude = ['user']
 
 
 class ProductSerializer(serializers.ModelSerializer):
