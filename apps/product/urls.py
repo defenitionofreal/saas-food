@@ -43,9 +43,9 @@ urlpatterns = [
    path('institution/<uuid:pk>/sticker/list/', sticker_list.StickerListAPIView.as_view()),
    path('institution/<uuid:pk>/sticker/detail/<int:sticker_pk>/', sticker_detail.StickerDetailAPIView.as_view()),
    # product
-   path('institution/<uuid:pk>/product/new/', product_create.ProductCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/product/list/', product_list.ProductListAPIView.as_view()),
-   path('institution/<uuid:pk>/product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
+   path('product/new/', product_create.ProductCreateAPIView.as_view()),
+   path('product/list/', product_list.ProductListAPIView.as_view()),
+   path('product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
    # modifier
    path('institution/<uuid:pk>/modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
    path('institution/<uuid:pk>/modifier/list/', modifier_list.ModifierListAPIView.as_view()),
