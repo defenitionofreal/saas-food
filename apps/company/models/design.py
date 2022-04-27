@@ -1,6 +1,6 @@
 from django.db import models
 
-
+# TODO: institution foreignKey
 class Design(models.Model):
     """
     Color of buttons and elements

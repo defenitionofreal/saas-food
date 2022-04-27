@@ -28,9 +28,9 @@ urlpatterns = [
    # for dashboard
 
    # category
-   path('institution/<uuid:pk>/category/new/', category_create.CategoryCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/category/list/', category_list.CategoryListAPIView.as_view()),
-   path('institution/<uuid:pk>/category/detail/<int:category_pk>/', category_detail.CategoryDetailAPIView.as_view()),
+   path('category/new/', category_create.CategoryCreateAPIView.as_view()),
+   path('category/list/', category_list.CategoryListAPIView.as_view()),
+   path('category/detail/<int:category_pk>/', category_detail.CategoryDetailAPIView.as_view()),
    # additive
    path('institution/<uuid:pk>/additive/new/', additive_create.AdditiveCreateAPIView.as_view()),
    path('institution/<uuid:pk>/additive/list/', additive_list.AdditiveListAPIView.as_view()),

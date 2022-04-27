@@ -1,15 +1,19 @@
 from django.db import models
-
 from apps.product.models.enums import WeightUnit
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Product(models.Model):
     """
     Product of institution
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="products")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             null=True, blank=True)
+    institution = models.ManyToManyField("company.Institution",
+                                         related_name="products",
+                                         blank=True)
     category = models.ForeignKey("product.Category", on_delete=models.PROTECT,
                                  related_name="products")
     sticker = models.ManyToManyField("product.Sticker", blank=True)

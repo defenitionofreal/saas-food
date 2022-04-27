@@ -1,15 +1,20 @@
 from django.db import models
 from apps.product.services.path_additive_img import get_path_additive
 from django.core.validators import FileExtensionValidator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class CategoryAdditive(models.Model):
     """
     Category of additive
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="category")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             null=True, blank=True)
+    institution = models.ManyToManyField("company.Institution",
+                                         related_name="category",
+                                         blank=True)
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     row = models.PositiveIntegerField(default=1)
@@ -22,9 +27,11 @@ class Additive(models.Model):
     """
     Additive of the product
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="additives")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             null=True, blank=True)
+    institution = models.ManyToManyField("company.Institution",
+                                         related_name="additives",
+                                         blank=True)
     category = models.ForeignKey(CategoryAdditive, on_delete=models.SET_NULL,
                                  null=True, related_name="category_additive")
     title = models.CharField(max_length=255)

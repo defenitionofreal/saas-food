@@ -2,6 +2,7 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 
+# TODO: реквизиты присваиваются компании(user), а не филиалу
 class Requisites(models.Model):
     """
     Institution paying requisites

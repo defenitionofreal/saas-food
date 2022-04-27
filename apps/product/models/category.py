@@ -1,11 +1,18 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Category(models.Model):
     """
     Category of institution
     """
-    institution = models.ForeignKey("company.Institution", on_delete=models.CASCADE, related_name="categories")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             null=True, blank=True)
+    institution = models.ManyToManyField("company.Institution",
+                                         related_name="categories",
+                                         blank=True)
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     row = models.PositiveIntegerField(default=1)

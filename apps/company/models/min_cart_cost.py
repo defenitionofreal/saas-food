@@ -1,6 +1,6 @@
 from django.db import models
 
-
+# TODO: institution ManyToMany
 class MinCartCost(models.Model):
     """
     Minimal cart price value to checkout

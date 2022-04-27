@@ -4,7 +4,7 @@ from apps.delivery.models.enums import (DeliveryType,
                                         SaleType,
                                         PaymentType)
 
-
+# TODO: institution ManyToMany
 class Delivery(models.Model):
     """
     Delivery model

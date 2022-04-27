@@ -11,8 +11,8 @@ class CategoryListAPIView(APIView):
     """ List Category """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, pk):
-        institution = Institution.objects.get(pk=pk)
-        query = Category.objects.filter(institution=institution)
+    def get(self, request):
+        #institution = Institution.objects.filter(user=self.request.user)
+        query = Category.objects.filter(user=self.request.user)
         serializer = CategorySerializer(query, many=True)
         return Response(serializer.data)

@@ -1,6 +1,17 @@
 import uuid
 
 
+def check_if_list_exists_compare_values(request_list, institution_list):
+    """
+    Check if requested data is not blank
+     - then check for a wrong uuid in a list
+    """
+    if request_list:
+        if _find_wrong_inst_id(request_list, institution_list) is True:
+            return True
+    return False
+
+
 def _find_wrong_inst_id(request_list, institution_list):
     """
     Checking for a wrong uuid

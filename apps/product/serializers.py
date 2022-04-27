@@ -8,7 +8,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        exclude = ['institution']
+        fields = ["id", "institution", "title", "slug", "row", "is_active"]
 
 
 class AdditiveSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class AdditiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Additive
-        exclude = ['institution']
+        exclude = ['user']
 
 
 class CategoryAdditiveSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class CategoryAdditiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CategoryAdditive
-        exclude = ['institution']
+        exclude = ['user']
 
 
 class StickerSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class StickerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sticker
-        exclude = ['institution']
+        exclude = ['user']
 
 
 class ModifierSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class ModifierSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Modifier
-        exclude = ['institution']
+        exclude = ['user']
 
 
 class ModifierPriceSerializer(serializers.ModelSerializer):
@@ -48,7 +48,7 @@ class ModifierPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ModifierPrice
-        exclude = ['institution', 'modifier']
+        exclude = ['user', 'institution', 'modifier']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        exclude = ['institution']
+        exclude = ['user']
 
     def validate_sticker(self, value):
         """
