@@ -32,13 +32,13 @@ urlpatterns = [
    path('category/list/', category_list.CategoryListAPIView.as_view()),
    path('category/detail/<int:category_pk>/', category_detail.CategoryDetailAPIView.as_view()),
    # additive
-   path('institution/<uuid:pk>/additive/new/', additive_create.AdditiveCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/additive/list/', additive_list.AdditiveListAPIView.as_view()),
-   path('institution/<uuid:pk>/additive/detail/<int:additive_pk>/', additive_detail.AdditiveDetailAPIView.as_view()),
+   path('additive/new/', additive_create.AdditiveCreateAPIView.as_view()),
+   path('additive/list/', additive_list.AdditiveListAPIView.as_view()),
+   path('additive/detail/<int:additive_pk>/', additive_detail.AdditiveDetailAPIView.as_view()),
    # additive category
-   path('institution/<uuid:pk>/additive/category/new/', additive_cat_create.CategoryAdditiveCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/additive/category/list/', additive_cat_list.CategoryAdditiveListAPIView.as_view()),
-   path('institution/<uuid:pk>/additive/category/detail/<int:additive_cat_pk>/', additive_cat_detail.CategoryAdditiveDetailAPIView.as_view()),
+   path('additive/category/new/', additive_cat_create.CategoryAdditiveCreateAPIView.as_view()),
+   path('additive/category/list/', additive_cat_list.CategoryAdditiveListAPIView.as_view()),
+   path('additive/category/detail/<int:additive_cat_pk>/', additive_cat_detail.CategoryAdditiveDetailAPIView.as_view()),
    # sticker
    path('sticker/new/', sticker_create.StickerCreateAPIView.as_view()),
    path('sticker/list/', sticker_list.StickerListAPIView.as_view()),
