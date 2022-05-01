@@ -10,6 +10,11 @@ class InstitutionSerializer(serializers.ModelSerializer):
         model = Institution
         exclude = ['user']
 
+    def get_logo_url(self, institution):
+        request = self.context.get('request')
+        logo_url = institution.logo.url
+        return request.build_absolute_uri(logo_url)
+
 
 class DesignSerializer(serializers.ModelSerializer):
     """ Design serializer """

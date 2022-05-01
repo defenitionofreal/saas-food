@@ -12,5 +12,7 @@ class InstitutionListAPIView(APIView):
 
     def get(self, request):
         institution = Institution.objects.filter(user=self.request.user)
-        serializer = InstitutionSerializer(institution, many=True)
+        serializer = InstitutionSerializer(institution,
+                                           many=True,
+                                           context={"request": request})
         return Response(serializer.data)

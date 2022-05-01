@@ -1,7 +1,7 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
-
+# TODO: institution MTM or NOT needed at all?
 class ExtraPhone(models.Model):
     """ additional phones for institution """
     institution = models.ForeignKey("company.Institution",

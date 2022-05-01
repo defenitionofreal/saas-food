@@ -22,12 +22,15 @@ class InstitutionDetailAPIView(APIView):
 
     def get(self, request, pk):
         institution = self.get_object(pk)
-        serializer = InstitutionSerializer(institution)
+        serializer = InstitutionSerializer(institution,
+                                           context={"request": request})
         return Response(serializer.data)
 
     def put(self, request, pk):
         institution = self.get_object(pk)
-        serializer = InstitutionSerializer(institution, data=request.data)
+        serializer = InstitutionSerializer(institution,
+                                           data=request.data,
+                                           context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

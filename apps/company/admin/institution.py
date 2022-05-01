@@ -6,7 +6,6 @@ from apps.company.models import Institution, MinCartCost, Design
 class InstitutionAdmin(admin.ModelAdmin):
     list_display = ["id", "domain", "user"]
     search_fields = ("title",)
-    autocomplete_fields = ("address",)
 
 
 @admin.register(MinCartCost)

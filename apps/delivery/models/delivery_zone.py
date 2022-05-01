@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import FileExtensionValidator
 from apps.delivery.services.upload_file import get_path_upload_map_file
 
-
+# TODO: institution ManyToMany
 class DeliveryZone(models.Model):
     """
     Delivery zone model

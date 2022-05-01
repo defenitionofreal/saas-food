@@ -1,6 +1,7 @@
 import qrcode
 from django.conf import settings
 
+
 def qrcode_generator(domain):
     """ QR code generator """
     qr = qrcode.QRCode(
