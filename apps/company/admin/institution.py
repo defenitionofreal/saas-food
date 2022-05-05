@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.company.models import Institution, MinCartCost, Design
+from apps.company.models import Institution, MinCartCost, Design, ExtraPhone
 
 
 @admin.register(Institution)
@@ -15,4 +15,10 @@ class MinCartCostAdmin(admin.ModelAdmin):
 @admin.register(Design)
 class DesignAdmin(admin.ModelAdmin):
     list_display = ["id"]
+    search_fields = ("id",)
+
+
+@admin.register(ExtraPhone)
+class ExtraPhoneAdmin(admin.ModelAdmin):
+    list_display = ["id", "institution", "phone", "position"]
     search_fields = ("id",)

@@ -28,6 +28,15 @@ class InstitutionDetailAPIView(APIView):
 
     def put(self, request, pk):
         institution = self.get_object(pk)
+
+        # костыль для того, чтобы на фронте оставить картинку по умолчанию
+        # при редактирование информации так как передается строка в поле logo
+        file = request.data['logo']
+        if type(file) is str:
+            request.data._mutable = True
+            request.data['logo'] = institution.logo
+            request.data._mutable = False
+
         serializer = InstitutionSerializer(institution,
                                            data=request.data,
                                            context={"request": request})
@@ -35,6 +44,9 @@ class InstitutionDetailAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        pass
 
     def delete(self, request, pk):
         institution = self.get_object(pk)
