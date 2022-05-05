@@ -31,10 +31,13 @@ class InstitutionDetailAPIView(APIView):
 
         # костыль для того, чтобы на фронте оставить картинку по умолчанию
         # при редактирование информации так как передается строка в поле logo
-        file = request.data['logo']
-        if type(file) is str:
+        if type(request.data['logo']) is str:
             request.data._mutable = True
-            request.data['logo'] = institution.logo
+            if request.data['logo'] == "null":
+                request.data['logo'] = None
+                institution.logo.delete()
+            else:
+                request.data['logo'] = institution.logo
             request.data._mutable = False
 
         serializer = InstitutionSerializer(institution,
