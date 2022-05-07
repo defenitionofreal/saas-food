@@ -6,7 +6,7 @@ from apps.base.services.sms_aero import SendSms, PhoneNumber
 
 @shared_task
 def send_sms_task(phone, text, sender_id=None):
-    _validate_phone_number(phone)
+    #_validate_phone_number(phone)
     if sender_id:
         sender = get_user_model().objects.filter(id=sender_id).first()
     else:
@@ -27,7 +27,8 @@ def _send_sms(phone, text, sender=None):
         raise ValueError(f"Failed to send sms {text} for phone number {phone} with error {response}")
 
 
-def _validate_phone_number(phone):
-    phone = PhoneNumber(phone)
-    if not phone.is_valid():
-        raise ValueError(f"Phone number {str(phone)} is not valid")
+# def _validate_phone_number(phone):
+#     print("phone here:", phone)
+#     phone = PhoneNumber(phone)
+#     if not phone.is_valid():
+#         raise ValueError(f"Phone number {str(phone)} is not valid")

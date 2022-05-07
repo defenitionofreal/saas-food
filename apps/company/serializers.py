@@ -3,19 +3,6 @@ from apps.company.models import Institution, Design, Analytics, SocialLinks, \
     Requisites, WorkingHours, ExtraPhone, Banner, MinCartCost
 
 
-class InstitutionSerializer(serializers.ModelSerializer):
-    """ Institution serializer """
-
-    class Meta:
-        model = Institution
-        exclude = ['user']
-
-    def get_logo_url(self, institution):
-        request = self.context.get('request')
-        logo_url = institution.logo.url
-        return request.build_absolute_uri(logo_url)
-
-
 class DesignSerializer(serializers.ModelSerializer):
     """ Design serializer """
 
@@ -26,8 +13,7 @@ class DesignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Design
-        fields = ['id', 'institution', 'color']
-        #exclude = ['institution']
+        exclude = ['user']
 
 
 class AnalyticsSerializer(serializers.ModelSerializer):
@@ -84,3 +70,29 @@ class MinCartCostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MinCartCost
         exclude = ['institution']
+
+
+class InstitutionSerializer(serializers.ModelSerializer):
+    """ Institution serializer """
+    other_phone = ExtraPhoneSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Institution
+        exclude = ['user']
+
+    def get_logo_url(self, institution):
+        request = self.context.get('request')
+        logo_url = institution.logo.url
+        return request.build_absolute_uri(logo_url)
+
+    # def create(self, validated_data):
+    #     phones = validated_data.get('other_phone', [])
+    #     # print('ser phones:', phones)
+    #     print('val data', validated_data)
+    #     print('val phones', phones)
+    #     # return Institution(**validated_data)
+
+    # def update(self, instance, validated_data):
+    #     instance.other_phone = validated_data.get('other_phone',
+    #                                               instance.other_phone)
+    #     return instance

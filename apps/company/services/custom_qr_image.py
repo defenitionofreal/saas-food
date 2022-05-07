@@ -4,7 +4,7 @@ from .generate_qr_code import qrcode_generator
 
 def create_qr_titles(title1, title2, title3, domain):
     """ creating custom image with qr and titles """
-    theme_color = '#A770EF'
+    theme_color = '#FF7C6A'
     # Scale up 4x for text, scale down with antialias, and then add qrcode
     multiplier = 4
     width = 2 * 250 * multiplier

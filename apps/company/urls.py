@@ -3,6 +3,7 @@ from .api import (institution_create,
                   institution_list,
                   institution_detail,
                   design_create,
+                  design_list,
                   design_detail,
                   analytics_create,
                   analytics_detail,
@@ -33,6 +34,7 @@ urlpatterns = [
     path('<uuid:pk>/', institution_detail.InstitutionDetailAPIView.as_view()),
     # design
     path('design/new/', design_create.DesignCreateAPIView.as_view()),
+    path('design/list/', design_list.DesignListAPIView.as_view()),
     path('<uuid:pk>/design/detail/<int:design_pk>/', design_detail.DesignDetailAPIView.as_view()),
     # analytics
     path('<uuid:pk>/analytics/new/', analytics_create.AnalyticsCreateAPIView.as_view()),

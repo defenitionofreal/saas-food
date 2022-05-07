@@ -1,10 +1,16 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
-# TODO: institution foreignKey
+User = get_user_model()
+
+# TODO: foreignKey ?
+# Нужно ли привязать все к юзеру дополнительно так как это аггрегатор??!
 class Design(models.Model):
     """
     Color of buttons and elements
     """
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             null=True, blank=True)
     institution = models.ManyToManyField("company.Institution",
                                          related_name="design")
     color = models.CharField(max_length=100)
