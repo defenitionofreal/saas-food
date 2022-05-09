@@ -35,7 +35,7 @@ urlpatterns = [
     # design
     path('design/new/', design_create.DesignCreateAPIView.as_view()),
     path('design/list/', design_list.DesignListAPIView.as_view()),
-    path('<uuid:pk>/design/detail/<int:design_pk>/', design_detail.DesignDetailAPIView.as_view()),
+    path('design/detail/<int:design_pk>/', design_detail.DesignDetailAPIView.as_view()),
     # analytics
     path('<uuid:pk>/analytics/new/', analytics_create.AnalyticsCreateAPIView.as_view()),
     path('<uuid:pk>/analytics/detail/<int:analytics_pk>/', analytics_detail.AnalyticsDetailAPIView.as_view()),

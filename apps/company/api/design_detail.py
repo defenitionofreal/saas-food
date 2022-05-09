@@ -27,7 +27,9 @@ class DesignDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, design_pk):
-        design = get_object_or_404(Design.objects, institution_id=pk, pk=design_pk)
+    def delete(self, request, design_pk):
+        design = get_object_or_404(Design.objects,
+                                   user=self.request.user,
+                                   pk=design_pk)
         design.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
