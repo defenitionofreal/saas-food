@@ -11,19 +11,19 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["id", "institution", "title", "slug", "row", "is_active"]
 
 
-class AdditiveSerializer(serializers.ModelSerializer):
-    """ Additive serializer """
-
-    class Meta:
-        model = Additive
-        exclude = ['user']
-
-
 class CategoryAdditiveSerializer(serializers.ModelSerializer):
     """ Category Additive serializer """
 
     class Meta:
         model = CategoryAdditive
+        exclude = ['user']
+
+
+class AdditiveSerializer(serializers.ModelSerializer):
+    """ Additive serializer """
+
+    class Meta:
+        model = Additive
         exclude = ['user']
 
 
@@ -79,7 +79,27 @@ class ProductSerializer(serializers.ModelSerializer):
                                          if i.category.id == cat.id}}
                             for cat in instance.additives.all()]
         rep['modifiers'] = [
-            {mod.title: p.price for p in mod.modifiers_price.all()
-             if p.product.id == instance.id and p.modifier.id == mod.id}
-            for mod in instance.modifiers.all()]
+            {"title": mod.title, "price": p.price}
+            for mod in instance.modifiers.all()
+            for p in mod.modifiers_price.all()
+            if p.product.id == instance.id and p.modifier.id == mod.id
+        ]
         return rep
+
+
+class ProductListSerializer(serializers.ModelSerializer):
+    """ Product list serializer """
+
+    class Meta:
+        model = Product
+        fields = ['id', 'institution', 'category', 'title', 'slug', 'price',
+                  'old_price', 'sticker', 'row', 'images']
+
+    def validate_sticker(self, value):
+        """
+        Check that product could have
+        only not more than 3 stickers
+        """
+        if len(value) > 3:
+            raise serializers.ValidationError("Maximum number should be 3")
+        return value

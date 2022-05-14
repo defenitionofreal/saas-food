@@ -36,8 +36,8 @@ class Cart(models.Model):
     @property
     def get_total_cart(self):
         total = 0
-        for i in self.items.all():
-            total += i.get_single_item_total
+        # for i in self.items.all():
+        #     total += i.get_single_item_total
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is False:

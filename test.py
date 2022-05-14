@@ -1,38 +1,56 @@
-from django.conf import settings
-from random import randint
-import requests
+import hashlib
+import json
 
-active_codes = []
+item = {"qty": 1,
+        "price": 250,
+        "additives": [{"title": "cheese", "price": 15},
+                      {"title": "red souce", "price": 10}],
+        "modifiers": [{"title": "25 cm", "price": 200}]
+        }
 
+# using encode() + dumps() to convert to bytes
+dict_to_bytes = json.dumps(item).encode('utf-8')
 
-def _create_authentication_code():
-    attempts_count = 0
+m = hashlib.md5()
+m.update(dict_to_bytes)
 
-    generated_code = None
-    while attempts_count < 10 and not generated_code:
-        code = randint(1000, 9999)
-        if str(code) not in active_codes:
-            active_codes.append(str(code))
-            generated_code = code
-        attempts_count += 1
+def to_representation(self, instance):
+    """
+    """
+    rep = super(self, self).to_representation(instance)
+    session = self.context["request"].session
 
-    if attempts_count >= 10 or not generated_code:
-        raise f"Exceeded max count of generate code attemts {settings.MAX_GENERATE_ATTEMPTS_COUNT}"
-
-    return generated_code
-
-
-def _validation_request_url():
-    request_url = "https://{email}:{api_key}@{api_url}sms/send?number={phone}&text={text}&sign={sign}&channel={channel}".format(
-        email="flavors@inbox.ru",
-        api_key="5bTsLKFrFdxkIhneppvWCIg6gU",
-        api_url="gate.smsaero.ru/v2/",
-        phone=str("79184333353").replace(' ', '').replace('-', '').replace('+', '').replace('(', '').replace(')', ''),
-        text=f"{_create_authentication_code()}",
-        sign="SMS Aero",
-        channel="FREE SIGN",
-    )
-    return request_url
-
-
-requests.get(_validation_request_url())
+    for item in instance.items.all():
+        #check = item.check_if_product_in_session(session)
+        products = session.get("product_with_options")
+        if products:
+            if item.product.slug in products["product"].keys():
+                price = products["product"][item.product.slug]["price"]
+                additives_total = products["product"][item.product.slug]["additives_price"]
+                if "additives" in products["product"][item.product.slug]:
+                    additives = [v for k, v in products["product"][item.product.slug]["additives"].items()
+                                 if products["product"][item.product.slug]["additives"]]
+                else:
+                    additives = []
+                if "modifiers" in products["product"][item.product.slug]:
+                    modifiers = [v for v in products["product"][item.product.slug]["modifiers"].values()
+                                 if products["product"][item.product.slug]["modifiers"]]
+                else:
+                    modifiers = []
+                # выводит только 1 товар !!!
+                item_response = {item.product.slug: {"price": price,
+                                                     "additives_total": additives_total,
+                                                     "additives": additives,
+                                                     "modifiers": modifiers}}
+                rep['items'] = item_response
+                rep['get_total_cart'] = (int(rep['items'][item.product.slug]["price"]) + int(rep['items'][item.product.slug]["additives_total"]))
+            else:
+                pass
+                # update with products that not in session?
+                # print(rep['items'])
+                # rep['items'].update({i.product.slug: {"price": i.product.price}
+                #             for i in instance.items.all()})
+        else:
+            rep['items'] = {i.product.slug: {"price": i.product.price}
+                            for i in instance.items.all()}
+    return rep
