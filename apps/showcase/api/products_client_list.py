@@ -11,8 +11,8 @@ from django.db.models import Prefetch
 class ProductsClientListAPIView(APIView):
 
     def get(self, request, domain):
-        institution = Institution.objects.filter(domain=domain).only("id",
-                                                                     "domain")
+        institution = Institution.objects.only("id", "domain").filter(
+            domain=domain)
 
         query = Product.objects.filter(is_active=True,
                                        institution=institution.first())\

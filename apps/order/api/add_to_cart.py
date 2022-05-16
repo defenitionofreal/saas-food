@@ -5,9 +5,10 @@ from rest_framework.generics import get_object_or_404
 from apps.product.models import Product
 from apps.company.models import Institution
 from apps.order.models import Cart, CartItem
-
 from apps.order.services.generate_cart_key import _generate_cart_key
+
 from django.conf import settings
+from django.db.models import F
 
 import hashlib
 import json
@@ -60,20 +61,22 @@ class AddToCartAPIView(APIView):
         checked_additives_sum = 0
         if additives:
             for additive in additives:
-                for cat in product.additives.filter(institution=institution,
-                                                    is_active=True):
-                    for i in cat.category_additive.filter(
-                            institution=institution, is_active=True).only(
-                            "title", "price"):
-                        if additive["title"] == i.title and additive["price"] != int(i.price):
-                            additive["price"] = int(i.price)
-                checked_additives_sum += additive["price"]
+                for i in product.additives \
+                        .values("category_additive__title",
+                                "category_additive__price") \
+                        .filter(is_active=True, institution=institution):
+                    if additive["title"] == i["category_additive__title"] and \
+                       additive["price"] != int(i["category_additive__price"]):
+                        additive["price"] = int(i["category_additive__price"])
+                    checked_additives_sum += additive["price"]
 
         if modifiers:
-            for mod in product.modifiers.filter(institution=institution):
-                for i in mod.modifiers_price.all():
-                    if modifiers["title"] == mod.title and modifiers["price"] != int(i.price):
-                        modifiers["price"] = int(i.price)
+            for i in product.modifiers \
+                    .values("title", "modifiers_price__price") \
+                    .filter(institution=institution):
+                if modifiers["title"] == i["title"] and \
+                   modifiers["price"] != int(i["modifiers_price__price"]):
+                    modifiers["price"] = int(i["modifiers_price__price"])
 
         checked_total_price = price + checked_additives_sum
         if modifiers:
@@ -117,14 +120,15 @@ class AddToCartAPIView(APIView):
                     product_key=product_key, cart=cart)
             else:
                 cart, cart_created = Cart.objects.get_or_create(
-                    institution=institution, session_id=session[settings.CART_SESSION_ID])
+                    institution=institution,
+                    session_id=session[settings.CART_SESSION_ID])
                 cart_item, cart_item_created = CartItem.objects.get_or_create(
                     product_key=product_key, cart=cart)
 
             if cart_created is False:
                 if cart.items.filter(product_key=product_key).exists():
-                    cart_item.quantity += 1
-                    cart_item.save()
+                    cart_item.quantity = F("quantity") + 1
+                    cart_item.save(update_fields=("quantity",))
                     return Response({"detail": "Product quantity updated"})
                 else:
                     cart.items.add(cart_item)
