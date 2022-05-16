@@ -36,8 +36,8 @@ class Cart(models.Model):
     @property
     def get_total_cart(self):
         total = 0
-        # for i in self.items.all():
-        #     total += i.get_single_item_total
+        for i in self.items.all():
+            total += i.get_total_item_price
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is False:
@@ -105,16 +105,6 @@ class Cart(models.Model):
             else:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
             return total_accrual
-
-    @property
-    def items_dict(self):
-        dic = {}
-        for i in self.items.all():
-            dic.update({i.product.slug: {
-                "price": i.product.price,
-                "quantity": i.quantity
-            }})
-        return dic
 
     def __str__(self):
         return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'

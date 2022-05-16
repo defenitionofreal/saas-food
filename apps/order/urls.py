@@ -13,7 +13,7 @@ urlpatterns = [
     path('customer/cart/add/<str:product_slug>/', add_to_cart.AddToCartAPIView.as_view()),
     path('customer/cart/remove/<str:product_slug>/', remove_from_cart.RemoveFromCartAPIView.as_view()),
     # add promo code
-    path('customer/cart/code/', add_promocode_to_cart.AddPromoCodeAPIView.as_view()),
+    path('customer/cart/code/<str:coupon>/', add_promocode_to_cart.AddPromoCodeAPIView.as_view()),
     # write off bonuses
     path('customer/cart/bonus/', add_customer_bonus_to_cart.AddBonusAPIView.as_view()),
 ]

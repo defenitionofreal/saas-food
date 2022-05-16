@@ -10,9 +10,6 @@ from apps.order.services.generate_cart_key import _generate_cart_key
 from django.conf import settings
 from django.db.models import F
 
-import hashlib
-import json
-
 
 class AddToCartAPIView(APIView):
     """
