@@ -33,14 +33,12 @@ class AddToCartAPIView(APIView):
         institution = Institution.objects.get(domain=domain)
         product = get_object_or_404(Product, slug=product_slug)
         user = self.request.user
-
         # данные запроса в переменные
         title = request.data['title']
         slug = request.data['slug']
         modifiers = request.data['modifiers']
         additives = request.data['additives']
         price = request.data['price']
-        total_price = request.data['total_price']
 
         # здесь я беру cart_id или создаю cart_id в сессии
         session = self.request.session
@@ -48,6 +46,7 @@ class AddToCartAPIView(APIView):
             session[settings.CART_SESSION_ID] = _generate_cart_key()
         else:
             session[settings.CART_SESSION_ID]
+        session.modified = True
         cart_session = session
 
         # перепроверить подлинность данных с фронта
@@ -58,7 +57,6 @@ class AddToCartAPIView(APIView):
         if price != int(product.price):
             price = int(product.price)
 
-        checked_additives_sum = 0
         if additives:
             for additive in additives:
                 for i in product.additives \
@@ -68,7 +66,6 @@ class AddToCartAPIView(APIView):
                     if additive["title"] == i["category_additive__title"] and \
                        additive["price"] != int(i["category_additive__price"]):
                         additive["price"] = int(i["category_additive__price"])
-                    checked_additives_sum += additive["price"]
 
         if modifiers:
             for i in product.modifiers \
@@ -78,55 +75,34 @@ class AddToCartAPIView(APIView):
                    modifiers["price"] != int(i["modifiers_price__price"]):
                     modifiers["price"] = int(i["modifiers_price__price"])
 
-        checked_total_price = price + checked_additives_sum
-        if modifiers:
-            checked_total_price = checked_additives_sum + modifiers["price"]
-
-        if total_price != checked_total_price:
-            total_price = checked_total_price
-
-        # создаю массив для сессии из данных запроса
+        # создаю массив для поля product в бд из данных запроса после проверки
         product_dict = {
             "title": title,
             "slug": slug,
             "price": price,
-            "quantity": 1,
             "modifiers": modifiers,
-            "additives": additives,
-            "total_price": total_price
+            "additives": additives
         }
 
-        # создаю уникальный хеш ключ данных массива для CartItem
-        dict_to_bytes = json.dumps(product_dict).encode('utf-8')
-        m = hashlib.md5()
-        m.update(dict_to_bytes)
-        product_key = m.hexdigest()
-
         if cart_session:
-            if not "products" in cart_session:
-                cart_session["products"] = {}
-
-            if product_key in cart_session["products"].keys():
-                cart_session["products"][product_key]["quantity"] += 1
-            else:
-                cart_session["products"][product_key] = product_dict
-            session.modified = True
-
             # логика связанная с БД
             if user.is_authenticated:
                 cart, cart_created = Cart.objects.get_or_create(
-                    institution=institution, customer=user)
+                    institution=institution,
+                    customer=user)
                 cart_item, cart_item_created = CartItem.objects.get_or_create(
-                    product_key=product_key, cart=cart)
+                    product=product_dict,
+                    cart=cart)
             else:
                 cart, cart_created = Cart.objects.get_or_create(
                     institution=institution,
                     session_id=session[settings.CART_SESSION_ID])
                 cart_item, cart_item_created = CartItem.objects.get_or_create(
-                    product_key=product_key, cart=cart)
+                    product=product_dict,
+                    cart=cart)
 
             if cart_created is False:
-                if cart.items.filter(product_key=product_key).exists():
+                if cart.items.filter(product=product_dict).exists():
                     cart_item.quantity = F("quantity") + 1
                     cart_item.save(update_fields=("quantity",))
                     return Response({"detail": "Product quantity updated"})

@@ -322,10 +322,10 @@ LOGGING = {
         }
     },
     'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['console', ],
-        },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console', ],
+        # },
         'django': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
