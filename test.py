@@ -24,10 +24,9 @@ import json
 # m = hashlib.md5()
 # m.update(dict_to_bytes)
 
-dict1 = { "slug": "margarita", "price": 250, "title": "маргарита", "additives": [ { "price": 30, "title": "клюквенный" }, { "price": 20, "title": "Красный" } ], "modifiers": { "price": 500, "title": "45 cm" } }
-dict2 ={ "slug": "margarita", "price": 250, "title": "маргарита", "additives": [ { "price": 30, "title": "клюквенный" }, { "price": 20, "title": "Красный" } ], "modifiers": { "price": 500, "title": "45 cm" } }
-
-if dict1 == dict2:
+query1 = ["drinks"]
+query2 = ["drinks", "pizza"]
+if query2 in query1:
     print("yes")
 else:
     print("no")

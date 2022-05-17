@@ -74,6 +74,8 @@ class AddToCartAPIView(APIView):
 
         # создаю массив для поля product в бд из данных запроса после проверки
         product_dict = {
+            "id": product.id,
+            "category": product.category.slug,
             "title": title,
             "slug": slug,
             "price": price,

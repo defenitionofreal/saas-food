@@ -54,26 +54,26 @@ class AddPromoCodeAPIView(APIView):
                     # if delivery_free
 
                     if coupon.date_start is not None:
-                        if coupon.date_start > today:  # <
+                        if today < coupon.date_start:
                             return Response({"detail": f"Code period not started yet"},
                                             status=status.HTTP_400_BAD_REQUEST)
 
                     if coupon.date_finish is not None:
-                        if coupon.date_finish >= today:
+                        if today >= coupon.date_finish:
                             return Response({"detail": f"Code period expired"},
                                             status=status.HTTP_400_BAD_REQUEST)
 
                     if coupon.categories.all():
                         x = set(cart.items.values_list('product__category', flat=True))
-                        y = set(coupon.categories.values_list('promocode__categories', flat=True))
+                        y = set(coupon.categories.values_list('promocode__categories__slug', flat=True))
                         if not x.intersection(y):
                             return Response(
                                 {"detail": "No categories tied with coupon."},
-                            status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
 
                     if coupon.products.all():
-                        x = set(cart.items.values_list('product', flat=True))
-                        y = set(coupon.products.values_list('promocode__products', flat=True))
+                        x = set(cart.items.values_list('product__slug', flat=True))
+                        y = set(coupon.products.values_list('promocode__products__slug', flat=True))
                         if not x.intersection(y):
                             return Response(
                                 {"detail": "No products tied with coupon."},

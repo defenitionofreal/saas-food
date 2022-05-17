@@ -19,6 +19,14 @@ class CartItem(models.Model):
         return f'{self.product}, {self.quantity}'
 
     @property
+    def get_product_slug(self):
+        return self.product["slug"]
+
+    @property
+    def get_product_price(self):
+        return self.product["price"]
+
+    @property
     def get_additives(self):
         return self.product["additives"]
 
@@ -28,11 +36,11 @@ class CartItem(models.Model):
 
     @property
     def get_total_item_price(self):
-        product_price = self.product["price"]
-        if self.product["modifiers"]:
+        product_price = self.get_product_price
+        if self.get_modifiers:
             product_price = self.product["modifiers"]["price"]
-        if self.product["additives"]:
-            for i in self.product["additives"]:
+        if self.get_additives:
+            for i in self.get_additives:
                 product_price += i["price"]
         quantity = self.quantity
         total_price = (product_price * quantity)
