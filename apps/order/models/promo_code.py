@@ -42,4 +42,4 @@ class PromoCodeUser(models.Model):
     num_uses = models.PositiveIntegerField(default=0, editable=False)
 
     def __str__(self):
-        return f'{self.user.email}: {self.code}'
+        return f'{self.user.phone}: {self.code}'

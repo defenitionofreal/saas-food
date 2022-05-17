@@ -36,4 +36,4 @@ class UserBonus(models.Model):
     bonus = models.PositiveIntegerField()
 
     def __str__(self):
-        return f'{self.institution.domain}: {self.user.email} with {self.bonus} points'
+        return f'{self.institution.domain}: {self.user.phone} with {self.bonus} points'

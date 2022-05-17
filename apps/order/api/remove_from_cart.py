@@ -4,9 +4,10 @@ from rest_framework.generics import get_object_or_404
 
 from apps.product.models import Product
 from apps.company.models import Institution
-from apps.order.models import Cart, CartItem
+from apps.order.models import Cart
 
 from django.conf import settings
+from django.db.models import F
 
 
 class RemoveFromCartAPIView(APIView):
@@ -16,7 +17,6 @@ class RemoveFromCartAPIView(APIView):
     - if not auth look for a cart tied to a session cart id
     - bottom logic looks for a product and rm it
     """
-    # TODO: ?? какой permission_class
 
     def post(self, request, domain, product_slug):
 
@@ -25,7 +25,7 @@ class RemoveFromCartAPIView(APIView):
         user = self.request.user
         session = self.request.session
 
-        if user.is_authenticated:  # and user.is_customer
+        if user.is_authenticated:
             cart = Cart.objects.filter(institution=institution, customer=user)
         else:
             if not settings.CART_SESSION_ID in session:
@@ -37,12 +37,11 @@ class RemoveFromCartAPIView(APIView):
         if cart.exists():
             cart = cart[0]
             if cart.items.filter(product__slug=product.slug).exists():
-                cart_item = CartItem.objects.get(product=product,
-                                                 cart=cart)
-                                                 #customer=user)
+                cart_item = cart.items.get(product__slug=product.slug,
+                                           cart=cart)
                 if cart_item.quantity > 1:
-                    cart_item.quantity -= 1
-                    cart_item.save()
+                    cart_item.quantity = F("quantity") - 1
+                    cart_item.save(update_fields=("quantity",))
                 else:
                     cart.items.remove(cart_item)
                 return Response({"detail": "Product quantity updated"})
