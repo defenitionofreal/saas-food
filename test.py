@@ -24,9 +24,8 @@ import json
 # m = hashlib.md5()
 # m.update(dict_to_bytes)
 
-query1 = ["drinks"]
-query2 = ["drinks", "pizza"]
-if query2 in query1:
-    print("yes")
-else:
-    print("no")
+some = "cola"
+somelist = ["cola"]
+
+if some in somelist:
+    print("ues")

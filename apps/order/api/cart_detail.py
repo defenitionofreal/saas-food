@@ -1,3 +1,5 @@
+import json
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -6,6 +8,7 @@ from apps.order.models import Cart
 from apps.order.serializers import CartSerializer
 
 from django.conf import settings
+from django.db.models import F
 
 
 class CartAPIView(APIView):
@@ -27,32 +30,33 @@ class CartAPIView(APIView):
 
         if user.is_authenticated:
             if settings.CART_SESSION_ID in session:
+
                 session_cart = Cart.objects.filter(
                     institution=institution,
                     session_id=session[settings.CART_SESSION_ID]).first()
+
                 if session_cart:
+
                     cart, cart_created = Cart.objects.get_or_create(
                         institution=institution, customer=user)
 
-                    for item in session_cart.items.all():
-                        item.cart = cart
-                        item.save()
+                    for session_item in session_cart.items.all():
+                        session_item.cart = cart
+                        session_item.save()
 
-                        # TODO: count and add products not correctly. fix it!
-                        product_filter = cart.items.filter(product__slug=item.product.slug)
-                        if product_filter.exists():
-                            for v in product_filter:
-                                v.quantity += 1
-                                v.save()
-                            # item.quantity += 1
-                            # item.save()
+                        cart_item_duplicates = cart.items.filter(product__slug=session_item.product["slug"])
+                        if cart_item_duplicates.exists():
+                            for i in cart_item_duplicates:
+                                i.quantity = F("quantity") + session_item.quantity
+                                i.save(update_fields=("quantity",))
                         else:
-                            cart.items.add(item)
+                            cart.items.add(session_item)
                             cart.save()
 
                     if session_cart.promo_code:
                         cart.promo_code = session_cart.promo_code
                         cart.save()
+
                     session_cart.delete()
                     del session[settings.CART_SESSION_ID]
                     #session.flush()
