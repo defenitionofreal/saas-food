@@ -31,8 +31,16 @@ class Delivery(models.Model):
     # price for a specific delivery type (optional)
     delivery_price = models.DecimalField(max_digits=10,
                                          decimal_places=2,
+                                         default=0,
                                          blank=True,
                                          null=True)
+    # if total bigger than this, delivery is free if delivery_price (optional)
+    free_delivery_amount = models.DecimalField(max_digits=10,
+                                               decimal_places=2,
+                                               default=0,
+                                               blank=True,
+                                               null=True
+                                               )
     # sale for a specific delivery type (optional)
     sale_type = models.CharField(max_length=20,
                                  choices=SaleType.choices,
@@ -41,8 +49,11 @@ class Delivery(models.Model):
     sale_amount = models.IntegerField(blank=True,
                                       null=True)
     # set minimum total cart price to use delivery (optional)
-    cart_total = models.IntegerField(blank=True,
-                                     null=True)
+    min_order_amount = models.IntegerField(blank=True,
+                                           null=True)
+
+    # customer could choose date & time of an order (optional)
+    order_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.institution.domain}: {self.delivery_type}"
