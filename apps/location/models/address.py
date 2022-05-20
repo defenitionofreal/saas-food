@@ -8,6 +8,8 @@ class Address(models.Model):
     building = models.CharField(max_length=255)
     office = models.CharField(max_length=255, blank=True)
     floor = models.CharField(max_length=255, blank=True)
+    # latitude
+    # longitude
 
     def __str__(self):
         return f"{self.city} {self.region} {self.street} {self.street}\

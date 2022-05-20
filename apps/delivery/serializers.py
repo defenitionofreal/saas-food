@@ -8,7 +8,7 @@ class DeliverySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Delivery
-        exclude = ['institution']
+        exclude = ['user']
 
 
 class DeliveryZoneFileSerializer(serializers.ModelSerializer):

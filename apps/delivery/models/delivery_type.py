@@ -51,10 +51,8 @@ class Delivery(models.Model):
     # set minimum total cart price to use delivery (optional)
     min_order_amount = models.IntegerField(blank=True,
                                            null=True)
-
-    # customer could choose date & time of an order (optional)
-    order_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.institution.domain}: {self.delivery_type}"
+        return f"{self.id}: {self.delivery_type}"
 

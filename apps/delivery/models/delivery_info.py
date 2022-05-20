@@ -24,6 +24,8 @@ class DeliveryInfo(models.Model):
                                 on_delete=models.SET_NULL,
                                 blank=True,
                                 null=True)
+    # customer could choose date & time of an order (optional)
+    order_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.id}: {self.type} | {self.phone}"
