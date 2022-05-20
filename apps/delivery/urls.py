@@ -9,7 +9,7 @@ app_name = 'delivery'
 urlpatterns = [
     # organization views
    path('delivery/new/', delivery_create.DeliveryCreateAPIView.as_view()),
-   path('institution/<uuid:pk>/delivery/list/', delivery_list.DeliveryListAPIView.as_view()),
+   path('delivery/list/', delivery_list.DeliveryListAPIView.as_view()),
    path('institution/<uuid:pk>/delivery/detail/<int:delivery_pk>/', delivery_detail.DeliveryDetailAPIView.as_view()),
     # delivery zones file
    path('institution/<uuid:pk>/delivery-zone/file/new/', delivery_zone_file_create.DeliveryZoneFileCreateAPIView.as_view()),

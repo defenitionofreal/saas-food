@@ -30,9 +30,10 @@ class DeliveryCreateAPIView(APIView):
 
             if _check_duplicated_uuid(data, delivery.values_list('institution',
                                                                  flat=True)):
-                if request.data["delivery_type"] in delivery.values_list('delivery_type', flat=True):
+                if request.data["delivery_type"] in delivery.values_list(
+                        'delivery_type', flat=True):
                     return Response(
-                        {"detail": f"institution already has a this delivery type"},
+                        {"detail": f"institution has this delivery type"},
                         status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"detail": "institution is required"},
