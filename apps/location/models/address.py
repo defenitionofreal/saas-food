@@ -15,5 +15,5 @@ class Address(models.Model):
     display_name = models.CharField(max_length=1000, blank=True)
 
     def __str__(self):
-        return f"({self.id})| г. {self.city}, {self.region}, ул. {self.street}\
+        return f"id:{self.id} | г. {self.city}, {self.region}, ул. {self.street}\
                  д. {self.building} кв.{self.office} этаж {self.floor}"

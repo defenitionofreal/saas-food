@@ -19,3 +19,6 @@ class AddressLink(models.Model):
     address = models.ForeignKey("location.Address",
                                 on_delete=models.CASCADE)
     # session_id ?
+
+    def __str__(self):
+        return f"User ID: {self.user.id} | Address: {self.address}"
