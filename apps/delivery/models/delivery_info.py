@@ -26,6 +26,11 @@ class DeliveryInfo(models.Model):
                                 null=True)
     # customer could choose date & time of an order (optional)
     order_date = models.DateTimeField(blank=True, null=True)
+    # same as cart session_id if user is guest
+    session_id = models.CharField(max_length=50,
+                                  blank=True,
+                                  null=True,
+                                  unique=True)
 
     def __str__(self):
         return f"{self.id}: {self.type} | {self.phone}"

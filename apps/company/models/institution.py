@@ -16,7 +16,7 @@ import uuid
 User = get_user_model()
 
 
-class Institution(SeoModel, AddressModel):
+class Institution(SeoModel):
     """
     Institution(company) model
     """

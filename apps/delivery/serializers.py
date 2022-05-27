@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.delivery.models import Delivery, DeliveryZoneFile
+from apps.delivery.models import Delivery, DeliveryZoneFile, DeliveryInfo
 from apps.base.services.delete_file import delete_old_file
 
 
@@ -9,6 +9,14 @@ class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         exclude = ['user']
+
+
+class DeliveryInfoSerializer(serializers.ModelSerializer):
+    """ Delivery info serializer """
+
+    class Meta:
+        model = DeliveryInfo
+        exclude = ['user', 'type']
 
 
 class DeliveryZoneFileSerializer(serializers.ModelSerializer):

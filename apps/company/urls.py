@@ -22,11 +22,13 @@ from .api import (institution_create,
                   banner_detail,
                   min_cart_cost_update_create,
                   min_cart_cost_delete,
-                  dashboard)
+                  dashboard,
+                  geocoding)
 
 app_name = 'company'
 
 urlpatterns = [
+    path('geocoding/', geocoding.GetAddressApiView.as_view()),
     path('dashboard/', dashboard.DashboardView.as_view()),
     # institution
     path('new/', institution_create.InstitutionCreateAPIView.as_view()),
