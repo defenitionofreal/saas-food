@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from apps.location.models import Address
+from apps.location.models import Address, AddressLink
+from apps.company.serializers import BasicInstitutionSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -7,4 +8,14 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = '__all__'
+        fields = ["id", "city", "street", "building"]
+
+
+class AddressLinkSerializer(serializers.ModelSerializer):
+    """ address link serializer """
+    address = AddressSerializer(many=False)
+    institution = BasicInstitutionSerializer(many=False)
+
+    class Meta:
+        model = AddressLink
+        fields = ["id", "institution", "address"]

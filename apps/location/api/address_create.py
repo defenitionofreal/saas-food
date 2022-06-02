@@ -49,8 +49,10 @@ class AddressCreateAPIView(APIView):
                                            address=Address.objects.filter(
                                                id=serializer.data[
                                                    "id"]).first())
-            AddressLink.objects.create(user=user,
-                                       address=Address.objects.filter(
-                                           id=serializer.data["id"]).first())
+            else:
+                AddressLink.objects.create(user=user,
+                                           address=Address.objects.filter(
+                                               id=serializer.data[
+                                                   "id"]).first())
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

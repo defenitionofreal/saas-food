@@ -26,9 +26,7 @@ def _check_duplicated_uuid(request_list, model_field):
     """
     Checking for a value which is already exist in db
     """
-    print("request_list", request_list)
     for i in request_list:
-        print(model_field)
         if uuid.UUID(i) in model_field:
             return True
     return False
