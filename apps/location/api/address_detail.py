@@ -3,25 +3,22 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from apps.location.serializers import AddressSerializer
-from apps.location.models import Address, AddressLink
+from apps.location.serializers import AddressLinkSerializer
+from apps.location.models import AddressLink
 from apps.company.models import Institution
 
 
-class GetAddressAPIView(APIView):
+class AddressDetailAPIView(APIView):
     """ Get affiliate (institution) address """
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-
+    def get(self, request, pk):
         user = self.request.user
-        serializer = AddressSerializer(data=request.data)
-
-        institution = Institution.objects.filter(user=user)
-        address_link = AddressLink.objects.filter(user=user)
-        data = request.data["institution"]
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        institution = Institution.objects.filter(id=pk)
+        if institution.exists():
+            address = AddressLink.objects.filter(user=user,
+                                                 institution=institution[0])
+            serializer = AddressLinkSerializer(address[0], many=False)
+            return Response(serializer.data)
+        return Response({"detail": "institution does not exist"},
+                        status=status.HTTP_400_BAD_REQUEST)

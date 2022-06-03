@@ -8,7 +8,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = ["id", "city", "street", "building"]
+        fields = ["id", "city", "street", "building", "latitude", "longitude"]
 
 
 class AddressLinkSerializer(serializers.ModelSerializer):
