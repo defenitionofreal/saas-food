@@ -12,7 +12,8 @@ from apps.showcase.api import (products_client_list,
                                requisites_client_list,
                                products_client_detail,
                                delivery_client_list,
-                               delivery_client_info)
+                               delivery_client_info,
+                               address_list)
 
 app_name = 'showcase'
 
@@ -43,5 +44,6 @@ urlpatterns = [
     path('order/', include('apps.order.urls', namespace='order')),
     # delivery
     path('delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
-    path('delivery/<int:delivery_type_pk>/info/', delivery_client_info.DeliveryInfoAPIView.as_view())
+    path('delivery/<int:delivery_type_pk>/info/', delivery_client_info.DeliveryInfoAPIView.as_view()),
+    path('address/', address_list.AddressListAPIView.as_view())
 ]
