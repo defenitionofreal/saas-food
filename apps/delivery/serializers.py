@@ -39,16 +39,19 @@ class DeliveryZoneFileSerializer(serializers.ModelSerializer):
 class DeliveryZoneSerializer(serializers.ModelSerializer):
     """ delivery zone serializer """
     institution = BasicInstitutionSerializer(many=False)
+    dz_coordinates = serializers.SlugRelatedField(many=True,
+                                                  read_only=True,
+                                                  slug_field="coordinates")
 
     class Meta:
         model = DeliveryZone
         fields = "__all__"
 
 
-class DeliveryZoneCoordinatesSerializer(serializers.ModelSerializer):
-    """ Delivery zone coordinates nested serializer """
-    zone = DeliveryZoneSerializer(many=False)
-
-    class Meta:
-        model = DeliveryZoneСoordinates
-        fields = "__all__"
+# class DeliveryZoneCoordinatesSerializer(serializers.ModelSerializer):
+#     """ Delivery zone coordinates nested serializer """
+#     zone = DeliveryZoneSerializer(many=False)
+#
+#     class Meta:
+#         model = DeliveryZoneСoordinates
+#         fields = "__all__"
