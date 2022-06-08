@@ -286,6 +286,8 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # SESSIONS
 CART_SESSION_ID = 'cart_id'
+DELIVERY_SESSION_ID = 'delivery_id'
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  #.cache
 # 2 weeks
 SESSION_COOKIE_AGE = 12000 #60 * 60 * 24 * 7 * 2

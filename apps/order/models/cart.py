@@ -18,20 +18,34 @@ class Cart(models.Model):
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
                                     related_name="cart_institution")
-    customer = models.OneToOneField(User, on_delete=models.CASCADE,
+    customer = models.OneToOneField(User,
+                                    on_delete=models.CASCADE,
                                     related_name='cart_customer',
                                     null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    promo_code = models.ForeignKey("order.PromoCode", on_delete=models.SET_NULL,
-                                   related_name="cart_promo_code", null=True,
+    promo_code = models.ForeignKey("order.PromoCode",
+                                   on_delete=models.SET_NULL,
+                                   related_name="cart_promo_code",
+                                   null=True,
                                    blank=True)
-    customer_bonus = models.PositiveIntegerField(blank=True, null=True)
+    customer_bonus = models.PositiveIntegerField(blank=True,
+                                                 null=True)
     # TODO: добавить поле стоимости доставки в корзине
     #delivery_cost = models.
-    min_amount = models.PositiveIntegerField(blank=True, null=True)
-    items = models.ManyToManyField("order.CartItem", related_name="cart_items")
-    session_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
+    delivery = models.ForeignKey("delivery.DeliveryInfo",
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 blank=True,
+                                 related_name="cart_delivery")
+    min_amount = models.PositiveIntegerField(blank=True,
+                                             null=True)
+    items = models.ManyToManyField("order.CartItem",
+                                   related_name="cart_items")
+    session_id = models.CharField(max_length=50,
+                                  blank=True,
+                                  null=True,
+                                  unique=True)
 
     @property
     def get_total_cart(self):

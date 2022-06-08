@@ -19,3 +19,12 @@ class AddressLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = AddressLink
         fields = ["id", "institution", "address"]
+
+
+class AddressLinkCustomerSerializer(serializers.ModelSerializer):
+    """ address link serializer """
+    address = AddressSerializer(many=False)
+
+    class Meta:
+        model = AddressLink
+        fields = ["id", "address"]

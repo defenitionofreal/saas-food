@@ -17,8 +17,13 @@ class AddressLink(models.Model):
                                     blank=True,
                                     null=True)
     address = models.ForeignKey("location.Address",
-                                on_delete=models.CASCADE)
-    # session_id ?
+                                on_delete=models.CASCADE,
+                                related_name="address")
+    # if user is a guest
+    session_id = models.CharField(max_length=50,
+                                  blank=True,
+                                  null=True,
+                                  unique=True)
 
     def __str__(self):
         return f"User ID: {self.user.id} | Address: {self.address}"

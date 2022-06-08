@@ -17,20 +17,18 @@ class DeliveryInfo(models.Model):
     # user could choose a type from given
     type = models.ForeignKey("delivery.Delivery",
                              on_delete=models.CASCADE)
-    # required field
-    phone = PhoneNumberField()
-    # address is only required if delivery type is delivery
-    address = models.ForeignKey("location.Address",
+    # address filled if delivery type is delivery else auto replacement
+    address = models.ForeignKey("location.AddressLink",
                                 on_delete=models.SET_NULL,
                                 blank=True,
                                 null=True)
     # customer could choose date & time of an order (optional)
     order_date = models.DateTimeField(blank=True, null=True)
-    # same as cart session_id if user is guest
+    # if user is guest
     session_id = models.CharField(max_length=50,
                                   blank=True,
                                   null=True,
                                   unique=True)
 
     def __str__(self):
-        return f"{self.id}: {self.type} | {self.phone}"
+        return f"{self.id}: {self.type}"

@@ -6,6 +6,7 @@ from apps.delivery.models import (Delivery,
                                   DeliveryZoneСoordinates)
 from apps.base.services.delete_file import delete_old_file
 from apps.company.serializers import BasicInstitutionSerializer
+from apps.location.serializers import AddressLinkCustomerSerializer
 
 
 class DeliverySerializer(serializers.ModelSerializer):
@@ -21,7 +22,7 @@ class DeliveryInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryInfo
-        exclude = ['user', 'type']
+        exclude = ['user', 'session_id']
 
 
 class DeliveryZoneFileSerializer(serializers.ModelSerializer):
@@ -46,6 +47,24 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryZone
         fields = "__all__"
+
+
+class DeliveryCustomerSerializer(serializers.ModelSerializer):
+    """ Delivery serializer """
+
+    class Meta:
+        model = Delivery
+        exclude = ['user', 'institution', 'is_active']
+
+
+class DeliveryInfoCustomerSerializer(serializers.ModelSerializer):
+    """ Delivery info serializer """
+    address = AddressLinkCustomerSerializer(read_only=True, many=False)
+    type = DeliveryCustomerSerializer(read_only=True, many=False)
+
+    class Meta:
+        model = DeliveryInfo
+        exclude = ['user', 'session_id']
 
 
 # class DeliveryZoneCoordinatesSerializer(serializers.ModelSerializer):
