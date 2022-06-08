@@ -117,7 +117,7 @@ class DeliveryInfoAPIView(APIView):
                                                 "order_date": order_date})
                 # cart check here
                 cart = Cart.objects.filter(institution=institution,
-                                           user=user).first()
+                                           customer=user).first()
                 if cart:
                     cart.delivery = delivery_info
                     cart.save()
