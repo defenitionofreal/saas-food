@@ -17,7 +17,6 @@ class PromoCode(models.Model):
     code = models.CharField(max_length=10)
     sale = models.PositiveIntegerField()
     cart_total = models.PositiveIntegerField(blank=True, null=True)
-    # TODO: поле delivery_free если выбранно, то доставка бесплатная в корзине
     delivery_free = models.BooleanField(default=False, blank=True, null=True)
     products = models.ManyToManyField("product.Product", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)
@@ -37,8 +36,10 @@ class PromoCodeUser(models.Model):
     Model to tie coupon and a user together.
     So we can check how many times coupon have been used by user.
     """
-    code = models.ForeignKey(PromoCode, related_name='users', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    code = models.ForeignKey(PromoCode, related_name='users',
+                             on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True,
+                             on_delete=models.CASCADE)
     num_uses = models.PositiveIntegerField(default=0, editable=False)
 
     def __str__(self):

@@ -193,21 +193,26 @@ class Cart(models.Model):
         if self.delivery is not None:
             delivery_price = self.delivery.type.delivery_price
             free_delivery_amount = self.delivery.type.free_delivery_amount
-            if delivery_price:
-                if free_delivery_amount:
-                    if total > free_delivery_amount:
-                        total = total
+
+            if self.promo_code and self.promo_code.delivery_free is True:
+                total = total
+            else:
+                if delivery_price:
+                    if free_delivery_amount:
+                        if total > free_delivery_amount:
+                            total = total
+                        else:
+                            total += delivery_price
                     else:
                         total += delivery_price
-                else:
-                    total += delivery_price
 
-            delivery_sale = self.delivery.type.sale_amount
-            if delivery_sale:
-                if self.delivery.type.sale_type == "absolute":
-                    total -= delivery_sale
-                if self.delivery.type.sale_type == "percent":
-                    total -= round((delivery_sale / Decimal('100')) * total)
+                delivery_sale = self.delivery.type.sale_amount
+                if delivery_sale:
+                    if self.delivery.type.sale_type == "absolute":
+                        total -= delivery_sale
+                    if self.delivery.type.sale_type == "percent":
+                        total -= round(
+                            (delivery_sale / Decimal('100')) * total)
 
         return total
 
