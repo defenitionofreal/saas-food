@@ -31,8 +31,6 @@ class Cart(models.Model):
                                    blank=True)
     customer_bonus = models.PositiveIntegerField(blank=True,
                                                  null=True)
-    # TODO: добавить поле стоимости доставки в корзине
-    #delivery_cost = models.
     delivery = models.ForeignKey("delivery.DeliveryInfo",
                                  on_delete=models.SET_NULL,
                                  null=True,
@@ -52,84 +50,117 @@ class Cart(models.Model):
         total = 0
         for i in self.items.all():
             total += i.get_total_item_price
-        if self.customer_bonus is not None:
-            bonus = Bonus.objects.get(institution=self.institution)
-            if bonus.is_active and bonus.is_promo_code is False:
-                return total - self.customer_bonus
         return total
 
     @property
+    def get_delivery_price(self):
+        if self.delivery is not None:
+            if self.delivery.type.delivery_price:
+                return self.delivery.type.delivery_price
+
+    @property
+    def get_free_delivery_amount(self):
+        if self.delivery is not None:
+            if self.delivery.type.free_delivery_amount:
+                return self.delivery.type.free_delivery_amount
+
+    @property
+    def get_delivery_sale(self):
+        if self.delivery is not None:
+            delivery_sale = self.delivery.type.sale_amount
+            total = self.get_total_cart
+            with_sale = self.get_total_cart_after_sale
+            if with_sale:
+                total = with_sale
+            if delivery_sale:
+                if self.delivery.type.sale_type == "absolute":
+                    return delivery_sale
+                if self.delivery.type.sale_type == "percent":
+                    return round((delivery_sale / Decimal('100')) * total)
+        return None
+
+    @property
+    def get_min_delivery_order_amount(self):
+        if self.delivery is not None:
+            return self.delivery.type.min_order_amount
+
+    @property
     def get_sale(self):
-        sale = self.promo_code.sale
-        # if absolute sale type
-        if self.promo_code.code_type == 'absolute':
-            # categories participate coupon
-            if self.promo_code.categories.all():
-                items_cat = self.items.values("product__category",
-                                              "product__slug",
+        if self.promo_code:
+            sale = self.promo_code.sale
+            # if absolute sale type
+            if self.promo_code.code_type == 'absolute':
+                # categories participate coupon
+                if self.promo_code.categories.all():
+                    items_cat = self.items.values("product__category",
+                                                  "product__slug",
+                                                  "product__price",
+                                                  "quantity")
+                    code_cat = self.promo_code.categories.values_list("slug",
+                                                                      flat=True)
+                    for i in items_cat:
+                        if i["product__category"] in code_cat:
+                            sale = sale
+                    sale = sale if sale >= 0.0 else 0.0
+                    return sale
+                # products participate coupon
+                if self.promo_code.products.all():
+                    items = self.items.values("product__slug",
                                               "product__price",
                                               "quantity")
-                code_cat = self.promo_code.categories.values_list("slug",
-                                                                  flat=True)
-                for i in items_cat:
-                    if i["product__category"] in code_cat:
-                        sale = sale
-                sale = sale if sale >= 0.0 else 0.0
-                return sale
-            # products participate coupon
-            if self.promo_code.products.all():
-                items = self.items.values("product__slug",
-                                          "product__price",
-                                          "quantity")
-                code_product = self.promo_code.products.values_list("slug",
-                                                                    flat=True)
-                for i in items:
-                    if i["product__slug"] in code_product:
-                        sale = sale
+                    code_product = self.promo_code.products.values_list("slug",
+                                                                        flat=True)
+                    for i in items:
+                        if i["product__slug"] in code_product:
+                            sale = sale
+                    sale = sale if sale >= 0.0 else 0.0
+                    return sale
+
                 sale = sale if sale >= 0.0 else 0.0
                 return sale
 
-            sale = sale if sale >= 0.0 else 0.0
-            return sale
+            # if percent sale type
+            if self.promo_code.code_type == 'percent':
 
-        # if percent sale type
-        if self.promo_code.code_type == 'percent':
+                # categories participate coupon
+                if self.promo_code.categories.all():
+                    cat_total = 0
+                    items_cat = self.items.values("product__category",
+                                                  "product__slug",
+                                                  "product__price",
+                                                  "quantity")
+                    code_cat = self.promo_code.categories.values_list("slug",
+                                                                      flat=True)
+                    for i in items_cat:
+                        if i["product__category"] in code_cat:
+                            cat_total += i["product__price"] * i["quantity"]
+                    cat_total = cat_total if cat_total >= 0.0 else 0.0
+                    return round((sale / Decimal('100')) * cat_total)
 
-            # categories participate coupon
-            if self.promo_code.categories.all():
-                cat_total = 0
-                items_cat = self.items.values("product__category",
-                                              "product__slug",
+                # products participate coupon
+                if self.promo_code.products.all():
+                    products_total = 0
+                    items = self.items.values("product__slug",
                                               "product__price",
                                               "quantity")
-                code_cat = self.promo_code.categories.values_list("slug",
-                                                                  flat=True)
-                for i in items_cat:
-                    if i["product__category"] in code_cat:
-                        cat_total += i["product__price"] * i["quantity"]
-                cat_total = cat_total if cat_total >= 0.0 else 0.0
-                return round((sale / Decimal('100')) * cat_total)
+                    code_product = self.promo_code.products.values_list("slug",
+                                                                        flat=True)
+                    for i in items:
+                        if i["product__slug"] in code_product:
+                            products_total += i["product__price"] * i[
+                                "quantity"]
+                    products_total = products_total if products_total >= 0.0 else 0.0
+                    return round((sale / Decimal('100')) * products_total)
 
-            # products participate coupon
-            if self.promo_code.products.all():
-                products_total = 0
-                items = self.items.values("product__slug",
-                                          "product__price",
-                                          "quantity")
-                code_product = self.promo_code.products.values_list("slug",
-                                                                    flat=True)
-                for i in items:
-                    if i["product__slug"] in code_product:
-                        products_total += i["product__price"] * i["quantity"]
-                products_total = products_total if products_total >= 0.0 else 0.0
-                return round((sale / Decimal('100')) * products_total)
-
-            return round((sale / Decimal('100')) * self.get_total_cart)
+                return round((sale / Decimal('100')) * self.get_total_cart)
+        return None
 
     @property
     def get_total_cart_after_sale(self):
         total = self.get_total_cart
-        sale = self.get_sale
+        sale = 0
+        if self.get_sale is not None:
+            sale = self.get_sale
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is True:
@@ -145,6 +176,40 @@ class Cart(models.Model):
             else:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
             return total_accrual
+
+    @property
+    def final_price(self):
+        total = self.get_total_cart
+        with_sale = self.get_total_cart_after_sale
+        if with_sale:
+            total = with_sale
+
+        # TODO: подумать куда лучше (здесь или в get_total_cart)
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.get(institution=self.institution)
+            if bonus.is_active and bonus.is_promo_code is False:
+                return total - self.customer_bonus
+
+        if self.delivery is not None:
+            delivery_price = self.delivery.type.delivery_price
+            free_delivery_amount = self.delivery.type.free_delivery_amount
+            if delivery_price:
+                if free_delivery_amount:
+                    if total > free_delivery_amount:
+                        total = total
+                    else:
+                        total += delivery_price
+                else:
+                    total += delivery_price
+
+            delivery_sale = self.delivery.type.sale_amount
+            if delivery_sale:
+                if self.delivery.type.sale_type == "absolute":
+                    total -= delivery_sale
+                if self.delivery.type.sale_type == "percent":
+                    total -= round((delivery_sale / Decimal('100')) * total)
+
+        return total
 
     def __str__(self):
         return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'

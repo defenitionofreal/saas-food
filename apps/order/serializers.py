@@ -23,7 +23,9 @@ class CartSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'customer', 'created_at', 'delivery', 'updated_at', 'items',
             'promo_code', 'customer_bonus', 'min_amount', 'get_total_cart',
-            'get_total_cart_after_sale', 'get_sale', 'get_bonus_accrual'
+            'get_total_cart_after_sale', 'get_sale', 'get_bonus_accrual',
+            'get_delivery_price', 'get_free_delivery_amount',
+            'get_delivery_sale', 'get_min_delivery_order_amount', 'final_price'
         )
 
 
