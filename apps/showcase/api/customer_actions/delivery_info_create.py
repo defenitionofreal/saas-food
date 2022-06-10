@@ -12,7 +12,7 @@ from apps.order.services.generate_cart_key import _generate_cart_key
 from django.conf import settings
 
 from turfpy.measurement import boolean_point_in_polygon
-from geojson import Point, Polygon, Feature
+from geojson import Point, Polygon
 
 import json
 
