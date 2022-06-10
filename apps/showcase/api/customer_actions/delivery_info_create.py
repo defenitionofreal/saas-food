@@ -16,65 +16,10 @@ from geojson import Point, Polygon, Feature
 
 import json
 
-#
-# class DeliveryInfoAPIView(APIView):
-#     """
-#     Delivery info create by customer
-#     """
-#
-#     def post(self, request, domain):
-#         institution = Institution.objects.get(domain=domain)
-#         address = request.data['address']
-#         order_date = request.data['order_date']
-#         delivery_type = request.data['delivery_type']
-#
-#         if delivery_type in institution.delivery.values_list("delivery_type",
-#                                                              flat=True):
-#             delivery_type = institution.delivery.get(
-#                 delivery_type=request.data['delivery_type'])
-#         else:
-#             return Response({"detail": "Wrong delivery type"},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         session = self.request.session
-#         if not settings.DELIVERY_SESSION_ID in session:
-#             session[settings.DELIVERY_SESSION_ID] = _generate_cart_key()
-#         else:
-#             session[settings.DELIVERY_SESSION_ID]
-#         session.modified = True
-#         delivery_session = session[settings.DELIVERY_SESSION_ID]
-#
-#         if delivery_session:
-#             address_arr = {"city": address["city"],
-#                            "region": address["region"],
-#                            "street": address["street"],
-#                            "building": address["building"],
-#                            "office": address["office"],
-#                            "floor": address["floor"],
-#                            "latitude": address["latitude"],
-#                            "longitude": address["longitude"]}
-#             delivery_session = {"delivery_type": delivery_type.delivery_type,
-#                                 "order_date": order_date,
-#                                 "address": address_arr}
-#
-#             # cart check
-#             if settings.CART_SESSION_ID in session:
-#                 session_cart = Cart.objects.filter(
-#                     institution=institution,
-#                     session_id=session[settings.CART_SESSION_ID]).first()
-#                 if session_cart:
-#                     session_cart.delivery = delivery_session
-#                     session_cart.save()
-#
-#             return Response(
-#                 {"detail": delivery_session},
-#                 status=status.HTTP_201_CREATED
-#             )
-
 
 class DeliveryInfoAPIView(APIView):
     """
-    Delivery info create by customer
+    Delivery info create/update by customer
     """
 
     def post(self, request, domain):
