@@ -2,7 +2,8 @@ from django.contrib import admin
 from apps.delivery.models import (DeliveryZoneFile,
                                   DeliveryZone,
                                   DeliveryZoneСoordinates,
-                                  Delivery)
+                                  Delivery,
+                                  DeliveryInfo)
 
 
 @admin.register(DeliveryZoneFile)
@@ -27,3 +28,9 @@ class DeliveryZoneСoordinatesAdmin(admin.ModelAdmin):
 class DeliveryAdmin(admin.ModelAdmin):
     search_fields = ("delivery_type",)
     autocomplete_fields = ("institution",)
+
+
+@admin.register(DeliveryInfo)
+class DeliveryInfoAdmin(admin.ModelAdmin):
+    search_fields = ("type",)
+    autocomplete_fields = ("type",)

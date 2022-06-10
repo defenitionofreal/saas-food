@@ -51,8 +51,6 @@ class AddPromoCodeAPIView(APIView):
                             return Response({"detail": f"Total cart price have to be more {coupon.cart_total}"},
                                             status=status.HTTP_400_BAD_REQUEST)
 
-                    # if delivery_free
-
                     if coupon.date_start is not None:
                         if today < coupon.date_start:
                             return Response({"detail": f"Code period not started yet"},

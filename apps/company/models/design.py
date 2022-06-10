@@ -3,8 +3,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# TODO: foreignKey ?
-# Нужно ли привязать все к юзеру дополнительно так как это аггрегатор??!
+
 class Design(models.Model):
     """
     Color of buttons and elements

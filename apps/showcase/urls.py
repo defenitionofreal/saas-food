@@ -11,8 +11,11 @@ from apps.showcase.api import (products_client_list,
                                working_hours_client_list,
                                requisites_client_list,
                                products_client_detail,
-                               create_or_delete_additives_product,
-                               create_or_delete_modifiers_product)
+                               delivery_client_list,
+                               address_list,
+                               delivery_zone_list)
+
+from apps.showcase.api.customer_actions import (delivery_info_create)
 
 app_name = 'showcase'
 
@@ -41,8 +44,9 @@ urlpatterns = [
 
     # order (cart) detail/add/delete
     path('order/', include('apps.order.urls', namespace='order')),
-
-    # add or rm modifiers/additives to/from a product
-    path('menu/<str:product_slug>/additive/<int:additive_pk>/', create_or_delete_additives_product.CreateOrDeleteAdditivesClientAPIView.as_view()),
-    path('menu/<str:product_slug>/modifier/<int:modifier_pk>/', create_or_delete_modifiers_product.CreateOrDeleteModifiersClientAPIView.as_view()),
+    # delivery
+    path('delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
+    path('delivery-info/add/', delivery_info_create.DeliveryInfoAPIView.as_view()),
+    path('address/', address_list.AddressListAPIView.as_view()),
+    path('delivery-zone/', delivery_zone_list.DeliveryZoneListAPIView.as_view())
 ]

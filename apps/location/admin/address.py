@@ -1,9 +1,13 @@
 from django.contrib import admin
 
-from apps.location.models import Address
+from apps.location.models import Address, AddressLink
 
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    search_fields = ("city__title", "region__title", "street__title")
-    autocomplete_fields = ("city", "region", "street")
+    pass
+
+@admin.register(AddressLink)
+class AddressLinkAdmin(admin.ModelAdmin):
+    pass
+

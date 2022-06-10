@@ -17,6 +17,7 @@ class Bonus(models.Model):
     accrual = models.PositiveIntegerField()  # %
     is_promo_code = models.BooleanField(default=False)
     is_registration_bonus = models.BooleanField(default=False)
+    # TODO: добавить функций для бонуса при регистрации
     registration_bonus = models.PositiveIntegerField(blank=True, null=True)  # $
 
     def __str__(self):

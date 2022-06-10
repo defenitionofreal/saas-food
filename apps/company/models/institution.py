@@ -3,7 +3,6 @@ from django.core.validators import FileExtensionValidator
 from django.contrib.auth import get_user_model
 
 from apps.base.models.seo import SeoModel
-from apps.base.models.address import AddressModel
 
 from apps.company.models.enums.timezone_ru import RussianTimezone
 from apps.company.services.path_qr_code import get_path_qr_code
@@ -16,7 +15,7 @@ import uuid
 User = get_user_model()
 
 
-class Institution(SeoModel, AddressModel):
+class Institution(SeoModel):
     """
     Institution(company) model
     """

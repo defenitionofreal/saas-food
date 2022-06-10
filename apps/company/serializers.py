@@ -96,3 +96,11 @@ class InstitutionSerializer(serializers.ModelSerializer):
     #     instance.other_phone = validated_data.get('other_phone',
     #                                               instance.other_phone)
     #     return instance
+
+
+class BasicInstitutionSerializer(serializers.ModelSerializer):
+    """ basic affiliate serializer for nested serializers"""
+
+    class Meta:
+        model = Institution
+        fields = ["id", "title", "domain"]

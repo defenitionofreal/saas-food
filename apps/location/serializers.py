@@ -1,34 +1,30 @@
 from rest_framework import serializers
-from apps.location.models import address, city, region, street
+from apps.location.models import Address, AddressLink
+from apps.company.serializers import BasicInstitutionSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
     """ address serializer """
 
     class Meta:
-        model = address
-        fields = '__all__'
+        model = Address
+        fields = ["id", "city", "street", "building", "latitude", "longitude"]
 
 
-class CitySerializer(serializers.ModelSerializer):
-    """ city serializer """
-
-    class Meta:
-        model = city
-        fields = '__all__'
-
-
-class RegionSerializer(serializers.ModelSerializer):
-    """ region serializer """
+class AddressLinkSerializer(serializers.ModelSerializer):
+    """ address link serializer """
+    address = AddressSerializer(many=False)
+    institution = BasicInstitutionSerializer(many=False)
 
     class Meta:
-        model = region
-        fields = '__all__'
+        model = AddressLink
+        fields = ["id", "institution", "address"]
 
 
-class StreetSerializer(serializers.ModelSerializer):
-    """ street serializer """
+class AddressLinkCustomerSerializer(serializers.ModelSerializer):
+    """ address link serializer """
+    address = AddressSerializer(many=False)
 
     class Meta:
-        model = street
-        fields = '__all__'
+        model = AddressLink
+        fields = ["id", "address"]
