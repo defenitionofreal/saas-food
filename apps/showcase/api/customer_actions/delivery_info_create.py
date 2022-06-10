@@ -5,10 +5,16 @@ from rest_framework import status
 from apps.company.models import Institution
 from apps.order.models import Cart
 from apps.delivery.models import DeliveryInfo
+from apps.delivery.models.enums import DeliveryType
 from apps.location.models import Address, AddressLink
 from apps.order.services.generate_cart_key import _generate_cart_key
 
 from django.conf import settings
+
+from turfpy.measurement import boolean_point_in_polygon
+from geojson import Point, Polygon, Feature
+
+import json
 
 #
 # class DeliveryInfoAPIView(APIView):
@@ -81,13 +87,24 @@ class DeliveryInfoAPIView(APIView):
         if delivery_type in institution.delivery.values_list("delivery_type",
                                                              flat=True):
             delivery_type = institution.delivery.get(
-                delivery_type=request.data['delivery_type'])
+                delivery_type=delivery_type)
+
+            # check if customers point in delivery area
+            if delivery_type.delivery_type == DeliveryType.COURIER:
+                zones = institution.dz.filter(is_active=True)
+                if zones.exists() and not any(boolean_point_in_polygon(
+                            Point([json.loads(address["latitude"]),
+                                   json.loads(address["longitude"])]),
+                            Polygon(json.loads(zone.dz_coordinates.values_list(
+                                "coordinates", flat=True)[0])))
+                               for zone in zones):
+                    return Response({"detail": "Point not in delivery zone"})
         else:
             return Response({"detail": "Wrong delivery type"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         session = self.request.session
-        if not settings.DELIVERY_SESSION_ID in session:
+        if settings.DELIVERY_SESSION_ID not in session:
             session[settings.DELIVERY_SESSION_ID] = _generate_cart_key()
         else:
             session[settings.DELIVERY_SESSION_ID]
@@ -123,14 +140,16 @@ class DeliveryInfoAPIView(APIView):
                     cart.save()
             else:
                 address_link, address_link_created = AddressLink.objects \
-                    .update_or_create(session_id=session[settings.DELIVERY_SESSION_ID],
-                                      defaults={"address": address_obj})
+                    .update_or_create(
+                        session_id=session[settings.DELIVERY_SESSION_ID],
+                        defaults={"address": address_obj})
 
                 delivery_info, delivery_info_created = DeliveryInfo.objects \
-                    .update_or_create(session_id=session[settings.DELIVERY_SESSION_ID],
-                                      defaults={"type": delivery_type,
-                                                "address": address_link,
-                                                "order_date": order_date})
+                    .update_or_create(
+                        session_id=session[settings.DELIVERY_SESSION_ID],
+                        defaults={"type": delivery_type,
+                                  "address": address_link,
+                                  "order_date": order_date})
                 # cart check
                 if settings.CART_SESSION_ID in session:
                     session_cart = Cart.objects.filter(
