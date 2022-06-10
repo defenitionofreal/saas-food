@@ -2,7 +2,11 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from apps.order.models import Bonus
-from apps.company.models import MinCartCost
+from apps.delivery.models.enums import DeliveryType
+
+from turfpy.measurement import boolean_point_in_polygon
+from geojson import Point, Polygon
+import json
 
 User = get_user_model()
 
@@ -83,6 +87,26 @@ class Cart(models.Model):
     def get_min_delivery_order_amount(self):
         if self.delivery is not None:
             return self.delivery.type.min_order_amount
+
+    @property
+    def get_delivery_zone(self):
+        zones = self.institution.dz.filter(is_active=True)
+        if zones.exists():
+            for zone in zones:
+                address = self.delivery.address.address
+                point = Point([json.loads(address.latitude),
+                               json.loads(address.longitude)])
+                polygon = Polygon(json.loads(
+                    zone.dz_coordinates.values_list("coordinates",
+                                                    flat=True)[0]))
+                if boolean_point_in_polygon(point,
+                                            polygon) and zone.price:
+                    return {"title": zone.title,
+                            "price": zone.price,
+                            "free_delivery_amount": zone.free_delivery_amount,
+                            "min_order_amount": zone.min_order_amount,
+                            "delivery_time": zone.delivery_time}
+        return None
 
     @property
     def get_sale(self):
@@ -197,14 +221,43 @@ class Cart(models.Model):
             if self.promo_code and self.promo_code.delivery_free is True:
                 total = total
             else:
-                if delivery_price:
-                    if free_delivery_amount:
-                        if total > free_delivery_amount:
-                            total = total
+                zones = self.institution.dz.filter(is_active=True)
+                if zones.exists():
+                    for zone in zones:
+                        address = self.delivery.address.address
+                        point = Point([json.loads(address.latitude),
+                                       json.loads(address.longitude)])
+                        polygon = Polygon(json.loads(
+                            zone.dz_coordinates.values_list("coordinates",
+                                                            flat=True)[0]))
+                        if boolean_point_in_polygon(point,
+                                                    polygon) and zone.price:
+                            if self.delivery.type.delivery_type == DeliveryType.COURIER:
+                                if zone.free_delivery_amount:
+                                    if total > zone.free_delivery_amount:
+                                        total = total
+                                    else:
+                                        total += zone.price
+                                else:
+                                    total += zone.price
+                        else:
+                            if delivery_price:
+                                if free_delivery_amount:
+                                    if total > free_delivery_amount:
+                                        total = total
+                                    else:
+                                        total += delivery_price
+                                else:
+                                    total += delivery_price
+                else:
+                    if delivery_price:
+                        if free_delivery_amount:
+                            if total > free_delivery_amount:
+                                total = total
+                            else:
+                                total += delivery_price
                         else:
                             total += delivery_price
-                    else:
-                        total += delivery_price
 
                 delivery_sale = self.delivery.type.sale_amount
                 if delivery_sale:
