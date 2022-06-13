@@ -20,7 +20,6 @@ class CartAPIView(APIView):
     - if not auth
      - check for session cart but if no cart than raise it
     """
-    # TODO: ?? если авторизованный и нет, то какой permission_class ??
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
@@ -31,39 +30,43 @@ class CartAPIView(APIView):
         if user.is_authenticated:
             if settings.CART_SESSION_ID in session:
 
-                session_cart = Cart.objects.filter(
+                cart = Cart.objects.filter(
                     institution=institution,
                     session_id=session[settings.CART_SESSION_ID]).first()
 
-                if session_cart:
-
-                    cart, cart_created = Cart.objects.get_or_create(
-                        institution=institution, customer=user)
-
-                    for session_item in session_cart.items.all():
-                        session_item.cart = cart
-                        session_item.save()
-
-                        cart_item_duplicates = cart.items.filter(product__slug=session_item.product["slug"])
-                        if cart_item_duplicates.exists():
-                            for i in cart_item_duplicates:
-                                i.quantity = F("quantity") + session_item.quantity
-                                i.save(update_fields=("quantity",))
-                        else:
-                            cart.items.add(session_item)
-                            cart.save()
-
-                    if session_cart.promo_code:
-                        cart.promo_code = session_cart.promo_code
-                        cart.save()
-
-                    session_cart.delete()
-                    del session[settings.CART_SESSION_ID]
-                    #session.flush()
+                if cart:
+                    cart.customer = user
+                    cart.save()
+                    # cart, cart_created = Cart.objects.get_or_create(
+                    #     institution=institution, customer=user)
+                    #
+                    # for session_item in session_cart.items.all():
+                    #     session_item.cart = cart
+                    #     session_item.save()
+                    #
+                    #     cart_item_duplicates = cart.items.filter(product__slug=session_item.product["slug"])
+                    #     if cart_item_duplicates.exists():
+                    #         for i in cart_item_duplicates:
+                    #             i.quantity = F("quantity") + session_item.quantity
+                    #             i.save(update_fields=("quantity",))
+                    #     else:
+                    #         cart.items.add(session_item)
+                    #         cart.save()
+                    #
+                    # if session_cart.promo_code:
+                    #     cart.promo_code = session_cart.promo_code
+                    #     cart.save()
+                    #
+                    # session_cart.delete()
+                    # del session[settings.CART_SESSION_ID]
+                    # #session.flush()
                 else:
                     # if no session cart
                     cart, cart_created = Cart.objects.get_or_create(
-                        institution=institution, customer=user)
+                        institution=institution,
+                        customer=user,
+                        session_id=session[settings.CART_SESSION_ID]
+                    )
             else:
                 cart = Cart.objects.filter(institution=institution,
                                            customer=user).first()
