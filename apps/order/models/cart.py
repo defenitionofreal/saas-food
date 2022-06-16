@@ -259,13 +259,16 @@ class Cart(models.Model):
                         else:
                             total += delivery_price
 
-                delivery_sale = self.delivery.type.sale_amount
+                # delivery_sale = self.delivery.type.sale_amount
+                # if delivery_sale:
+                #     if self.delivery.type.sale_type == "absolute":
+                #         total -= delivery_sale
+                #     if self.delivery.type.sale_type == "percent":
+                #         total -= round(
+                #             (delivery_sale / Decimal('100')) * total)
+                delivery_sale = self.get_delivery_sale
                 if delivery_sale:
-                    if self.delivery.type.sale_type == "absolute":
-                        total -= delivery_sale
-                    if self.delivery.type.sale_type == "percent":
-                        total -= round(
-                            (delivery_sale / Decimal('100')) * total)
+                    total -= delivery_sale
 
         return total
 

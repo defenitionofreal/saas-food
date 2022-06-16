@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.product.serializers import ProductSerializer
-from apps.order.models import Cart, CartItem, PromoCode, Bonus
+from apps.order.models import Cart, CartItem, PromoCode, Bonus, Order
 from apps.delivery.serializers import DeliveryInfoCustomerSerializer
 
 
@@ -42,6 +42,17 @@ class CartItemSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'cart', 'product', 'quantity'
         )
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """Serializer for an Order model."""
+
+    class Meta:
+        model = Order
+        fields = ["id", "payment_type", "name", "phone", "comment",
+                  "delivery", "items", "delivery_cost", "delivery_sale",
+                  "total", "coupon_sale", "total_after_sale",
+                  "final_price", "paid"]
 
 
 # ======== for organizations only ===========

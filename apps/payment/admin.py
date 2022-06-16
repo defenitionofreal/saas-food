@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.payment.models import (PaymentTypeInstitution)
+
+
+@admin.register(PaymentTypeInstitution)
+class PaymentTypeInstitutionAdmin(admin.ModelAdmin):
+    search_fields = ("id",)
+

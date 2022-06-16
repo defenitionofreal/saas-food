@@ -43,3 +43,58 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
+
+    @property
+    def delivery_type(self):
+        return self.cart.delivery.type.delivery_type
+
+    @property
+    def delivery_address(self):
+        address = {"city": self.cart.delivery.address.address.city,
+                   "street": self.cart.delivery.address.address.street,
+                   "building": self.cart.delivery.address.address.building,
+                   "office": self.cart.delivery.address.address.office,
+                   "floor": self.cart.delivery.address.address.floor}
+        return address
+
+    @property
+    def delivery_date(self):
+        return self.cart.delivery.order_date
+
+    @property
+    def delivery(self):
+        delivery = {"type": self.delivery_type,
+                    "address": self.delivery_address,
+                    "order_date": self.delivery_date}
+        return delivery
+
+    @property
+    def items(self):
+        return self.cart.items.values("product", "quantity")
+
+    @property
+    def delivery_cost(self):
+        cost = self.cart.get_delivery_price
+        if self.cart.get_delivery_zone:
+            cost = self.cart.get_delivery_zone["price"]
+        return cost
+
+    @property
+    def delivery_sale(self):
+        return self.cart.get_delivery_sale
+
+    @property
+    def coupon_sale(self):
+        return self.cart.get_sale
+
+    @property
+    def total(self):
+        return self.cart.get_total_cart
+
+    @property
+    def total_after_sale(self):
+        return self.cart.get_total_cart_after_sale
+
+    @property
+    def final_price(self):
+        return self.cart.final_price

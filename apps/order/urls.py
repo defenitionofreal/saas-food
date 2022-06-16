@@ -3,7 +3,8 @@ from apps.order.api import (cart_detail,
                             add_to_cart,
                             remove_from_cart,
                             add_promocode_to_cart,
-                            add_customer_bonus_to_cart)
+                            add_customer_bonus_to_cart,
+                            checkout)
 
 app_name = 'order'
 
@@ -16,4 +17,6 @@ urlpatterns = [
     path('customer/cart/code/<str:coupon>/', add_promocode_to_cart.AddPromoCodeAPIView.as_view()),
     # write off bonuses
     path('customer/cart/bonus/', add_customer_bonus_to_cart.AddBonusAPIView.as_view()),
+    # checkout
+    path('customer/checkout/', checkout.CheckoutAPIView.as_view())
 ]
