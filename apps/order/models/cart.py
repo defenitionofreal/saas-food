@@ -91,7 +91,7 @@ class Cart(models.Model):
     @property
     def get_delivery_zone(self):
         zones = self.institution.dz.filter(is_active=True)
-        if zones.exists():
+        if zones.exists() and self.delivery.type.delivery_type == DeliveryType.COURIER:
             for zone in zones:
                 address = self.delivery.address.address
                 point = Point([json.loads(address.latitude),
@@ -99,8 +99,7 @@ class Cart(models.Model):
                 polygon = Polygon(json.loads(
                     zone.dz_coordinates.values_list("coordinates",
                                                     flat=True)[0]))
-                if boolean_point_in_polygon(point,
-                                            polygon) and zone.price:
+                if boolean_point_in_polygon(point, polygon):
                     return {"title": zone.title,
                             "price": zone.price,
                             "free_delivery_amount": zone.free_delivery_amount,
@@ -208,7 +207,7 @@ class Cart(models.Model):
         if with_sale:
             total = with_sale
 
-        # TODO: подумать куда лучше (здесь или в get_total_cart)
+        # minus bonus points from total
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is False:
@@ -221,51 +220,21 @@ class Cart(models.Model):
             if self.promo_code and self.promo_code.delivery_free is True:
                 total = total
             else:
-                zones = self.institution.dz.filter(is_active=True)
-                if zones.exists():
-                    for zone in zones:
-                        address = self.delivery.address.address
-                        point = Point([json.loads(address.latitude),
-                                       json.loads(address.longitude)])
-                        polygon = Polygon(json.loads(
-                            zone.dz_coordinates.values_list("coordinates",
-                                                            flat=True)[0]))
-                        if boolean_point_in_polygon(point,
-                                                    polygon) and zone.price:
-                            if self.delivery.type.delivery_type == DeliveryType.COURIER:
-                                if zone.free_delivery_amount:
-                                    if total > zone.free_delivery_amount:
-                                        total = total
-                                    else:
-                                        total += zone.price
-                                else:
-                                    total += zone.price
-                        else:
-                            if delivery_price:
-                                if free_delivery_amount:
-                                    if total > free_delivery_amount:
-                                        total = total
-                                    else:
-                                        total += delivery_price
-                                else:
-                                    total += delivery_price
+                # check for courier type and delivery zone
+                if self.get_delivery_zone:
+                    if self.get_delivery_zone["free_delivery_amount"]:
+                        if total < self.get_delivery_zone["free_delivery_amount"]:
+                            total += self.get_delivery_zone["price"]
+                    else:
+                        total += self.get_delivery_zone["price"]
                 else:
-                    if delivery_price:
-                        if free_delivery_amount:
-                            if total > free_delivery_amount:
-                                total = total
-                            else:
-                                total += delivery_price
-                        else:
-                            total += delivery_price
+                    if free_delivery_amount:
+                        if total < free_delivery_amount:
+                            total += total
+                    else:
+                        total += delivery_price
 
-                # delivery_sale = self.delivery.type.sale_amount
-                # if delivery_sale:
-                #     if self.delivery.type.sale_type == "absolute":
-                #         total -= delivery_sale
-                #     if self.delivery.type.sale_type == "percent":
-                #         total -= round(
-                #             (delivery_sale / Decimal('100')) * total)
+                # if delivery type has a sale
                 delivery_sale = self.get_delivery_sale
                 if delivery_sale:
                     total -= delivery_sale

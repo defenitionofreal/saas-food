@@ -75,8 +75,19 @@ class Order(models.Model):
     @property
     def delivery_cost(self):
         cost = self.cart.get_delivery_price
+        if self.cart.delivery.type.free_delivery_amount:
+            if self.total_after_sale > self.cart.delivery.type.free_delivery_amount:
+                cost = 0
+
         if self.cart.get_delivery_zone:
             cost = self.cart.get_delivery_zone["price"]
+            if self.cart.get_delivery_zone["free_delivery_amount"]:
+                if self.total_after_sale > self.cart.get_delivery_zone["free_delivery_amount"]:
+                    cost = 0
+
+        if self.cart.promo_code and self.cart.promo_code.delivery_free is True:
+            cost = 0
+
         return cost
 
     @property
@@ -86,6 +97,14 @@ class Order(models.Model):
     @property
     def coupon_sale(self):
         return self.cart.get_sale
+
+    @property
+    def bonus_write_off(self):
+        return self.cart.customer_bonus
+
+    @property
+    def bonus_accrual(self):
+        return self.cart.get_bonus_accrual
 
     @property
     def total(self):

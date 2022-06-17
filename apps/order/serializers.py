@@ -50,9 +50,9 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["id", "payment_type", "name", "phone", "comment",
-                  "delivery", "items", "delivery_cost", "delivery_sale",
-                  "total", "coupon_sale", "total_after_sale",
-                  "final_price", "paid"]
+                  "delivery", "items", "total", "coupon_sale",
+                  "bonus_write_off", "total_after_sale", "delivery_cost",
+                  "delivery_sale", "bonus_accrual", "final_price", "paid"]
 
 
 # ======== for organizations only ===========
