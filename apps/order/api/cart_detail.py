@@ -29,14 +29,14 @@ class CartAPIView(APIView):
 
         if user.is_authenticated:
             if settings.CART_SESSION_ID in session:
-
                 cart = Cart.objects.filter(
                     institution=institution,
                     session_id=session[settings.CART_SESSION_ID]).first()
 
                 if cart:
-                    cart.customer = user
-                    cart.save()
+                    if not cart.customer:
+                        cart.customer = user
+                        cart.save()
                     # cart, cart_created = Cart.objects.get_or_create(
                     #     institution=institution, customer=user)
                     #
@@ -64,9 +64,7 @@ class CartAPIView(APIView):
                     # if no session cart
                     cart, cart_created = Cart.objects.get_or_create(
                         institution=institution,
-                        customer=user,
-                        session_id=session[settings.CART_SESSION_ID]
-                    )
+                        customer=user)
             else:
                 cart = Cart.objects.filter(institution=institution,
                                            customer=user).first()
