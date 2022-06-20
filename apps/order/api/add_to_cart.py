@@ -30,12 +30,40 @@ class AddToCartAPIView(APIView):
         institution = Institution.objects.get(domain=domain)
         product = get_object_or_404(Product, slug=product_slug)
         user = self.request.user
-        # данные запроса в переменные
-        title = request.data['title']
-        slug = request.data['slug']
-        modifiers = request.data['modifiers']
-        additives = request.data['additives']
-        price = request.data['price']
+
+        # check if request data exists
+        if "title" not in request.data:
+            title = product.title
+        else:
+            title = request.data['title']
+
+        if "slug" not in request.data:
+            slug = product.slug
+        else:
+            slug = request.data['slug']
+
+        if "price" not in request.data:
+            price = int(product.price)
+        else:
+            price = request.data['price']
+
+        if "modifiers" not in request.data:
+            modifiers = {}
+        else:
+            modifiers = request.data['modifiers']
+
+        if "additives" not in request.data:
+            additives = []
+        else:
+            additives = request.data['additives']
+
+        # check if request data is relevant
+        if title != product.title:
+            title = product.title
+        if slug != product.slug:
+            slug = product.slug
+        if price != int(product.price):
+            price = int(product.price)
 
         # здесь я беру cart_id или создаю cart_id в сессии
         session = self.request.session
@@ -45,14 +73,6 @@ class AddToCartAPIView(APIView):
             session[settings.CART_SESSION_ID]
         session.modified = True
         cart_session = session
-
-        # перепроверить подлинность данных с фронта
-        if title != product.title:
-            title = product.title
-        if slug != product.slug:
-            slug = product.slug
-        if price != int(product.price):
-            price = int(product.price)
 
         # ==== check for additives ====
         product_additives = product.additives \
@@ -98,7 +118,7 @@ class AddToCartAPIView(APIView):
         if not product_modifiers and modifiers:
             modifiers.clear()
 
-        # создаю массив для поля product в бд из данных запроса после проверки
+        # new array for a product field
         product_dict = {
             "id": product.id,
             "category": product.category.slug,
@@ -110,7 +130,6 @@ class AddToCartAPIView(APIView):
         }
 
         if cart_session:
-            # логика связанная с БД
             if user.is_authenticated:
                 cart, cart_created = Cart.objects.get_or_create(
                     institution=institution,
