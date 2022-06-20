@@ -17,11 +17,31 @@ class CheckoutAPIView(APIView):
         session = self.request.session
         user = self.request.user
 
-        name = request.data['name']
-        phone = request.data['phone']
-        comment = request.data['comment']
-        payment_type = request.data['payment_type']
+        # check if request data exists
+        if "name" not in request.data:
+            return Response({"detail": "Enter your name"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            name = request.data['name']
 
+        if "phone" not in request.data:
+            return Response({"detail": "Enter your phone"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            phone = request.data['phone']
+
+        if "comment" not in request.data:
+            comment = ""
+        else:
+            comment = request.data['comment']
+
+        if "payment_type" not in request.data:
+            return Response({"detail": "Choose your payment_type"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            payment_type = request.data['payment_type']
+
+        # check if payment_type exists in db with affiliate
         if payment_type in institution.payment_type.values_list("type",
                                                                 flat=True):
             payment_type = institution.payment_type.get(type=payment_type)
