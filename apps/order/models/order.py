@@ -3,6 +3,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth import get_user_model
 from apps.payment.models.enums import PaymentType
 
+# from django.db.models.signals import post_save
+# from django.dispatch import receiver
+
 User = get_user_model()
 
 
@@ -42,7 +45,15 @@ class Order(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    code = models.CharField(max_length=5, blank=True, null=True)
     paid = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            from apps.order.services.generate_order_number import \
+                _generate_order_number
+            self.code = _generate_order_number(1, 3)
+        super().save(*args, **kwargs)
 
     @property
     def delivery_type(self):
@@ -82,7 +93,8 @@ class Order(models.Model):
         if self.cart.get_delivery_zone:
             cost = self.cart.get_delivery_zone["price"]
             if self.cart.get_delivery_zone["free_delivery_amount"]:
-                if self.total_after_sale > self.cart.get_delivery_zone["free_delivery_amount"]:
+                if self.total_after_sale > self.cart.get_delivery_zone[
+                    "free_delivery_amount"]:
                     cost = 0
 
         if self.cart.promo_code and self.cart.promo_code.delivery_free is True:
@@ -117,3 +129,9 @@ class Order(models.Model):
     @property
     def final_price(self):
         return self.cart.final_price
+
+# # method for updating
+# @receiver(post_save, sender=Order, dispatch_uid="generate_order_number")
+# def update_stock(sender, instance, **kwargs):
+#     instance.product.stock -= instance.amount
+#     instance.product.save()

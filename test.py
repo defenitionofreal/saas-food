@@ -1,31 +1,10 @@
-import hashlib
-import json
+import random
+import string
 
-# item = {"qty": 1,
-#         "price": 250,
-#         "additives": [{"title": "cheese", "price": 15},
-#                       {"title": "red souce", "price": 10}],
-#         "modifiers": [{"title": "25 cm", "price": 200}]
-#         }
-#
-#
-# product_dict = {
-#             "title": "title",
-#             "slug": "slug",
-#             "price": 100,
-#             "quantity": 1,
-#             "modifiers": None,
-#             "additives": [],
-#             "total_price": 222
-#         }
-#
-# # using encode() + dumps() to convert to bytes
-# dict_to_bytes = json.dumps(item).encode('utf-8')
-# m = hashlib.md5()
-# m.update(dict_to_bytes)
 
-some = "cola"
-somelist = ["cola"]
+def gen_num():
+    digits = "".join(random.choices(string.digits, k=3))
+    return f"{random.choices(string.ascii_uppercase, k=1)[0]}-{digits}"
 
-if some in somelist:
-    print("ues")
+
+print(gen_num())

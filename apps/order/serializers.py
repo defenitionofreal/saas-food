@@ -52,7 +52,8 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ["id", "payment_type", "name", "phone", "comment",
                   "delivery", "items", "total", "coupon_sale",
                   "bonus_write_off", "total_after_sale", "delivery_cost",
-                  "delivery_sale", "bonus_accrual", "final_price", "paid"]
+                  "delivery_sale", "bonus_accrual", "final_price",
+                  "code", "paid"]
 
 
 # ======== for organizations only ===========
