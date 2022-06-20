@@ -57,6 +57,10 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def institution_name(self):
+        return self.institution.title
+
+    @property
     def delivery_type(self):
         return self.cart.delivery.type.delivery_type
 
@@ -94,8 +98,7 @@ class Order(models.Model):
         if self.cart.get_delivery_zone:
             cost = self.cart.get_delivery_zone["price"]
             if self.cart.get_delivery_zone["free_delivery_amount"]:
-                if self.total_after_sale > self.cart.get_delivery_zone[
-                    "free_delivery_amount"]:
+                if self.total_after_sale > self.cart.get_delivery_zone["free_delivery_amount"]:
                     cost = 0
 
         if self.cart.promo_code and self.cart.promo_code.delivery_free is True:

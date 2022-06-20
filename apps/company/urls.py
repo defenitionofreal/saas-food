@@ -23,7 +23,8 @@ from .api import (institution_create,
                   min_cart_cost_update_create,
                   min_cart_cost_delete,
                   dashboard,
-                  geocoding)
+                  geocoding,
+                  orders_list)
 
 app_name = 'company'
 
@@ -34,6 +35,8 @@ urlpatterns = [
     path('new/', institution_create.InstitutionCreateAPIView.as_view()),
     path('list/', institution_list.InstitutionListAPIView.as_view()),
     path('<uuid:pk>/', institution_detail.InstitutionDetailAPIView.as_view()),
+    # orders
+    path('orders/', orders_list.OrderListAPIView.as_view()),
     # design
     path('design/new/', design_create.DesignCreateAPIView.as_view()),
     path('design/list/', design_list.DesignListAPIView.as_view()),
