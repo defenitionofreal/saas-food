@@ -2,9 +2,8 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth import get_user_model
 from apps.payment.models.enums import PaymentType
+from apps.order.models.enums.order_status import OrderStatus
 
-# from django.db.models.signals import post_save
-# from django.dispatch import receiver
 
 User = get_user_model()
 
@@ -34,11 +33,9 @@ class Order(models.Model):
                                 related_name="order_cart",
                                 null=True,
                                 blank=True)
-
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)
-
     name = models.CharField(max_length=255, default="имя")
     phone = PhoneNumberField()
     comment = models.TextField(max_length=1000, blank=True)
@@ -46,6 +43,10 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     code = models.CharField(max_length=5, blank=True, null=True)
+    status = models.CharField(max_length=10,
+                              choices=OrderStatus.choices,
+                              default=OrderStatus.PLACED)
+    # paid field should be for an online payment only?
     paid = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
@@ -129,9 +130,3 @@ class Order(models.Model):
     @property
     def final_price(self):
         return self.cart.final_price
-
-# # method for updating
-# @receiver(post_save, sender=Order, dispatch_uid="generate_order_number")
-# def update_stock(sender, instance, **kwargs):
-#     instance.product.stock -= instance.amount
-#     instance.product.save()
