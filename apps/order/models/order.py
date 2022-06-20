@@ -49,13 +49,6 @@ class Order(models.Model):
     # paid field should be for an online payment only?
     paid = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        if not self.code:
-            from apps.order.services.generate_order_number import \
-                _generate_order_number
-            self.code = _generate_order_number(1, 3)
-        super().save(*args, **kwargs)
-
     @property
     def institution_name(self):
         return self.institution.title
@@ -133,3 +126,13 @@ class Order(models.Model):
     @property
     def final_price(self):
         return self.cart.final_price
+
+    def __str__(self):
+        return f"{self.institution.title} | {self.status} | {self.paid}"
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            from apps.order.services.generate_order_number import \
+                _generate_order_number
+            self.code = _generate_order_number(1, 3)
+        super().save(*args, **kwargs)

@@ -53,7 +53,7 @@ class OrderSerializer(serializers.ModelSerializer):
                   "comment", "delivery", "items", "total", "coupon_sale",
                   "bonus_write_off", "total_after_sale", "delivery_cost",
                   "delivery_sale", "bonus_accrual", "final_price",
-                  "code", "paid"]
+                  "code", "status", "paid"]
 
 
 # ======== for organizations only ===========
