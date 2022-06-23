@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from apps.order.models import Order
 from apps.order.serializers import OrderSerializer
 
-
+#TODO: филтры и сортировки
 class OrderListAPIView(APIView):
     """ List orders """
     permission_classes = [IsAuthenticated]

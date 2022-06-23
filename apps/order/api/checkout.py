@@ -6,8 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.order.models import Cart, Order
 from apps.order.serializers import OrderSerializer
+from apps.payment.models.enums.payment_type import PaymentType
 
-
+#TODO: если тип оплаты онлайн, то проверка и шлюз платежный
 class CheckoutAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -48,6 +49,10 @@ class CheckoutAPIView(APIView):
         else:
             return Response({"detail": "Wrong payment type"},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        # првоерить если оплата онлайн тут !!
+        if payment_type == PaymentType.ONLINE:
+            pass
 
         if user.is_authenticated:
             # cart check
