@@ -209,6 +209,8 @@ class YooMoneyPay:
                  targets: str,
                  paymentType: str,
                  sum: int,
+                 formcomment: str = None,
+                 shortdest: str = None,
                  label: str = None,
                  successURL: str = None,
                  need_fio: bool = None,
@@ -221,6 +223,8 @@ class YooMoneyPay:
         self.targets = targets
         self.paymentType = paymentType
         self.sum = sum
+        self.formcomment = formcomment
+        self.shortdest = shortdest
         self.label = label
         self.successURL = successURL
         self.need_fio = need_fio
@@ -238,6 +242,10 @@ class YooMoneyPay:
                    "paymentType": self.paymentType,
                    "sum": self.sum}
 
+        if self.formcomment != None:
+            payload["formcomment"] = self.formcomment
+        if self.shortdest != None:
+            payload["short-dest"] = self.shortdest
         if self.label != None:
             payload["label"] = self.label
         if self.successURL != None:
@@ -280,6 +288,8 @@ yoo_pay = YooMoneyPay("410015505324410",
                       "A-123",
                       "AC",
                       2,
+                      "Доставка Ленивец. Номер заказ A-123",
+                      "Доставка Ленивец. Номер заказ A-123",
                       "A-123",
                       REDIRECT_URL,
                       None,
