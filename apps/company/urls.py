@@ -25,7 +25,8 @@ from .api import (institution_create,
                   dashboard,
                   geocoding,
                   orders_list,
-                  order_detail)
+                  order_detail,
+                  set_yoomoney)
 
 app_name = 'company'
 
@@ -67,5 +68,8 @@ urlpatterns = [
     # min cart cost
     path('<uuid:pk>/cart/rule/', min_cart_cost_update_create.MinCartCostCreateAPIView.as_view()),
     path('<uuid:pk>/cart/rule/<int:rule_pk>/', min_cart_cost_delete.MinCartCostDeleteAPIView.as_view()),
+
+    # payments stuff
+    path('yoomoney/', set_yoomoney.YooMoneyCreateAPIView.as_view())
 
 ]
