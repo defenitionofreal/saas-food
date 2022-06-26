@@ -7,6 +7,8 @@ from apps.company.models import Institution
 from apps.order.models import Cart, Order
 from apps.order.serializers import OrderSerializer
 from apps.payment.models.enums.payment_type import PaymentType
+from apps.payment.models.enums.payment_status import PaymentStatus
+from apps.payment.models import Payment
 
 #TODO: если тип оплаты онлайн, то проверка и шлюз платежный
 class CheckoutAPIView(APIView):
@@ -45,36 +47,81 @@ class CheckoutAPIView(APIView):
         # check if payment_type exists in db with affiliate
         if payment_type in institution.payment_type.values_list("type",
                                                                 flat=True):
-            payment_type = institution.payment_type.get(type=payment_type)
+            payment_type = institution.payment_type.get(type=payment_type).type
         else:
             return Response({"detail": "Wrong payment type"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # првоерить если оплата онлайн тут !!
-        if payment_type == PaymentType.ONLINE:
-            pass
+        # cart check
+        cart = Cart.objects.filter(institution=institution,
+                                   customer=user)
+        if cart.exists():
+            cart = cart.first()
+
+            # order create or update
+            order, order_created = Order.objects.update_or_create(
+                institution=institution, customer=user, cart=cart,
+                defaults={"name": name,
+                          "phone": phone,
+                          "comment": comment,
+                          "payment_type": payment_type})
+
+            # payment create or update
+            payment, payment_created = Payment.objects.update_or_create(
+                institution=institution, user=user, order=order,
+                defaults={"total": order.final_price})
+
+            # check if payment type is online by card
+            if payment_type == PaymentType.ONLINE:
+                if "gateway" not in request.data:
+                    return Response({"detail": "Choose your payment gateway"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    gateway = request.data['gateway']
+
+                payment.type = PaymentType.ONLINE
+                payment.status = PaymentStatus.PENDING
+                payment.save()
+
+                # if customer choose pay by yoomoney
+                # TODO: (yoomoney) localhost заменить из хостов settings
+                if gateway == "yoomoney":
+                    wallet = institution.user.yoomoney.values_list("wallet", flat=True)[0]
+                    if wallet:
+                        from apps.payment.services.YooMoney.send_payment import YooMoneyPay
+                        client = YooMoneyPay(wallet,
+                                             "shop",
+                                             order.code,
+                                             "AC",
+                                             order.final_price,
+                                             f"APP: заказ {order.id}",
+                                             f"APP: заказ {order.id}",
+                                             order.code,
+                                             "localhost")
+                        return Response({"url": client.redirected_url})
 
         if user.is_authenticated:
+            pass
             # cart check
-            cart = Cart.objects.filter(institution=institution,
-                                       customer=user)
-            # if settings.CART_SESSION_ID in session:
-            #     cart = Cart.objects.filter(institution=institution,
-            #                                customer=user,
-            #                                session_id=session[
-            #                                    settings.CART_SESSION_ID])
-            if cart.exists():
-                cart = cart.first()
-
-                order, created = Order.objects.update_or_create(
-                    institution=institution, customer=user, cart=cart,
-                    defaults={"name": name,
-                              "phone": phone,
-                              "comment": comment,
-                              "payment_type": payment_type.type})
-
-                serializer = OrderSerializer(order)
-
-            return Response({"detail": serializer.data})
+            # cart = Cart.objects.filter(institution=institution,
+            #                            customer=user)
+            # # if settings.CART_SESSION_ID in session:
+            # #     cart = Cart.objects.filter(institution=institution,
+            # #                                customer=user,
+            # #                                session_id=session[
+            # #                                    settings.CART_SESSION_ID])
+            # if cart.exists():
+            #     cart = cart.first()
+            #
+            #     order, created = Order.objects.update_or_create(
+            #         institution=institution, customer=user, cart=cart,
+            #         defaults={"name": name,
+            #                   "phone": phone,
+            #                   "comment": comment,
+            #                   "payment_type": payment_type.type})
+            #
+            #     serializer = OrderSerializer(order)
+            #
+            # return Response({"detail": serializer.data})
         else:
             return Response({"detail": "Please login"})

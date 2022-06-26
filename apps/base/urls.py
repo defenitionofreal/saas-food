@@ -6,7 +6,9 @@ from .api import (user_view,
                   login_view,
                   logout_view,
                   login_by_code,
-                  send_auth_code)
+                  send_auth_code,
+
+                  yoomoney_notification)
 
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -34,6 +36,10 @@ urlpatterns = [
 
     # TODO: дописать get/put на прифили пользователей для смены паролей и т.д.
     path('user/', user_view.UserAPIView.as_view()),
+
+    # check payment status (yoomoney)
+    # TODO: (yoomoney) убрать в более базовый урл без приставки auth
+    path('yoomoney-notification/', yoomoney_notification.YooMoneyHttpNotificationAPIView.as_view())
 ]
 
 

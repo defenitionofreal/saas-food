@@ -44,6 +44,8 @@ urlpatterns = [
 
     # order (cart) detail/add/delete
     path('order/', include('apps.order.urls', namespace='order')),
+    # payment
+    path('payment/', include('apps.payment.urls', namespace='payment')),
     # delivery
     path('delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
     path('delivery-info/add/', delivery_info_create.DeliveryInfoAPIView.as_view()),

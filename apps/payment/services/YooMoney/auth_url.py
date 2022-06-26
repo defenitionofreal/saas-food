@@ -4,8 +4,13 @@ from .exceptions import *
 
 
 class YooMoneyAuth:
-    def __init__(self, client_id: str, redirect_uri: str, scope: List[str]):
+    def __init__(self,
+                 client_id: str,
+                 client_secret: str,
+                 redirect_uri: str,
+                 scope: List[str]):
         self.client_id = client_id
+        self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.scope = scope
         self.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -30,11 +35,13 @@ class YooMoneyAuth:
         """
         Send POST request to get an access token for further use
         """
-        url = "https://yoomoney.ru/oauth/token?code={code}&client_id={client_id}&" \
-              "grant_type=authorization_code&redirect_uri={redirect_uri}"\
+        url = "https://yoomoney.ru/oauth/token?code={code}&"\
+              "client_id={client_id}&grant_type=authorization_code"\
+              "&redirect_uri={redirect_uri}&client_secret={client_secret}"\
             .format(code=code,
                     client_id=self.client_id,
-                    redirect_uri=self.redirect_uri)
+                    redirect_uri=self.redirect_uri,
+                    client_secret=self.client_secret)
         response = requests.post(url, headers=self.headers)
 
         if "error" in response.json():
