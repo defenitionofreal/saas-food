@@ -6,9 +6,12 @@ services:
     container_name: efood_backend
     #hostname: efood_backend
     #restart: always
-    command: python manage.py runserver 0.0.0.0:8000
+    command: bash entrypoint.sh #python manage.py runserver 0.0.0.0:8000
+    # volumes соответствие директорий на локальной машине и в контейнрер
     volumes:
       - .:/efood
+      - ./static:/efood/static
+      - ./media:/efood/media
     ports:
       - "8000:8000"
     env_file:
@@ -75,6 +78,18 @@ services:
   redis:
     image: "redis:alpine"
     container_name: efood_redis
+
+  nginx:
+    build: ./nginx
+    container_name: efood_nginx
+    restart: on-failure
+    ports:
+      - 80:80
+    volumes:
+      - ./static:/static
+      - ./media:/media
+    depends_on:
+      - backend
 
 volumes:
   efood-pgdata:
