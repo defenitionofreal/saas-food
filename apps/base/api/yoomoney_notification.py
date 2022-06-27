@@ -32,8 +32,11 @@ class YooMoneyHttpNotificationAPIView(APIView):
             YANDEX_MONEY_SECRET_WORD,
             request.POST['label'])
 
+        for key, value in request.POST.items():
+            print("key:", key)
+            print("value:", value)
+
         if request.POST['sha1_hash'] == hashlib.sha1(line_notification_options.encode()).hexdigest():
-            print(line_notification_options)
             print("all good")
             return Response({"data": line_notification_options}, status=200)
         print("all bad")
