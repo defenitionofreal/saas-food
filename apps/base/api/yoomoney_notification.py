@@ -20,8 +20,7 @@ YANDEX_MONEY_SECRET_WORD = "5j8lK2M4L5tp+iE0m9ppyb8E"
 class YooMoneyHttpNotificationAPIView(APIView):
 
     def post(self, request):
-        print(request)
-        print(request.POST['notification_type'])
+        print("start YooMoneyHttpNotificationAPIView")
         line_notification_options = '%s&%s&%s&%s&%s&%s&%s&%s&%s' % (
             request.POST['notification_type'],
             request.POST['operation_id'],
@@ -34,6 +33,7 @@ class YooMoneyHttpNotificationAPIView(APIView):
             request.POST['label'])
 
         if request.POST['sha1_hash'] == hashlib.sha1(line_notification_options.encode()).hexdigest():
+            print(line_notification_options)
             print("all good")
             return Response({"data": line_notification_options}, status=200)
         print("all bad")
