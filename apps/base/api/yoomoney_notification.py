@@ -21,6 +21,7 @@ class YooMoneyHttpNotificationAPIView(APIView):
 
     def post(self, request):
         print(request)
+        print(request.POST['notification_type'])
         line_notification_options = '%s&%s&%s&%s&%s&%s&%s&%s&%s' % (
             request.POST['notification_type'],
             request.POST['operation_id'],
