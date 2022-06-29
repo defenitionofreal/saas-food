@@ -31,6 +31,7 @@ class InstitutionDetailAPIView(APIView):
 
         # костыль для того, чтобы на фронте оставить картинку по умолчанию
         # при редактирование информации так как передается строка в поле logo
+        #TODO: работает с VUE, но через postman ошикба 'dict' object has no attribute '_mutable'
         if type(request.data['logo']) is str:
             request.data._mutable = True
             if request.data['logo'] == "null":

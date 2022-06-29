@@ -14,6 +14,7 @@ class DesignDetailAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    #TODO: get() missing 1 required positional argument: 'pk'
     def get(self, request, pk, design_pk):
         design = get_object_or_404(Design.objects, institution_id=pk, pk=design_pk)
         serializer = DesignSerializer(design)

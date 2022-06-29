@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.permissions import IsAuthenticated
 
 from apps.company.models import Institution
@@ -93,11 +94,13 @@ class CheckoutAPIView(APIView):
                                              "shop",
                                              order.code,
                                              "AC",
-                                             order.final_price,
+                                             2,  #order.final_price
                                              f"APP: заказ {order.id}",
                                              f"APP: заказ {order.id}",
                                              order.code,
-                                             "localhost")
+                                             f"http://localhost:8000/api/showcase/payment/success/")  # на витрину филиала лучше возвращать
+
+                        #return HttpResponseRedirect(client.redirected_url)
                         return Response({"url": client.redirected_url})
 
         if user.is_authenticated:

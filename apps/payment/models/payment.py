@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.company.models import Institution
+import uuid
 
 User = get_user_model()
 
@@ -11,6 +12,9 @@ class Payment(models.Model):
     """
     Payment model
     """
+    id = models.UUIDField(primary_key=True,
+                          default=uuid.uuid4,
+                          editable=False)
     institution = models.ForeignKey(Institution,
                                     on_delete=models.CASCADE,
                                     related_name="payment_inst",

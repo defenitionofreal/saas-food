@@ -39,7 +39,7 @@ urlpatterns = [
     path('<uuid:pk>/', institution_detail.InstitutionDetailAPIView.as_view()),
     # orders
     path('orders/list/', orders_list.OrderListAPIView.as_view()),
-    path('orders/detail/<int:order_pk>/', order_detail.OrderDetailAPIView.as_view()),
+    path('orders/detail/<uuid:order_pk>/', order_detail.OrderDetailAPIView.as_view()),
     # design
     path('design/new/', design_create.DesignCreateAPIView.as_view()),
     path('design/list/', design_list.DesignListAPIView.as_view()),

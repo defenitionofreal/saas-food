@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from apps.payment.models.enums import PaymentType
 from apps.order.models.enums.order_status import OrderStatus
 
+import uuid
+
 
 User = get_user_model()
 
@@ -18,6 +20,9 @@ class Order(models.Model):
     cart details with items (total price)
     generate code for e-queue
     """
+    id = models.UUIDField(primary_key=True,
+                          default=uuid.uuid4,
+                          editable=False)
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
                                     related_name="order_institution",
