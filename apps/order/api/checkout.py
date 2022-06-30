@@ -11,7 +11,9 @@ from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment
 
-#TODO: если тип оплаты онлайн, то проверка и шлюз платежный
+from django.conf import settings
+
+
 class CheckoutAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -55,7 +57,9 @@ class CheckoutAPIView(APIView):
 
         # cart check
         cart = Cart.objects.filter(institution=institution,
-                                   customer=user)
+                                   customer=user,
+                                   session_id=session[
+                                       settings.CART_SESSION_ID])
         if cart.exists():
             cart = cart.first()
 
@@ -72,7 +76,9 @@ class CheckoutAPIView(APIView):
 
             # payment create or update
             payment, payment_created = Payment.objects.update_or_create(
-                institution=institution, user=user, order=order,
+                institution=institution,
+                user=user,
+                order=order,
                 defaults={"total": order.final_price})
 
             # check if payment type is online by card
@@ -90,7 +96,8 @@ class CheckoutAPIView(APIView):
 
                 # if customer choose pay by yoomoney
                 if gateway == "yoomoney":
-                    wallet = institution.user.yoomoney.values_list("wallet", flat=True)[0]
+                    wallet = institution.user.yoomoney.\
+                        values_list("wallet", flat=True)[0]
                     if wallet:
                         from apps.payment.services.YooMoney.send_payment import YooMoneyPay
                         client = YooMoneyPay(receiver=wallet,

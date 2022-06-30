@@ -1,3 +1,6 @@
+from django.db import transaction
+from django.conf import settings
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,7 +12,6 @@ from apps.order.serializers import OrderSerializer
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment
-from django.db import transaction
 
 import dateutil.parser
 import hashlib
@@ -52,6 +54,9 @@ class YooMoneyHttpNotificationAPIView(APIView):
                         order.status = OrderStatus.ACCEPTED
                         order.paid = True
                         order.save()
+                        # del cart_id from session
+                        session = self.request.session
+                        del session[settings.CART_SESSION_ID]
                         # отправить нотификацию на почту/номер/телеграм (task)
 
             return Response({}, status=status.HTTP_200_OK)

@@ -22,10 +22,10 @@ class Cart(models.Model):
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
                                     related_name="cart_institution")
-    customer = models.OneToOneField(User,
-                                    on_delete=models.CASCADE,
-                                    related_name='cart_customer',
-                                    null=True, blank=True)
+    customer = models.ForeignKey(User,
+                                 on_delete=models.CASCADE,
+                                 related_name='cart_customer',
+                                 null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     promo_code = models.ForeignKey("order.PromoCode",

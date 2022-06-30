@@ -16,7 +16,8 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ["id",]
+    list_display = ["id", "institution", "customer", "cart", "payment_type",
+                    "status", "paid", "code"]
     search_fields = ("id",)
 
 
