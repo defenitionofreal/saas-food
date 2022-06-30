@@ -34,7 +34,7 @@ class Order(models.Model):
                                  null=True,
                                  blank=True)
     cart = models.OneToOneField("order.Cart",
-                                on_delete=models.CASCADE,
+                                on_delete=models.CASCADE,   # TODO: удаляя корзину сохранить данные
                                 related_name="order_cart",
                                 null=True,
                                 blank=True)

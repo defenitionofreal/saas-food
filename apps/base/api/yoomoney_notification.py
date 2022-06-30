@@ -32,31 +32,26 @@ class YooMoneyHttpNotificationAPIView(APIView):
             YANDEX_MONEY_SECRET_WORD,
             request.POST['label'])
 
-        for key, value in request.POST.items():
-            print(f"{key}: {value}")
-        print("line_notification_options", line_notification_options)
+        # for key, value in request.POST.items():
+        #     print(f"{key}: {value}")
 
         if request.POST['sha1_hash'] ==\
                 hashlib.sha1(line_notification_options.encode()).hexdigest():
-            print("all good")
             payment = Payment.objects.filter(order_id=request.POST["label"])
             if payment.exists():
                 payment = payment[0]
-                print("payment", payment.id)
                 with transaction.atomic():
                     # if payment accepted
                     if request.POST["unaccepted"] is not True:
-                        print("payment accepted")
                         # payment part
                         payment.status = PaymentStatus.SUCCESS
-                        print("could fail here")
                         payment.code = request.POST["operation_label"]
                         payment.save()
-                        print("operation_label all good")
                         # order part
                         order = payment.order
                         order.status = OrderStatus.ACCEPTED
                         order.paid = True
+                        order.save()
                         # отправить нотификацию на почту/номер/телеграм (task)
 
             return Response({}, status=status.HTTP_200_OK)

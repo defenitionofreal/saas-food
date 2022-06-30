@@ -74,6 +74,7 @@ class CheckoutAPIView(APIView):
 
             # check if payment type is online by card
             if payment_type == PaymentType.ONLINE:
+                # check for gateway param
                 if "gateway" not in request.data:
                     return Response({"detail": "Choose your payment gateway"},
                                     status=status.HTTP_400_BAD_REQUEST)
@@ -85,23 +86,22 @@ class CheckoutAPIView(APIView):
                 payment.save()
 
                 # if customer choose pay by yoomoney
-                # TODO: (yoomoney) localhost заменить из хостов settings
                 if gateway == "yoomoney":
                     wallet = institution.user.yoomoney.values_list("wallet", flat=True)[0]
                     if wallet:
                         from apps.payment.services.YooMoney.send_payment import YooMoneyPay
                         client = YooMoneyPay(receiver=wallet,
                                              quickpay_form="shop",
-                                             targets=f"Оплата заказа {order.code}",
+                                             targets=f"Заказ {order.id}",
                                              paymentType="AC",
                                              sum=2,  #order.final_price  #TODO: change
-                                             formcomment=f"APP: заказ {order.id}",  #TODO: change
-                                             shortdest=f"APP: заказ {order.id}",  #TODO: change
+                                             formcomment=f"Заказ {order.id}",
+                                             shortdest=f"Заказ {order.id}",
                                              label=order.id,
                                              successURL=f"http://localhost:8000/api/showcase/{institution.domain}/menu/")  #TODO: host change
-
-                        #return HttpResponseRedirect(client.redirected_url)
-                        return Response({"url": client.redirected_url})
+                        return Response(
+                            {"redirected_url": client.redirected_url})
+            # if another PaymentType
 
         if user.is_authenticated:
             pass
