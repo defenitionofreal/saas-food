@@ -23,7 +23,6 @@ class YooMoneyHttpNotificationAPIView(APIView):
     def post(self, request):
         line_notification_options = '%s&%s&%s&%s&%s&%s&%s&%s&%s' % (
             request.POST['notification_type'],
-            request.POST["operation_label"],
             request.POST['operation_id'],
             request.POST['amount'],
             request.POST['currency'],
@@ -43,14 +42,17 @@ class YooMoneyHttpNotificationAPIView(APIView):
             payment = Payment.objects.filter(id=request.POST["label"])
             if payment.exists():
                 payment = payment[0]
-
+                print("payment", payment.id)
                 with transaction.atomic():
                     # if payment accepted
                     if request.POST["unaccepted"] is not True:
+                        print("payment accepted")
                         # payment part
                         payment.status = PaymentStatus.SUCCESS
+                        print("could fail here")
                         payment.code = request.POST["operation_label"]
                         payment.save()
+                        print("operation_label all good")
                         # order part
                         order = payment.order
                         order.status = OrderStatus.ACCEPTED
