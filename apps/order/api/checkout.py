@@ -90,15 +90,15 @@ class CheckoutAPIView(APIView):
                     wallet = institution.user.yoomoney.values_list("wallet", flat=True)[0]
                     if wallet:
                         from apps.payment.services.YooMoney.send_payment import YooMoneyPay
-                        client = YooMoneyPay(wallet,
-                                             "shop",
-                                             order.code,
-                                             "AC",
-                                             2,  #order.final_price
-                                             f"APP: заказ {order.id}",
-                                             f"APP: заказ {order.id}",
-                                             order.code,
-                                             f"http://localhost:8000/api/showcase/payment/success/")  # на витрину филиала лучше возвращать
+                        client = YooMoneyPay(receiver=wallet,
+                                             quickpay_form="shop",
+                                             targets=f"Оплата заказа {order.code}",
+                                             paymentType="AC",
+                                             sum=2,  #order.final_price  #TODO: change
+                                             formcomment=f"APP: заказ {order.id}",  #TODO: change
+                                             shortdest=f"APP: заказ {order.id}",  #TODO: change
+                                             label=order.id,
+                                             successURL=f"http://localhost:8000/api/showcase/{institution.domain}/menu/")  #TODO: host change
 
                         #return HttpResponseRedirect(client.redirected_url)
                         return Response({"url": client.redirected_url})
