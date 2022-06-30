@@ -39,7 +39,7 @@ class YooMoneyHttpNotificationAPIView(APIView):
         if request.POST['sha1_hash'] ==\
                 hashlib.sha1(line_notification_options.encode()).hexdigest():
             print("all good")
-            payment = Payment.objects.filter(id=request.POST["label"])
+            payment = Payment.objects.filter(order_id=request.POST["label"])
             if payment.exists():
                 payment = payment[0]
                 print("payment", payment.id)
