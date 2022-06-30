@@ -51,6 +51,10 @@ class Order(models.Model):
     status = models.CharField(max_length=10,
                               choices=OrderStatus.choices,
                               default=OrderStatus.PLACED)
+    session_id = models.CharField(max_length=50,
+                                  blank=True,
+                                  null=True,
+                                  unique=True)
     # paid field should be for an online payment only?
     paid = models.BooleanField(default=False)
 

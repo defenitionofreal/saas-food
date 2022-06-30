@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from apps.company.models import Institution, MinCartCost
 from apps.order.models import Cart
 from apps.order.serializers import CartSerializer
+from apps.order.services.generate_cart_key import _generate_cart_key
 
 from django.conf import settings
 from django.db.models import F
@@ -32,7 +33,6 @@ class CartAPIView(APIView):
                 cart = Cart.objects.filter(
                     institution=institution,
                     session_id=session[settings.CART_SESSION_ID]).first()
-
                 if cart:
                     if not cart.customer:
                         cart.customer = user
@@ -64,9 +64,13 @@ class CartAPIView(APIView):
                     # if no session cart
                     cart, cart_created = Cart.objects.get_or_create(
                         institution=institution,
-                        customer=user)
+                        customer=user,
+                        session_id=session[settings.CART_SESSION_ID])
             else:
+                session[settings.CART_SESSION_ID] = _generate_cart_key()
                 cart = Cart.objects.filter(institution=institution,
+                                           session_id=session[
+                                               settings.CART_SESSION_ID],
                                            customer=user).first()
                 if not cart:
                     return Response({"detail": "Cart does not exist. (auth cart)"})

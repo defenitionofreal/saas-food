@@ -133,7 +133,8 @@ class AddToCartAPIView(APIView):
             if user.is_authenticated:
                 cart, cart_created = Cart.objects.get_or_create(
                     institution=institution,
-                    customer=user)
+                    customer=user,
+                    session_id=session[settings.CART_SESSION_ID])
                 cart_item, cart_item_created = CartItem.objects.get_or_create(
                     product=product_dict,
                     cart=cart)

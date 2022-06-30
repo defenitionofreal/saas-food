@@ -61,7 +61,10 @@ class CheckoutAPIView(APIView):
 
             # order create or update
             order, order_created = Order.objects.update_or_create(
-                institution=institution, customer=user, cart=cart,
+                institution=institution,
+                customer=user,
+                cart=cart,
+                session_id=cart.session_id,
                 defaults={"name": name,
                           "phone": phone,
                           "comment": comment,
