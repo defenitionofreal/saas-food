@@ -55,11 +55,11 @@ class YooMoneyHttpNotificationAPIView(APIView):
                         order.paid = True
                         order.save()
                         # del cart_id from session
-                        session = request.session
-                        print("session_cart_id", session[settings.CART_SESSION_ID])
-                        if settings.CART_SESSION_ID in session:
-                            session[settings.CART_SESSION_ID]
-                            session.modified = True
+                        request.session.pop(settings.CART_SESSION_ID, None)
+                       # print("session_cart_id", session[settings.CART_SESSION_ID])
+                        # if settings.CART_SESSION_ID in session:
+                        #     session.pop(settings.CART_SESSION_ID)
+                        #     session.modified = True
                         # отправить нотификацию на почту/номер/телеграм (task)
 
             return Response({}, status=status.HTTP_200_OK)
