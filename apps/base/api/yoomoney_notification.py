@@ -56,6 +56,7 @@ class YooMoneyHttpNotificationAPIView(APIView):
                         order.save()
                         # del cart_id from session
                         session = self.request.session
+                        print("session_cart_id", session[settings.CART_SESSION_ID])
                         if settings.CART_SESSION_ID in session:
                             del session[settings.CART_SESSION_ID]
                             session.modified = True
