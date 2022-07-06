@@ -12,6 +12,7 @@ class YooMoney(models.Model):
                              on_delete=models.CASCADE,
                              related_name="yoomoney")
     wallet = models.CharField(max_length=255)
+    # http_secret = models.CharField(max_length=255)
     #TODO: (yoomoney) нахер не надо три поля ниже
     client_id = models.CharField(max_length=1000)
     oauth_key = models.CharField(max_length=1000)

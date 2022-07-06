@@ -109,6 +109,7 @@ class CheckoutAPIView(APIView):
                                              shortdest=f"Заказ {order.id}",
                                              label=order.id,
                                              successURL=f"http://localhost:8000/api/showcase/{institution.domain}/menu/")  #TODO: host change
+                        del session[settings.CART_SESSION_ID] # удаляю ключ cart_id чтобы убрать корзину на стороне покупателя
                         return Response(
                             {"redirected_url": client.redirected_url})
             # if another PaymentType
