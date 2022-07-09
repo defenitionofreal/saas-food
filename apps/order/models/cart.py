@@ -61,7 +61,7 @@ class Cart(models.Model):
     @property
     def get_delivery_price(self):
         if self.delivery is not None:
-            if self.delivery.type.delivery_price:
+            if self.delivery.type:
                 return self.delivery.type.delivery_price
 
     @property
@@ -215,7 +215,7 @@ class Cart(models.Model):
                 return total - self.customer_bonus
 
         if self.delivery is not None:
-            delivery_price = self.delivery.type.delivery_price
+            delivery_price = self.get_delivery_price
             free_delivery_amount = self.delivery.type.free_delivery_amount
 
             if self.promo_code and self.promo_code.delivery_free is True:
