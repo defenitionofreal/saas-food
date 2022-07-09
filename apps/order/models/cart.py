@@ -194,11 +194,8 @@ class Cart(models.Model):
     def get_bonus_accrual(self):
         bonus = Bonus.objects.get(institution=self.institution)
         if bonus.is_active:
-            if bonus.is_promo_code is True:
-                total_accrual = calc_rounded_price(bonus.accrual, self.get_total_cart_after_sale)
-            else:
-                total_accrual = calc_rounded_price(bonus.accrual, self.get_total_cart)
-            return total_accrual
+            sale_total = self.get_total_cart_after_sale if bonus.is_promo_code is True else self.get_total_cart
+            return calc_rounded_price(bonus.accrual, sale_total)
 
     @property
     def final_price(self):
