@@ -71,21 +71,22 @@ class Cart(models.Model):
                 return self.delivery.type.free_delivery_amount
 
     @property
-    def get_delivery_sale(self):
-        if self.delivery is not None:
-            delivery_sale = self.delivery.type.sale_amount
+    def get_delivery_sale_discount(self):
+        """returns negative value to decrease the price"""
+        if not self.delivery:
+            return 0
 
-            is_absolute_sale = delivery_sale and self.delivery.type.sale_type == SaleType.ABSOLUTE
-            is_percent_sale = delivery_sale and self.delivery.type.sale_type == SaleType.PERCENT
+        delivery_sale = -1.0 * self.delivery.type.sale_amount
 
-            if is_absolute_sale:
-                return delivery_sale
+        is_absolute_sale = delivery_sale and self.delivery.type.sale_type == SaleType.ABSOLUTE
+        is_percent_sale = delivery_sale and self.delivery.type.sale_type == SaleType.PERCENT
 
-            if is_percent_sale:
-                total = self.get_total_cart_consider_sale
-                return calc_rounded_price(delivery_sale, total)
+        if is_absolute_sale:
+            return delivery_sale
 
-        return None
+        if is_percent_sale:
+            total = self.get_total_cart_consider_sale
+            return calc_rounded_price(delivery_sale, total)
 
     @property
     def get_min_delivery_order_amount(self):
