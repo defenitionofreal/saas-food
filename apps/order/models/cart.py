@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from apps.order.models import Bonus
-from apps.delivery.models.enums import DeliveryType
+from apps.delivery.models.enums import DeliveryType, SaleType
 
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
@@ -79,9 +79,9 @@ class Cart(models.Model):
             if with_sale:
                 total = with_sale
             if delivery_sale:
-                if self.delivery.type.sale_type == "absolute":
+                if self.delivery.type.sale_type == SaleType.ABSOLUTE:
                     return delivery_sale
-                if self.delivery.type.sale_type == "percent":
+                if self.delivery.type.sale_type == SaleType.PERCENT:
                     return calc_rounded_price(delivery_sale, total)
         return None
 
@@ -114,7 +114,7 @@ class Cart(models.Model):
         if self.promo_code:
             sale = self.promo_code.sale
             # if absolute sale type
-            if self.promo_code.code_type == 'absolute':
+            if self.promo_code.code_type == SaleType.ABSOLUTE:
                 # categories participate coupon
                 if self.promo_code.categories.all():
                     items_cat = self.items.values("product__category",
@@ -145,8 +145,7 @@ class Cart(models.Model):
                 return sale
 
             # if percent sale type
-            if self.promo_code.code_type == 'percent':
-
+            if self.promo_code.code_type == SaleType.PERCENT:
                 # categories participate coupon
                 if self.promo_code.categories.all():
                     cat_total = 0
