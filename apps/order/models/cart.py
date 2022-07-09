@@ -11,6 +11,10 @@ import json
 User = get_user_model()
 
 
+def calc_rounded_price(a, b):
+    return round((a / Decimal('100')) * b)
+
+
 class Cart(models.Model):
     """
     A model that contains data for a shopping cart.
@@ -51,10 +55,8 @@ class Cart(models.Model):
 
     @property
     def get_total_cart(self):
-        total = 0
-        for i in self.items.all():
-            total += i.get_total_item_price
-        return total
+        q = self.items.all()
+        return sum([i.get_total_item_price for i in q])
 
     @property
     def get_delivery_price(self):
@@ -80,7 +82,7 @@ class Cart(models.Model):
                 if self.delivery.type.sale_type == "absolute":
                     return delivery_sale
                 if self.delivery.type.sale_type == "percent":
-                    return round((delivery_sale / Decimal('100')) * total)
+                    return calc_rounded_price(delivery_sale, total)
         return None
 
     @property
@@ -158,7 +160,7 @@ class Cart(models.Model):
                         if i["product__category"] in code_cat:
                             cat_total += i["product__price"] * i["quantity"]
                     cat_total = cat_total if cat_total >= 0.0 else 0.0
-                    return round((sale / Decimal('100')) * cat_total)
+                    return calc_rounded_price(sale, cat_total)
 
                 # products participate coupon
                 if self.promo_code.products.all():
@@ -173,9 +175,8 @@ class Cart(models.Model):
                             products_total += i["product__price"] * i[
                                 "quantity"]
                     products_total = products_total if products_total >= 0.0 else 0.0
-                    return round((sale / Decimal('100')) * products_total)
-
-                return round((sale / Decimal('100')) * self.get_total_cart)
+                    return calc_rounded_price(sale, products_total)
+                return calc_rounded_price(sale, self.get_total_cart)
         return None
 
     @property
@@ -195,9 +196,9 @@ class Cart(models.Model):
         bonus = Bonus.objects.get(institution=self.institution)
         if bonus.is_active:
             if bonus.is_promo_code is True:
-                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
+                total_accrual = calc_rounded_price(bonus.accrual, self.get_total_cart_after_sale)
             else:
-                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
+                total_accrual = calc_rounded_price(bonus.accrual, self.get_total_cart)
             return total_accrual
 
     @property
