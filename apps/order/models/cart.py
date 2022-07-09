@@ -113,32 +113,51 @@ class Cart(models.Model):
         return None
 
     @property
+    def is_promo_code_absolute_sale(self):
+        return self.promo_code and self.promo_code.code_type == SaleType.ABSOLUTE
+
+    @property
+    def is_promo_code_percent_sale(self):
+        return self.promo_code and self.promo_code.code_type == SaleType.PERCENT
+
+    @property
     def get_sale(self):
         if self.promo_code:
             sale = self.promo_code.sale
-            # if absolute sale type
-            if self.promo_code.code_type == SaleType.ABSOLUTE:
+
+            items_cat = self.items.values("product__category",
+                                          "product__slug",
+                                          "product__price",
+                                          "quantity")
+
+            items_prod = self.items.values("product__slug",
+                                           "product__price",
+                                           "quantity")
+
+            has_promo_code_categories = self.promo_code.categories.all()
+            code_cat = []
+            if has_promo_code_categories:
+                code_cat = self.promo_code.categories.values_list("slug",
+                                                                  flat=True)
+
+            has_promo_code_products = self.promo_code.products.all()
+            code_product = []
+            if has_promo_code_products:
+                code_product = self.promo_code.products.values_list("slug",
+                                                                    flat=True)
+
+            # ABSOLUTE SALE
+            if self.is_promo_code_absolute_sale:
                 # categories participate coupon
-                if self.promo_code.categories.all():
-                    items_cat = self.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = self.promo_code.categories.values_list("slug",
-                                                                      flat=True)
+                if has_promo_code_categories:
                     for i in items_cat:
                         if i["product__category"] in code_cat:
                             sale = sale
                     sale = sale if sale >= 0.0 else 0.0
                     return sale
                 # products participate coupon
-                if self.promo_code.products.all():
-                    items = self.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = self.promo_code.products.values_list("slug",
-                                                                        flat=True)
-                    for i in items:
+                if has_promo_code_products:
+                    for i in items_prod:
                         if i["product__slug"] in code_product:
                             sale = sale
                     sale = sale if sale >= 0.0 else 0.0
@@ -147,17 +166,11 @@ class Cart(models.Model):
                 sale = sale if sale >= 0.0 else 0.0
                 return sale
 
-            # if percent sale type
-            if self.promo_code.code_type == SaleType.PERCENT:
+            # PERCENT SALE
+            if self.is_promo_code_percent_sale:
                 # categories participate coupon
-                if self.promo_code.categories.all():
+                if has_promo_code_categories:
                     cat_total = 0
-                    items_cat = self.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = self.promo_code.categories.values_list("slug",
-                                                                      flat=True)
                     for i in items_cat:
                         if i["product__category"] in code_cat:
                             cat_total += i["product__price"] * i["quantity"]
@@ -165,20 +178,15 @@ class Cart(models.Model):
                     return calc_rounded_price(sale, cat_total)
 
                 # products participate coupon
-                if self.promo_code.products.all():
+                if has_promo_code_products:
                     products_total = 0
-                    items = self.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = self.promo_code.products.values_list("slug",
-                                                                        flat=True)
-                    for i in items:
+                    for i in items_prod:
                         if i["product__slug"] in code_product:
-                            products_total += i["product__price"] * i[
-                                "quantity"]
+                            products_total += i["product__price"] * i["quantity"]
                     products_total = products_total if products_total >= 0.0 else 0.0
                     return calc_rounded_price(sale, products_total)
                 return calc_rounded_price(sale, self.get_total_cart)
+
         return None
 
     @property
