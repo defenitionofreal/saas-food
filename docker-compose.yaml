@@ -6,7 +6,8 @@ services:
     container_name: efood_backend
     #hostname: efood_backend
     #restart: always
-    command: bash entrypoint.sh #python manage.py runserver 0.0.0.0:8000
+#    command: bash entrypoint.sh #python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000
     # volumes соответствие директорий на локальной машине и в контейнрер
     volumes:
       - .:/efood
