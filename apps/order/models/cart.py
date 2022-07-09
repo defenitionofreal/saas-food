@@ -74,15 +74,17 @@ class Cart(models.Model):
     def get_delivery_sale(self):
         if self.delivery is not None:
             delivery_sale = self.delivery.type.sale_amount
-            total = self.get_total_cart
-            with_sale = self.get_total_cart_after_sale
-            if with_sale:
-                total = with_sale
-            if delivery_sale:
-                if self.delivery.type.sale_type == SaleType.ABSOLUTE:
-                    return delivery_sale
-                if self.delivery.type.sale_type == SaleType.PERCENT:
-                    return calc_rounded_price(delivery_sale, total)
+
+            is_absolute_sale = delivery_sale and self.delivery.type.sale_type == SaleType.ABSOLUTE
+            is_percent_sale = delivery_sale and self.delivery.type.sale_type == SaleType.PERCENT
+
+            if is_absolute_sale:
+                return delivery_sale
+
+            if is_percent_sale:
+                total = self.get_total_cart_consider_sale
+                return calc_rounded_price(delivery_sale, total)
+
         return None
 
     @property
@@ -191,6 +193,11 @@ class Cart(models.Model):
         return total - sale
 
     @property
+    def get_total_cart_consider_sale(self):
+        with_sale = self.get_total_cart_after_sale
+        return with_sale if with_sale else self.get_total_cart
+
+    @property
     def get_bonus_accrual(self):
         bonus = Bonus.objects.get(institution=self.institution)
         if bonus.is_active:
@@ -199,10 +206,7 @@ class Cart(models.Model):
 
     @property
     def final_price(self):
-        total = self.get_total_cart
-        with_sale = self.get_total_cart_after_sale
-        if with_sale:
-            total = with_sale
+        total = self.get_total_cart_consider_sale
 
         # minus bonus points from total
         if self.customer_bonus is not None:
