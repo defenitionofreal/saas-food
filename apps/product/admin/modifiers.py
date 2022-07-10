@@ -13,4 +13,4 @@ class ModifierAdmin(admin.ModelAdmin):
 class ModifierPriceAdmin(admin.ModelAdmin):
     search_fields = ("modifier",)
     ordering = ("pk", "modifier")
-    list_display = ("id", "modifier")
+    list_display = ("id", "modifier", "price")
