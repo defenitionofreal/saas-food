@@ -10,6 +10,8 @@ from apps.order.services.generate_cart_key import _generate_cart_key
 from django.conf import settings
 from django.db.models import F
 
+from apps.product.models.cart_item_product_keys import *
+
 
 class AddToCartAPIView(APIView):
     """
@@ -32,30 +34,30 @@ class AddToCartAPIView(APIView):
         user = self.request.user
 
         # check if request data exists
-        if "title" not in request.data:
+        if cart_item_prod_title not in request.data:
             title = product.title
         else:
-            title = request.data['title']
+            title = request.data[cart_item_prod_title]
 
-        if "slug" not in request.data:
+        if cart_item_prod_slug not in request.data:
             slug = product.slug
         else:
-            slug = request.data['slug']
+            slug = request.data[cart_item_prod_slug]
 
-        if "price" not in request.data:
+        if cart_item_prod_price not in request.data:
             price = int(product.price)
         else:
-            price = request.data['price']
+            price = request.data[cart_item_prod_price]
 
-        if "modifiers" not in request.data:
+        if cart_item_prod_modifiers not in request.data:
             modifiers = {}
         else:
-            modifiers = request.data['modifiers']
+            modifiers = request.data[cart_item_prod_modifiers]
 
-        if "additives" not in request.data:
+        if cart_item_prod_additives not in request.data:
             additives = []
         else:
-            additives = request.data['additives']
+            additives = request.data[cart_item_prod_additives]
 
         # check if request data is relevant
         if title != product.title:
@@ -120,13 +122,13 @@ class AddToCartAPIView(APIView):
 
         # new array for a product field
         product_dict = {
-            "id": product.id,
-            "category": product.category.slug,
-            "title": title,
-            "slug": slug,
-            "price": price,
-            "modifiers": modifiers,
-            "additives": additives
+            cart_item_prod_id: product.id,
+            cart_item_prod_category: product.category.slug,
+            cart_item_prod_title: title,
+            cart_item_prod_slug: slug,
+            cart_item_prod_price: price,
+            cart_item_prod_modifiers: modifiers,
+            cart_item_prod_additives: additives
         }
 
         if cart_session:

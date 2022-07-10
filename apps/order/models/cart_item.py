@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from apps.product.models.cart_item_product_keys import *
 
 User = get_user_model()
 
@@ -20,25 +21,25 @@ class CartItem(models.Model):
 
     @property
     def get_product_slug(self):
-        return self.product["slug"]
+        return self.product[cart_item_prod_slug]
 
     @property
     def get_product_price(self):
-        return self.product["price"]
+        return self.product[cart_item_prod_price]
 
     @property
     def get_additives(self):
-        return self.product["additives"]
+        return self.product[cart_item_prod_additives]
 
     @property
     def get_modifiers(self):
-        return self.product["modifiers"]
+        return self.product[cart_item_prod_modifiers]
 
     @property
     def get_total_item_price(self):
         product_price = self.get_product_price
         if self.get_modifiers:
-            product_price = self.product["modifiers"]["price"]
+            product_price = self.product[cart_item_prod_modifiers]["price"]
         if self.get_additives:
             for i in self.get_additives:
                 product_price += i["price"]
