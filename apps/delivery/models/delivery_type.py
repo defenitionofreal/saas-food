@@ -1,11 +1,16 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from decimal import Decimal
 
 from apps.delivery.models.enums import (DeliveryType,
                                         SaleType,
                                         PaymentType)
 
 User = get_user_model()
+
+
+def get_absolute_from_percent_and_total(percent, total):
+    return round((percent / Decimal('100')) * total)
 
 
 class Delivery(models.Model):
@@ -56,3 +61,39 @@ class Delivery(models.Model):
     def __str__(self):
         return f"{self.id}: {self.delivery_type}"
 
+    def get_delivery_sale_type(self):
+        return self.sale_type
+
+    def get_delivery_sale_amount(self):
+        if self.sale_amount:
+            return self.sale_amount
+        return 0
+
+    @property
+    def is_absolute_discount_type(self):
+        return self.get_delivery_sale_type() == SaleType.ABSOLUTE
+
+    @property
+    def is_percent_discount_type(self):
+        return self.get_delivery_sale_type() == SaleType.PERCENT
+
+    @property
+    def has_free_delivery_amount(self):
+        return bool(self.free_delivery_amount)
+
+    def get_delivery_discount(self, order_price):
+        delivery_sale = self.get_delivery_sale_amount()
+
+        if self.is_absolute_discount_type:
+            return delivery_sale
+
+        if self.is_percent_discount_type:
+            return get_absolute_from_percent_and_total(delivery_sale, order_price)
+
+        return 0
+
+    def get_delivery_cost(self, order_price):
+        min_order_price = self.free_delivery_amount
+        if min_order_price and order_price >= min_order_price:
+            return 0
+        return self.delivery_price
