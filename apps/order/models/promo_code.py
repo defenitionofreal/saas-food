@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 # TODO: institution ManyToMany
 class PromoCode(models.Model):
     """
@@ -23,8 +24,8 @@ class PromoCode(models.Model):
     date_start = models.DateField(blank=True, null=True)
     date_finish = models.DateField(blank=True, null=True)
     code_use = models.PositiveIntegerField(blank=True, null=True)
-    code_use_by_user = models.PositiveIntegerField(blank=True, null=True)
-    num_uses = models.PositiveIntegerField(default=0, editable=False)
+    code_use_by_user = models.PositiveIntegerField(blank=True, null=True)  # total uses by specific user
+    num_uses = models.PositiveIntegerField(default=0, editable=False)  # total uses across all users
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
