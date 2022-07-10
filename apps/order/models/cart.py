@@ -61,7 +61,8 @@ class Cart(models.Model):
     @property
     def get_total_cart(self):
         q = self.items.all()
-        return sum([i.get_total_item_price for i in q])
+        s = sum([i.get_total_item_price for i in q])
+        return Decimal(s)
 
     # ======== DELIVERY ========
 
@@ -123,11 +124,7 @@ class Cart(models.Model):
                 return self.get_delivery_zone["price"]
         return self.get_delivery_zone["price"]
 
-    def get_delivery_cost_contribution_to_final_price(self, total):
-        """
-        cost of the delivery
-        :return: value <= 0
-        """
+    def get_final_delivery_cost(self, total):
         if not self.delivery or self.has_free_delivery:
             return 0
 
@@ -137,14 +134,13 @@ class Cart(models.Model):
 
         cost = 0
 
-        # check for courier type and delivery zone
         if self.get_delivery_zone:
             cost += self.get_delivery_cost_for_delivery_zone(total)
         else:
             cost += dm.get_delivery_cost(total)
 
         discount = dm.get_delivery_discount(total)
-        return -1 * (cost - discount)
+        return cost - discount
 
     # ======== PROMO CODE ========
 
@@ -249,11 +245,11 @@ class Cart(models.Model):
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is True:
-                return -1.0 * self.customer_bonus
+                return -1 * self.customer_bonus
         return 0
 
     def get_sale_contrib_to_total(self):
-        return -1.0 * self.get_sale
+        return -1 * Decimal(self.get_sale)
 
     @property
     def get_total_cart_after_sale(self):
@@ -263,7 +259,7 @@ class Cart(models.Model):
         promo_code_bonus_contrib = self.get_promo_code_bonus_contrib_to_total()
         return total + sale_contrib + promo_code_bonus_contrib
 
-    def get_bonus_contrib_to_final_price(self):
+    def get_customer_bonus_contrib_to_final_price(self):
         """
         discount amount
         :return: value <= 0
@@ -273,15 +269,17 @@ class Cart(models.Model):
 
         bonus = Bonus.objects.get(institution=self.institution)
         if bonus.is_active and bonus.is_promo_code is False:
-            return -1.0 * self.customer_bonus
+            return -1 * self.customer_bonus
+
+        return 0
 
     @property
     def final_price(self):
         """ final money amount for customer to pay """
         total = self.get_total_cart_after_sale
 
-        bonus_contrib = self.get_bonus_contrib_to_final_price()
-        delivery_contrib = self.get_delivery_cost_contribution_to_final_price(total)
+        bonus_contrib = self.get_customer_bonus_contrib_to_final_price()
+        delivery_contrib = self.get_final_delivery_cost(total)
 
         total += bonus_contrib + delivery_contrib
         return total
