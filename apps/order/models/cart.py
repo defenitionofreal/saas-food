@@ -66,6 +66,17 @@ class Cart(models.Model):
 
     # ======== DELIVERY ========
 
+    def get_delivery_model(self) -> Delivery:
+        if self.delivery:
+            return self.delivery.type
+
+    @property
+    def get_delivery_sale(self):
+        dm = self.get_delivery_model()
+        if dm:
+            return dm.get_delivery_sale_amount()
+        return 0
+
     @property
     def get_delivery_price(self):
         if self.delivery is not None:
@@ -88,10 +99,6 @@ class Cart(models.Model):
     def has_free_delivery(self):
         """whether delivery is free in any case"""
         return self.promo_code and self.promo_code.delivery_free is True
-
-    def get_delivery_model(self) -> Delivery:
-        if self.delivery:
-            return self.delivery.type
 
     @property
     def get_min_delivery_order_amount(self):
