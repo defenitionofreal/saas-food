@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+
+from apps.delivery.models import Delivery
 from apps.order.models import Bonus
 from apps.delivery.models.enums import DeliveryType, SaleType
 
@@ -11,8 +13,8 @@ import json
 User = get_user_model()
 
 
-def calc_rounded_price(a, b):
-    return round((a / Decimal('100')) * b)
+def get_absolute_from_percent_and_total(percent, total):
+    return round((percent / Decimal('100')) * total)
 
 
 class Cart(models.Model):
@@ -53,10 +55,15 @@ class Cart(models.Model):
                                   null=True,
                                   unique=True)
 
+    def __str__(self):
+        return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'
+
     @property
     def get_total_cart(self):
         q = self.items.all()
         return sum([i.get_total_item_price for i in q])
+
+    # ======== DELIVERY ========
 
     @property
     def get_delivery_price(self):
@@ -65,28 +72,25 @@ class Cart(models.Model):
                 return self.delivery.type.delivery_price
 
     @property
-    def get_free_delivery_amount(self):
-        if self.delivery is not None:
-            if self.delivery.type.free_delivery_amount:
-                return self.delivery.type.free_delivery_amount
+    def has_free_delivery_amount(self):
+        dm = self.get_delivery_model()
+        if dm:
+            return dm.has_free_delivery_amount
+        return False
 
     @property
-    def get_delivery_sale_discount(self):
-        """returns negative value to decrease the price"""
-        if not self.delivery:
-            return 0
+    def get_free_delivery_amount(self):
+        if self.has_free_delivery_amount:
+            return self.delivery.type.free_delivery_amount
 
-        delivery_sale = -1.0 * self.delivery.type.sale_amount
+    @property
+    def has_free_delivery(self):
+        """whether delivery is free in any case"""
+        return self.promo_code and self.promo_code.delivery_free is True
 
-        is_absolute_sale = delivery_sale and self.delivery.type.sale_type == SaleType.ABSOLUTE
-        is_percent_sale = delivery_sale and self.delivery.type.sale_type == SaleType.PERCENT
-
-        if is_absolute_sale:
-            return delivery_sale
-
-        if is_percent_sale:
-            total = self.get_total_cart_consider_sale
-            return calc_rounded_price(delivery_sale, total)
+    def get_delivery_model(self) -> Delivery:
+        if self.delivery:
+            return self.delivery.type
 
     @property
     def get_min_delivery_order_amount(self):
@@ -105,6 +109,7 @@ class Cart(models.Model):
                     zone.dz_coordinates.values_list("coordinates",
                                                     flat=True)[0]))
                 if boolean_point_in_polygon(point, polygon):
+                    # todo: replace literal keys with variables
                     return {"title": zone.title,
                             "price": zone.price,
                             "free_delivery_amount": zone.free_delivery_amount,
@@ -112,13 +117,60 @@ class Cart(models.Model):
                             "delivery_time": zone.delivery_time}
         return None
 
+    def get_delivery_cost_for_delivery_zone(self, total):
+        if self.get_delivery_zone["free_delivery_amount"]:
+            if total < self.get_delivery_zone["free_delivery_amount"]:
+                return self.get_delivery_zone["price"]
+        return self.get_delivery_zone["price"]
+
+    def get_delivery_cost_contribution_to_final_price(self, total):
+        """
+        cost of the delivery
+        :return: value <= 0
+        """
+        if not self.delivery or self.has_free_delivery:
+            return 0
+
+        dm = self.get_delivery_model()
+        if not dm:
+            return 0
+
+        cost = 0
+
+        # check for courier type and delivery zone
+        if self.get_delivery_zone:
+            cost += self.get_delivery_cost_for_delivery_zone(total)
+        else:
+            cost += dm.get_delivery_cost(total)
+
+        discount = dm.get_delivery_discount(total)
+        return -1 * (cost - discount)
+
+    # ======== PROMO CODE ========
+
+    def get_promo_code_type(self):
+        if self.promo_code:
+            return self.promo_code.code_type
+
     @property
     def is_promo_code_absolute_sale(self):
-        return self.promo_code and self.promo_code.code_type == SaleType.ABSOLUTE
+        return self.get_promo_code_type() == SaleType.ABSOLUTE
 
     @property
     def is_promo_code_percent_sale(self):
-        return self.promo_code and self.promo_code.code_type == SaleType.PERCENT
+        return self.get_promo_code_type() == SaleType.PERCENT
+
+    @property
+    def get_bonus_accrual(self):
+        """ amount of bonus money given to customer after this order """
+        bonus = Bonus.objects.get(institution=self.institution)
+        if bonus and bonus.is_active:
+            if bonus.is_promo_code is True:
+                sale_total = self.get_total_cart_after_sale
+            else:
+                sale_total = self.get_total_cart
+            return get_absolute_from_percent_and_total(bonus.accrual, sale_total)
+        return 0
 
     @property
     def get_sale(self):
@@ -175,7 +227,7 @@ class Cart(models.Model):
                         if i["product__category"] in code_cat:
                             cat_total += i["product__price"] * i["quantity"]
                     cat_total = cat_total if cat_total >= 0.0 else 0.0
-                    return calc_rounded_price(sale, cat_total)
+                    return get_absolute_from_percent_and_total(sale, cat_total)
 
                 # products participate coupon
                 if has_promo_code_products:
@@ -184,46 +236,38 @@ class Cart(models.Model):
                         if i["product__slug"] in code_product:
                             products_total += i["product__price"] * i["quantity"]
                     products_total = products_total if products_total >= 0.0 else 0.0
-                    return calc_rounded_price(sale, products_total)
-                return calc_rounded_price(sale, self.get_total_cart)
+                    return get_absolute_from_percent_and_total(sale, products_total)
+                return get_absolute_from_percent_and_total(sale, self.get_total_cart)
 
-        return None
+        return 0
 
-    @property
-    def get_total_cart_after_sale(self):
-        total = self.get_total_cart
-        sale = 0
-        if self.get_sale is not None:
-            sale = self.get_sale
+    def get_promo_code_bonus_contrib_to_total(self):
+        """
+        discount from bonus promo code
+        :return: value <= 0
+        """
         if self.customer_bonus is not None:
             bonus = Bonus.objects.get(institution=self.institution)
             if bonus.is_active and bonus.is_promo_code is True:
-                return total - (sale + self.customer_bonus)
-        return total - sale
+                return -1.0 * self.customer_bonus
+        return 0
+
+    def get_sale_contrib_to_total(self):
+        return -1.0 * self.get_sale
 
     @property
-    def get_total_cart_consider_sale(self):
-        with_sale = self.get_total_cart_after_sale
-        return with_sale if with_sale else self.get_total_cart
+    def get_total_cart_after_sale(self):
+        """ order cost after discounts applied"""
+        total = self.get_total_cart
+        sale_contrib = self.get_sale_contrib_to_total()
+        promo_code_bonus_contrib = self.get_promo_code_bonus_contrib_to_total()
+        return total + sale_contrib + promo_code_bonus_contrib
 
-    @property
-    def get_bonus_accrual(self):
-        bonus = Bonus.objects.get(institution=self.institution)
-        if bonus.is_active:
-            sale_total = self.get_total_cart_after_sale if bonus.is_promo_code is True else self.get_total_cart
-            return calc_rounded_price(bonus.accrual, sale_total)
-
-    @property
-    def has_free_delivery(self):
-        return self.promo_code and self.promo_code.delivery_free is True
-
-    @property
-    def has_free_delivery_amount(self):
-        if self.delivery:
-            return bool(self.delivery.type.free_delivery_amount)
-
-    def get_bonus_contrib_discount_to_final_price(self):
-        """returns negative value to sum up with total (bonus should decrease the price)"""
+    def get_bonus_contrib_to_final_price(self):
+        """
+        discount amount
+        :return: value <= 0
+        """
         if not self.customer_bonus:
             return 0
 
@@ -231,48 +275,13 @@ class Cart(models.Model):
         if bonus.is_active and bonus.is_promo_code is False:
             return -1.0 * self.customer_bonus
 
-    def get_delivery_cost_for_delivery_zone(self, total):
-        if self.get_delivery_zone["free_delivery_amount"]:
-            if total < self.get_delivery_zone["free_delivery_amount"]:
-                return self.get_delivery_zone["price"]
-        return self.get_delivery_zone["price"]
-
-    def get_delivery_cost_for_free_delivery_amount(self, total):
-        assert self.has_free_delivery_amount
-        free_delivery_amount = self.delivery.type.free_delivery_amount
-        if free_delivery_amount:
-            if total < free_delivery_amount:
-                return total
-        else:
-            return self.get_delivery_price
-
-    def get_delivery_cost_contribution_to_final_price(self, total):
-        if not self.delivery or self.has_free_delivery:
-            return 0
-
-        # check for courier type and delivery zone
-        if self.get_delivery_zone:
-            total += self.get_delivery_cost_for_delivery_zone(total)
-        else:
-            if self.has_free_delivery_amount:
-                total += self.get_delivery_cost_for_free_delivery_amount(total)
-
-        total += self.get_delivery_sale_discount
-
     @property
     def final_price(self):
-        total = self.get_total_cart_consider_sale
+        """ final money amount for customer to pay """
+        total = self.get_total_cart_after_sale
 
-        bonus_contrib = self.get_bonus_contrib_discount_to_final_price()
-        total += bonus_contrib
-
-        # this was in the original code
-        # if bonus_contrib == 0:
-        #     return total
-
+        bonus_contrib = self.get_bonus_contrib_to_final_price()
         delivery_contrib = self.get_delivery_cost_contribution_to_final_price(total)
-        total += delivery_contrib
-        return total
 
-    def __str__(self):
-        return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'
+        total += bonus_contrib + delivery_contrib
+        return total
