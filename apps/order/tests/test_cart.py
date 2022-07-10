@@ -1,3 +1,4 @@
+from apps.delivery.models.enums import SaleType
 from apps.order.services.product_obj_to_cart_item_dict import \
     get_cart_item_dict_from_product_object_no_modifiers_no_additives
 from apps.order.tests.test_setup_base import TestSetupBase
@@ -40,11 +41,28 @@ class TestCartNoModifiersAdditivesInProduct(TestSetupBase):
     def get_cart(self) -> Cart:
         return self.cart
 
+    def get_basic_total_cart_price(self):
+        return self.product1_price * self.quantity_p1 + self.product2_price * self.quantity_p2
+
     def test_get_total_cart(self):
-        expected = self.product1_price * self.quantity_p1 + self.product2_price * self.quantity_p2
+        expected = self.get_basic_total_cart_price()
         res = self.get_cart().get_total_cart
         self.assertEqual(expected, res)
 
-    def test_work(self):
-        print(self.cart)
-        self.assertTrue(True)
+    def test_final_price_with_delivery_and_bonus(self):
+        delivery_sale = 25
+        delivery_sale_type = SaleType.ABSOLUTE
+        cart = self.get_cart()
+        delivery = self.create_delivery_obj(delivery_sale, delivery_sale_type)
+        delivery_info = self.create_delivery_info_obj(delivery)
+        cart.delivery = delivery_info
+
+        customer_bonus = 30
+        cart.bonus = self.create_bonus(is_promo_code=True)
+        cart.customer_bonus = customer_bonus
+
+        expected_final_price = self.get_basic_total_cart_price() - (delivery_sale + customer_bonus)
+        result_final_price = cart.final_price
+
+        self.assertEqual(expected_final_price, result_final_price)
+        cart.delivery = None
