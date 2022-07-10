@@ -13,8 +13,8 @@ class Bonus(models.Model):
                                     on_delete=models.CASCADE,
                                     related_name="bonuses")
     is_active = models.BooleanField(default=False)
-    write_off = models.PositiveIntegerField()  # %
-    accrual = models.PositiveIntegerField()  # %
+    write_off = models.PositiveIntegerField()  # max discount, % from order cost
+    accrual = models.PositiveIntegerField()  # amount to get to customer after order is done, % from order cost
     is_promo_code = models.BooleanField(default=False)
     is_registration_bonus = models.BooleanField(default=False)
     # TODO: добавить функций для бонуса при регистрации
