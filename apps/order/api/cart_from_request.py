@@ -15,6 +15,7 @@ def get_cart_from_request(request, domain):
             return Cart.objects.get(institution=institution,
                                     session_id=session[settings.CART_SESSION_ID])
 
+
 def get_or_create_cart_from_request(request, domain):
     institution = Institution.objects.get(domain=domain)
     user = request.user

@@ -31,7 +31,6 @@ class AddToCartAPIView(APIView):
 
         institution = Institution.objects.get(domain=domain)
         product = get_object_or_404(Product, slug=product_slug)
-        user = self.request.user
 
         # check if request data exists
         if cart_item_prod_title not in request.data:
