@@ -37,6 +37,14 @@ class PromoCode(models.Model):
         return self.title
 
     @property
+    def is_absolute_sale(self):
+        return self.code_type == SaleType.ABSOLUTE
+
+    @property
+    def is_percent_sale(self):
+        return self.code_type == SaleType.PERCENT
+
+    @property
     def has_num_uses_left(self):
         if not self.code_use:
             return True
