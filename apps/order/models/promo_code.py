@@ -1,8 +1,13 @@
 from django.db import models
 from apps.delivery.models.enums import SaleType
 from django.contrib.auth import get_user_model
+import datetime
 
 User = get_user_model()
+
+
+def get_today_date():
+    return datetime.datetime.now().date()
 
 
 # TODO: institution ManyToMany
@@ -31,6 +36,44 @@ class PromoCode(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def has_num_uses_left(self):
+        if not self.code_use:
+            return True
+        return self.code_use > self.num_uses
+
+    def can_be_used_on_day_by_start_date(self, date):
+        if not self.date_start:
+            return True
+        return date >= self.date_start
+
+    def can_be_used_on_day_by_finish_date(self, date):
+        if not self.date_finish:
+            return True
+        return date < self.date_finish
+
+    @property
+    def can_be_used_today_by_start_date(self):
+        return self.can_be_used_on_day_by_start_date(get_today_date())
+
+    @property
+    def can_be_used_today_by_finish_date(self):
+        return self.can_be_used_on_day_by_finish_date(get_today_date())
+
+    def can_be_used_by_cart_total(self, cart_total_price):
+        if not self.cart_total:
+            return True
+        return cart_total_price >= self.cart_total
+
+    def increase_num_uses(self):
+        self.num_uses += 1
+        self.save()
+
+    def can_be_used_by_user_with_use_count(self, use_count):
+        if not self.code_use_by_user:
+            return True
+        return self.code_use_by_user > use_count
+
 
 class PromoCodeUser(models.Model):
     """
@@ -45,3 +88,12 @@ class PromoCodeUser(models.Model):
 
     def __str__(self):
         return f'{self.user.phone}: {self.code}'
+
+    @property
+    def can_use_this_code(self):
+        m: PromoCode = self.code
+        return m.can_be_used_by_user_with_use_count(self.num_uses)
+
+    def increase_num_uses(self):
+        self.num_uses += 1
+        self.save()
