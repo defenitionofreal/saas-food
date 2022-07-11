@@ -60,6 +60,10 @@ class Cart(models.Model):
     def __str__(self):
         return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'
 
+    def set_customer_bonus_amount(self, amount):
+        self.customer_bonus = amount
+        self.save()
+
     @property
     def get_total_cart(self):
         q = self.items.all()
