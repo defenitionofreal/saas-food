@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from rest_framework.generics import get_object_or_404
+from django.db.models import F
+
 
 from apps.delivery.models import Delivery
 from apps.order.models import Bonus
@@ -9,6 +12,8 @@ from apps.delivery.models.enums import DeliveryType, SaleType
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
 import json
+
+from apps.product.models import Product
 
 User = get_user_model()
 
@@ -290,3 +295,18 @@ class Cart(models.Model):
 
         total += bonus_contrib + delivery_contrib
         return total
+
+    # ========================================
+    def remove_product_by_slug(self, product_slug):
+        product = get_object_or_404(Product, slug=product_slug)
+        has_product_items = self.items.filter(product__slug=product.slug).exists()
+        if not has_product_items:
+            return
+
+        cart_item = self.items.get(product__slug=product.slug, cart=self)
+        if cart_item.quantity > 1:
+            cart_item.quantity = F("quantity") - 1
+            cart_item.save(update_fields=("quantity",))
+        else:
+            self.items.remove(cart_item)
+
