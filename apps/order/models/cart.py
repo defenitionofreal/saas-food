@@ -4,10 +4,10 @@ from decimal import Decimal
 from rest_framework.generics import get_object_or_404
 from django.db.models import F
 
-
 from apps.delivery.models import Delivery
 from apps.order.models import Bonus
 from apps.delivery.models.enums import DeliveryType, SaleType
+from .cart_item import CartItem
 
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
@@ -297,6 +297,16 @@ class Cart(models.Model):
         return total
 
     # ========================================
+    def add_product_to_cart(self, product_dict):
+        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict, cart=self)
+        do_update_quantity = not cart_item_created
+
+        if do_update_quantity:
+            cart_item.quantity = F("quantity") + 1
+            cart_item.save(update_fields=("quantity",))
+        else:
+            self.items.add(cart_item)
+
     def remove_product_by_slug(self, product_slug):
         product = get_object_or_404(Product, slug=product_slug)
         has_product_items = self.items.filter(product__slug=product.slug).exists()
@@ -309,4 +319,3 @@ class Cart(models.Model):
             cart_item.save(update_fields=("quantity",))
         else:
             self.items.remove(cart_item)
-
