@@ -2,13 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
+from apps.order.api.cart_from_request import get_or_create_cart_from_request
+from apps.order.serializers import CartSerializer
 from apps.product.models import Product
 from apps.company.models import Institution
-from apps.order.models import Cart, CartItem
 from apps.order.services.generate_cart_key import _generate_cart_key
 
 from django.conf import settings
-from django.db.models import F
 
 from apps.product.models.cart_item_product_keys import *
 
@@ -69,10 +69,9 @@ class AddToCartAPIView(APIView):
 
         # здесь я беру cart_id или создаю cart_id в сессии
         session = self.request.session
-        if not settings.CART_SESSION_ID in session:
+        if settings.CART_SESSION_ID not in session:
             session[settings.CART_SESSION_ID] = _generate_cart_key()
-        else:
-            session[settings.CART_SESSION_ID]
+
         session.modified = True
         cart_session = session
 
@@ -117,10 +116,11 @@ class AddToCartAPIView(APIView):
                 modifiers["price"] = int(product_modifiers[0]["modifiers_price__price"])
             else:
                 modifiers.clear()
+
         if not product_modifiers and modifiers:
             modifiers.clear()
 
-        # new array for a product field
+        # new dict for a product field
         product_dict = {
             cart_item_prod_id: product.id,
             cart_item_prod_category: product.category.slug,
@@ -131,31 +131,10 @@ class AddToCartAPIView(APIView):
             cart_item_prod_additives: additives
         }
 
-        if cart_session:
-            if user.is_authenticated:
-                cart, cart_created = Cart.objects.get_or_create(
-                    institution=institution,
-                    customer=user,
-                    session_id=session[settings.CART_SESSION_ID])
-                cart_item, cart_item_created = CartItem.objects.get_or_create(
-                    product=product_dict,
-                    cart=cart)
-            else:
-                cart, cart_created = Cart.objects.get_or_create(
-                    institution=institution,
-                    session_id=session[settings.CART_SESSION_ID])
-                cart_item, cart_item_created = CartItem.objects.get_or_create(
-                    product=product_dict,
-                    cart=cart)
+        assert cart_session
 
-            if cart_created is False:
-                if cart.items.filter(product=product_dict).exists():
-                    cart_item.quantity = F("quantity") + 1
-                    cart_item.save(update_fields=("quantity",))
-                    return Response({"detail": "Product quantity updated"})
-                else:
-                    cart.items.add(cart_item)
-                    return Response({"detail": "New product added"})
-            else:
-                cart.items.add(cart_item)
-                return Response({"detail": "Cart created and product added"})
+        cart, cart_created = get_or_create_cart_from_request(request, domain)
+        cart.add_product_to_cart(product_dict)
+
+        serializer = CartSerializer(cart, context={"request": request})
+        return Response(serializer.data)
