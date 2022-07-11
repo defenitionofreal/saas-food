@@ -69,6 +69,13 @@ class Cart(models.Model):
         s = sum([i.get_total_item_price for i in q])
         return Decimal(s)
 
+    @property
+    def has_not_promo_code_bonus(self):
+        if self.customer_bonus is not None:
+            bonus = Bonus.objects.filter(institution=self.institution).first()
+            return bonus and bonus.is_promo_code is False
+        return False
+
     # ======== DELIVERY ========
 
     def get_delivery_model(self) -> Delivery:
