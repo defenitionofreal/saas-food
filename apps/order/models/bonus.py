@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from apps.order.services.math_utils import get_absolute_from_percent_and_total
+
 User = get_user_model()
 
 # TODO: institution ManyToMany
@@ -23,6 +25,9 @@ class Bonus(models.Model):
     def __str__(self):
         return f'{self.institution.domain} - write off: {self.write_off} / accrual: {self.accrual}'
 
+    def get_write_off_absolute_amount(self, total_cart_price):
+        return get_absolute_from_percent_and_total(self.write_off, total_cart_price)
+
 
 class UserBonus(models.Model):
     """
@@ -35,6 +40,11 @@ class UserBonus(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,
                              blank=True)
     bonus = models.PositiveIntegerField()
+
+    def write_off_bonus_amount(self, amount):
+        amount = amount if amount < self.bonus else self.bonus
+        self.bonus -= amount
+        self.save()
 
     def __str__(self):
         return f'{self.institution.domain}: {self.user.phone} with {self.bonus} points'
