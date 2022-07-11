@@ -14,6 +14,7 @@ from geojson import Point, Polygon
 import json
 
 from apps.product.models import Product
+from ..services.cart_calculate_sale import cart_calculate_sale
 from ..services.math_utils import get_absolute_from_percent_and_total
 
 User = get_user_model()
@@ -164,18 +165,6 @@ class Cart(models.Model):
 
     # ======== PROMO CODE ========
 
-    def get_promo_code_type(self):
-        if self.promo_code:
-            return self.promo_code.code_type
-
-    @property
-    def is_promo_code_absolute_sale(self):
-        return self.get_promo_code_type() == SaleType.ABSOLUTE
-
-    @property
-    def is_promo_code_percent_sale(self):
-        return self.get_promo_code_type() == SaleType.PERCENT
-
     @property
     def get_bonus_accrual(self):
         """ amount of bonus money given to customer after this order """
@@ -190,72 +179,7 @@ class Cart(models.Model):
 
     @property
     def get_sale(self):
-        if self.promo_code:
-            sale = self.promo_code.sale
-
-            items_cat = self.items.values("product__category",
-                                          "product__slug",
-                                          "product__price",
-                                          "quantity")
-
-            items_prod = self.items.values("product__slug",
-                                           "product__price",
-                                           "quantity")
-
-            has_promo_code_categories = self.promo_code.categories.all()
-            code_cat = []
-            if has_promo_code_categories:
-                code_cat = self.promo_code.categories.values_list("slug",
-                                                                  flat=True)
-
-            has_promo_code_products = self.promo_code.products.all()
-            code_product = []
-            if has_promo_code_products:
-                code_product = self.promo_code.products.values_list("slug",
-                                                                    flat=True)
-
-            # ABSOLUTE SALE
-            if self.is_promo_code_absolute_sale:
-                # categories participate coupon
-                if has_promo_code_categories:
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
-                # products participate coupon
-                if has_promo_code_products:
-                    for i in items_prod:
-                        if i["product__slug"] in code_product:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
-
-                sale = sale if sale >= 0.0 else 0.0
-                return sale
-
-            # PERCENT SALE
-            if self.is_promo_code_percent_sale:
-                # categories participate coupon
-                if has_promo_code_categories:
-                    cat_total = 0
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            cat_total += i["product__price"] * i["quantity"]
-                    cat_total = cat_total if cat_total >= 0.0 else 0.0
-                    return get_absolute_from_percent_and_total(sale, cat_total)
-
-                # products participate coupon
-                if has_promo_code_products:
-                    products_total = 0
-                    for i in items_prod:
-                        if i["product__slug"] in code_product:
-                            products_total += i["product__price"] * i["quantity"]
-                    products_total = products_total if products_total >= 0.0 else 0.0
-                    return get_absolute_from_percent_and_total(sale, products_total)
-                return get_absolute_from_percent_and_total(sale, self.get_total_cart)
-
-        return 0
+        return cart_calculate_sale(self, self.promo_code)
 
     def get_promo_code_bonus_contrib_to_total(self):
         """
