@@ -69,14 +69,7 @@ class CartRetriever:
             cart_session_id = self.__get_cart_session_id()
             return self.__retrieve_cart_auth_with_session_id(institution, user, cart_session_id)
         else:
-            self.__add_cart_id_to_session()
-            cart_session_id = self.__get_cart_session_id()
-            cart = Cart.objects.filter(institution=institution, session_id=cart_session_id, customer=user).first()
-            if not cart:
-                fail_response = Response({"detail": "Cart does not exist. (auth cart)"})
-
-        self.fail_response = fail_response
-        self.cart = cart
+            return self.__retrieve_cart_auth_no_session_id(institution, user)
 
     def __retrieve_cart_auth_with_session_id(self, institution: Institution, user, cart_session_id):
         cart = None
