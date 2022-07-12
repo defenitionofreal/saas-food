@@ -15,6 +15,7 @@ import json
 
 from apps.product.models import Product
 from ..services.cart_calculate_sale import cart_calculate_sale
+from ..services.cart_merging import merge_two_carts
 from ..services.math_utils import get_absolute_from_percent_and_total
 
 User = get_user_model()
@@ -251,3 +252,7 @@ class Cart(models.Model):
             cart_item.save(update_fields=("quantity",))
         else:
             self.items.remove(cart_item)
+
+    def merge_with_cart(self, other_cart):
+        """  Combines two carts together """
+        merge_two_carts(self, other_cart)
