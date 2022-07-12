@@ -75,6 +75,7 @@ class CartRetriever:
             if not cart.customer:
                 cart.customer = user
                 cart.save()
+            # todo: cart merging logic should be moved to cart model
             # cart, cart_created = Cart.objects.get_or_create(
             #     institution=institution, customer=user)
             #
@@ -118,6 +119,7 @@ class CartRetriever:
 
     def __retrieve_cart_not_auth(self):
         if self.has_cart_session_id:
-            self.cart = Cart.objects.get(institution=self.__get_institution(), session_id=self.__get_cart_session_id())
+            cart_session_id = self.__get_cart_session_id()
+            self.cart = Cart.objects.get(institution=self.__get_institution(), session_id=cart_session_id)
         else:
             self.fail_response = Response({"detail": "Cart does not exist. (session cart)"})
