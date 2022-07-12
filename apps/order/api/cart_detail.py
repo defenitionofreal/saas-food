@@ -5,6 +5,7 @@ from apps.company.models import Institution, MinCartCost
 from apps.order.api.cart_retriever import CartRetriever
 from apps.order.serializers import CartSerializer
 
+
 class CartAPIView(APIView):
     """
     Cart Detail View:
@@ -23,7 +24,7 @@ class CartAPIView(APIView):
         if not cart_retriever.has_cart:
             return cart_retriever.get_response()
 
-        # always modify this because cart session id might be added
+        # always modify request because cart session id might be added
         self.request = cart_retriever.request
         cart = cart_retriever.get_cart()
 
