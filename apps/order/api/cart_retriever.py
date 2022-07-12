@@ -51,29 +51,25 @@ class CartRetriever:
     def __retrieve(self):
         user = self.__get_user()
 
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             return self.__retrieve_cart_auth()
         else:
             return self.__retrieve_cart_not_auth()
 
     def __retrieve_cart_auth(self):
+        if self.has_cart_session_id:
+            return self.__retrieve_cart_auth_with_session_id()
+        else:
+            return self.__retrieve_cart_auth_no_session_id()
+
+    def __retrieve_cart_auth_with_session_id(self):
         institution = self.__get_institution()
         user = self.__get_user()
+        cart_session_id = self.__get_cart_session_id()
+
         cart = None
         fail_response = None
 
-        # todo: maybe firstly check for cart session id and provide this if absent
-        # with this logic will be more clear
-
-        if self.has_cart_session_id:
-            cart_session_id = self.__get_cart_session_id()
-            return self.__retrieve_cart_auth_with_session_id(institution, user, cart_session_id)
-        else:
-            return self.__retrieve_cart_auth_no_session_id(institution, user)
-
-    def __retrieve_cart_auth_with_session_id(self, institution: Institution, user, cart_session_id):
-        cart = None
-        fail_response = None
         cart = Cart.objects.filter(institution=institution, session_id=cart_session_id).first()
         if cart:
             if not cart.customer:
@@ -103,15 +99,18 @@ class CartRetriever:
             # del session[settings.CART_SESSION_ID]
             # #session.flush()
         else:
-            # if no session cart
             cart, cart_created = Cart.objects.get_or_create(institution=institution, customer=user,
                                                             session_id=cart_session_id)
 
         self.fail_response = fail_response
         self.cart = cart
 
-    def __retrieve_cart_auth_no_session_id(self, institution: Institution, user):
+    def __retrieve_cart_auth_no_session_id(self):
+        institution = self.__get_institution()
+        user = self.__get_user()
+
         self.__add_cart_id_to_session()
+
         cart_session_id = self.__get_cart_session_id()
         self.cart = Cart.objects.filter(institution=institution, session_id=cart_session_id, customer=user).first()
         if not self.cart:
