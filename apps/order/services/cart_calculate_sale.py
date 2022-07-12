@@ -5,13 +5,15 @@ prod_category = 'product__category'
 prod_slug = 'product__slug'
 prod_price = 'product__price'
 quantity = 'quantity'
+slug = 'slug'
 
 
-def cart_calculate_sale(cart, promo_code: PromoCode):
+def cart_calculate_sale(cart):
     from apps.order.models import Cart
-    if not isinstance(cart, Cart) or not isinstance(promo_code, PromoCode):
+    if not isinstance(cart, Cart) or cart.promo_code is None:
         return 0
 
+    promo_code: PromoCode = cart.promo_code
     sale = promo_code.sale
 
     items_cat = cart.items.values(prod_category, prod_slug, prod_price, quantity)
@@ -20,12 +22,12 @@ def cart_calculate_sale(cart, promo_code: PromoCode):
     has_promo_code_categories = promo_code.categories.all()
     code_cat = []
     if has_promo_code_categories:
-        code_cat = promo_code.categories.values_list("slug", flat=True)
+        code_cat = promo_code.categories.values_list(slug, flat=True)
 
     has_promo_code_products = cart.promo_code.products.all()
     code_product = []
     if has_promo_code_products:
-        code_product = promo_code.products.values_list("slug", flat=True)
+        code_product = promo_code.products.values_list(slug, flat=True)
 
     # ABSOLUTE SALE
     if promo_code.is_absolute_sale:

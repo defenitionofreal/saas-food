@@ -179,7 +179,7 @@ class Cart(models.Model):
 
     @property
     def get_sale(self):
-        return cart_calculate_sale(self, self.promo_code)
+        return cart_calculate_sale(self)
 
     def get_promo_code_bonus_contrib_to_total(self):
         """
