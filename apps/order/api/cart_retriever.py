@@ -63,6 +63,8 @@ class CartRetriever:
         fail_response = None
 
         # todo: maybe firstly check for cart session id and provide this if absent
+        # with this logic will be more clear
+
         if self.has_cart_session_id:
             cart_session_id = self.__get_cart_session_id()
             return self.__retrieve_cart_auth_with_session_id(institution, user, cart_session_id)
@@ -116,16 +118,11 @@ class CartRetriever:
         self.cart = cart
 
     def __retrieve_cart_auth_no_session_id(self, institution: Institution, user):
-        cart = None
-        fail_response = None
         self.__add_cart_id_to_session()
         cart_session_id = self.__get_cart_session_id()
-        cart = Cart.objects.filter(institution=institution, session_id=cart_session_id, customer=user).first()
-        if not cart:
-            fail_response = Response({"detail": "Cart does not exist. (auth cart)"})
-
-        self.fail_response = fail_response
-        self.cart = cart
+        self.cart = Cart.objects.filter(institution=institution, session_id=cart_session_id, customer=user).first()
+        if not self.cart:
+            self.fail_response = Response({"detail": "Cart does not exist. (auth cart)"})
 
     def __retrieve_cart_not_auth(self):
         if self.has_cart_session_id:
