@@ -4,6 +4,7 @@ from apps.company.models.institution import Institution
 from apps.delivery.models import Delivery, DeliveryInfo
 from apps.delivery.models.enums import DeliveryType, SaleType
 from apps.order.models import Bonus
+from apps.product.models import Product
 from apps.product.models.category import Category
 
 User = get_user_model()
@@ -41,3 +42,8 @@ class TestSetupBase(TestCase):
     def create_bonus(self, is_promo_code, write_off=100, accrual=100, is_active=True):
         return Bonus.objects.create(institution=self.institution, is_active=is_active, write_off=write_off,
                                     accrual=accrual, is_promo_code=is_promo_code)
+
+    def make_simple_product(self, title, price, slug):
+        # maybe get or create
+        return Product.objects.create(category=self.category, title=title, description='d', price=price,
+                               weight=1, cook_time=1, slug=slug)
