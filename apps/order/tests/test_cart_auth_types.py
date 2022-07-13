@@ -167,10 +167,11 @@ class TestCartRetrieveExistingUser(APITestCase):
         # setup session cart
         session_cart: Cart = Cart.objects.create(institution=self.institution)
         session_cart.session_id = s_id
-        add_product_to_cart_no_mod_and_additives(db_cart, self.prod1, 2)
-        add_product_to_cart_no_mod_and_additives(db_cart, self.prod2, 1)
+        add_product_to_cart_no_mod_and_additives(session_cart, self.prod1, 2)
+        add_product_to_cart_no_mod_and_additives(session_cart, self.prod2, 1)
 
         session_cart_id = session_cart.id
+        session_cart.save()
 
         # NO AUTH
 
@@ -182,9 +183,15 @@ class TestCartRetrieveExistingUser(APITestCase):
         # AUTH
 
         self.force_auth_user()
+        user_id = self.user.id
         resp2: Response = self.client.get(api_path)
         response_2 = resp2.data
-        print(response_2)
+        # self.assertEqual(response_2[cart_keys.id], db_cart_id)
+        # self.assertEqual(response_2[cart_keys.customer], user_id)
+
+        # todo: assert cart with id = session_cart_id is removed
+
+        self.logout_user()
 
 
 def refresh_cart_session_id(testclass: TestCartRetrieveExistingUser):
