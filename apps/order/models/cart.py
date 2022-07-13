@@ -230,9 +230,15 @@ class Cart(models.Model):
         return total
 
     # ========================================
+    def add_or_merge_item_to_cart(self, item: CartItem):
+        self.add_product_to_cart_as_product_dict(item.product, quantity=item.quantity)
+
     def add_product_to_cart_as_product_dict(self, product_dict, quantity=1):
-        quantity = 1 if quantity < 0 else quantity
-        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict, cart=self, quantity=quantity)
+        if quantity < 0:
+            return
+
+        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict, cart=self,
+                                                                      quantity=quantity)
         do_update_quantity = not cart_item_created
 
         if do_update_quantity:
