@@ -173,6 +173,8 @@ class TestCartRetrieveExistingUser(APITestCase):
         session_cart_id = session_cart.id
         session_cart.save()
 
+        expected_price = db_cart.final_price + session_cart.final_price
+
         # NO AUTH
 
         resp1: Response = self.client.get(api_path)
@@ -188,6 +190,7 @@ class TestCartRetrieveExistingUser(APITestCase):
         response_2 = resp2.data
         self.assertEqual(response_2[cart_keys.id], db_cart_id)
         self.assertEqual(response_2[cart_keys.customer], user_id)
+        self.assertEqual(response_2[cart_keys.final_price], expected_price)
 
         session_cart_exists = Cart.objects.filter(id=session_cart_id).exists()
         self.assertFalse(session_cart_exists)
