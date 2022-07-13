@@ -67,43 +67,29 @@ class CartRetriever:
         user = self.__get_user()
         cart_session_id = self.__get_cart_session_id()
 
-        cart = None
-        fail_response = None
+        user_db_cart: Cart = Cart.objects.filter(institution=institution, customer=user).first()
+        session_anon_cart: Cart = Cart.objects.filter(institution=institution,
+                                                session_id=cart_session_id).exclude(customer=user).first()
 
-        cart = Cart.objects.filter(institution=institution, session_id=cart_session_id).first()
-        if cart:
-            if not cart.customer:
-                cart.customer = user
-                cart.save()
-            # todo: cart merging logic should be moved to cart model
-            # cart, cart_created = Cart.objects.get_or_create(
-            #     institution=institution, customer=user)
-            #
-            # for session_item in session_cart.items.all():
-            #     session_item.cart = cart
-            #     session_item.save()
-            #
-            #     cart_item_duplicates = cart.items.filter(product__slug=session_item.product["slug"])
-            #     if cart_item_duplicates.exists():
-            #         for i in cart_item_duplicates:
-            #             i.quantity = F("quantity") + session_item.quantity
-            #             i.save(update_fields=("quantity",))
-            #     else:
-            #         cart.items.add(session_item)
-            #         cart.save()
-            #
-            # if session_cart.promo_code:
-            #     cart.promo_code = session_cart.promo_code
-            #     cart.save()
-            #
-            # session_cart.delete()
-            # del session[settings.CART_SESSION_ID]
-            # #session.flush()
-        else:
-            cart, cart_created = Cart.objects.get_or_create(institution=institution, customer=user,
-                                                            session_id=cart_session_id)
+        can_merge_carts = user_db_cart and session_anon_cart and (user_db_cart.id != session_anon_cart.id)
+        if can_merge_carts:
+            user_db_cart.merge_with_cart(session_anon_cart)
+            self.cart = user_db_cart
+            session_anon_cart.delete()
+            return
 
-        self.fail_response = fail_response
+        if user_db_cart:
+            self.cart = user_db_cart
+            return
+
+        if session_anon_cart:
+            session_anon_cart.customer = user
+            session_anon_cart.save()
+            self.cart = session_anon_cart
+            return
+
+        cart, cart_created = Cart.objects.get_or_create(institution=institution, customer=user,
+                                                        session_id=cart_session_id)
         self.cart = cart
 
     def __retrieve_cart_auth_no_session_id(self):
