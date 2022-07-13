@@ -230,15 +230,17 @@ class Cart(models.Model):
         return total
 
     # ========================================
-    def add_product_to_cart(self, product_dict):
-        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict, cart=self)
+    def add_product_to_cart_as_product_dict(self, product_dict, quantity=1):
+        quantity = 1 if quantity < 0 else quantity
+        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict, cart=self, quantity=quantity)
         do_update_quantity = not cart_item_created
 
         if do_update_quantity:
-            cart_item.quantity = F("quantity") + 1
+            cart_item.quantity = F("quantity") + quantity
             cart_item.save(update_fields=("quantity",))
         else:
             self.items.add(cart_item)
+        self.save()
 
     def remove_product_by_slug(self, product_slug):
         product = get_object_or_404(Product, slug=product_slug)

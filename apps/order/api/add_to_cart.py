@@ -133,7 +133,7 @@ class AddToCartAPIView(APIView):
         assert cart_session
 
         cart, cart_created = get_or_create_cart_from_request(request, domain)
-        cart.add_product_to_cart(product_dict)
+        cart.add_product_to_cart_as_product_dict(product_dict)
 
         serializer = CartSerializer(cart, context={"request": request})
         return Response(serializer.data)
