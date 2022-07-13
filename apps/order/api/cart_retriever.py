@@ -121,6 +121,9 @@ class CartRetriever:
         cart_session_id = ''
         if self.has_cart_session_id:
             cart_session_id = self.__get_cart_session_id()
-        self.cart = Cart.objects.filter(institution=self.__get_institution(), session_id=cart_session_id).first()
+
+        # search for carts not assigned to customer (for privacy)
+        self.cart = Cart.objects.filter(institution=self.__get_institution(), session_id=cart_session_id,
+                                        customer=None).first()
         if self.cart is None:
             self.fail_response = Response({"detail": "Cart does not exist. (session cart)"})
