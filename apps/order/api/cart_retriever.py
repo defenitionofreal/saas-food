@@ -118,8 +118,9 @@ class CartRetriever:
             self.fail_response = Response({"detail": "Cart does not exist. (auth cart)"})
 
     def __retrieve_cart_not_auth(self):
+        cart_session_id = ''
         if self.has_cart_session_id:
             cart_session_id = self.__get_cart_session_id()
-            self.cart = Cart.objects.get(institution=self.__get_institution(), session_id=cart_session_id)
-        else:
+        self.cart = Cart.objects.filter(institution=self.__get_institution(), session_id=cart_session_id).first()
+        if self.cart is None:
             self.fail_response = Response({"detail": "Cart does not exist. (session cart)"})
