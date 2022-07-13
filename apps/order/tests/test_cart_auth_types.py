@@ -186,10 +186,11 @@ class TestCartRetrieveExistingUser(APITestCase):
         user_id = self.user.id
         resp2: Response = self.client.get(api_path)
         response_2 = resp2.data
-        # self.assertEqual(response_2[cart_keys.id], db_cart_id)
-        # self.assertEqual(response_2[cart_keys.customer], user_id)
+        self.assertEqual(response_2[cart_keys.id], db_cart_id)
+        self.assertEqual(response_2[cart_keys.customer], user_id)
 
-        # todo: assert cart with id = session_cart_id is removed
+        session_cart_exists = Cart.objects.filter(id=session_cart_id).exists()
+        self.assertFalse(session_cart_exists)
 
         self.logout_user()
 
