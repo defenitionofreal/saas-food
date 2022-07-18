@@ -35,6 +35,13 @@ class CartHelper:
             return True
         return False
 
+    def _cart_min_amount(self) -> int:
+        """ cart minimum amount rule """
+        value = self.institution.min_cart_value.values_list("cost", flat=True)
+        if value:
+            return value[0]
+        return 0
+
     def _cart_get_or_create(self) -> tuple:
         """ get or create cart """
         self._check_or_generate_session_cart_id_key()
@@ -42,11 +49,13 @@ class CartHelper:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
                 customer=self.user,
-                session_id=self.session[settings.CART_SESSION_ID])
+                session_id=self.session[settings.CART_SESSION_ID],
+                min_amount=self._cart_min_amount())
         else:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
-                session_id=self.session[settings.CART_SESSION_ID])
+                session_id=self.session[settings.CART_SESSION_ID],
+                min_amount=self._cart_min_amount())
         return cart, cart_created
 
     # ======= CONDITIONS & DEDUCTIONS =======
