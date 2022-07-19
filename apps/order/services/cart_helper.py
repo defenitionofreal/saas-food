@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 # other
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
+from apps.delivery.models.enums import SaleType
 
 
 class CartHelper:
@@ -107,30 +108,31 @@ class CartHelper:
     def get_delivery_price(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.get_delivery_price()
+            return delivery.type.delivery_price
 
     @property
     def get_free_delivery_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.get_free_delivery_amount()
+            return delivery.type.free_delivery_amount
 
     @property
     def get_min_delivery_order_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.get_min_delivery_order_amount()
+            return delivery.type.min_order_amount
 
     @property
     def get_delivery_sale(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            delivery_sale = delivery.get_sale_amount()
+            delivery_sale = delivery.type.sale_amount
             if delivery_sale:
+                delivery_type = delivery.type.sale_type
                 total = self.get_total_cart_after_sale
-                if delivery.is_absolute_sale_type():
+                if delivery_type == SaleType.ABSOLUTE:
                     return delivery_sale
-                if delivery.is_percent_sale_type():
+                if delivery_type == SaleType.PERCENT:
                     return get_absolute_from_percent_and_total(delivery_sale, total)
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
