@@ -1,4 +1,6 @@
 # core
+from decimal import Decimal
+
 from django.conf import settings
 from django.db.models import F
 # apps
@@ -7,6 +9,7 @@ from apps.order.models import Cart, CartItem
 # rest framework
 from rest_framework.response import Response
 # other
+from apps.order.services.math_utils import get_absolute_from_percent_and_total
 
 
 class CartHelper:
@@ -91,6 +94,15 @@ class CartHelper:
         if cart:
             items = cart.items.all()
             return sum(i.get_total_item_price for i in items)
+        return 0
+
+    @property
+    def get_total_cart_after_sale(self):
+        total_cart = self.get_total_cart()
+        basic_sale = self.get_sale
+        customer_bonus_sale = self.get_customer_bonus_contribution_to_sale()
+        total_sale = basic_sale + customer_bonus_sale
+        return total_cart - total_sale
 
     @property
     def get_delivery_price(self):
@@ -122,6 +134,13 @@ class CartHelper:
                     is_promo_code = bonus.is_promo_code
                     if is_active and is_promo_code:
                         return customer_bonus
+        return 0
+
+    @property
+    def get_sale(self):
+        """ Basic sale amount, value >= 0"""
+        # todo: this method is too big for refactoring now, but is required for other stuf
+        # i will implement this later
         return 0
 
     # ======= ACTIONS =======
