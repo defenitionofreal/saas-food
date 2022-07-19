@@ -23,6 +23,9 @@ class CartHelper:
     # ======= BASIC METHODS =======
     # todo: здесь базовые методы, которые так или иначе часто необходимы
 
+    def _has_cart_session_id(self):
+        return settings.CART_SESSION_ID in self.session
+
     def _check_or_generate_session_cart_id_key(self):
         """ cart_id in sessions needed for all further requests """
         if settings.CART_SESSION_ID not in self.session:
