@@ -32,3 +32,9 @@ class DeliveryInfo(models.Model):
 
     def __str__(self):
         return f"{self.id}: {self.type}"
+
+    def get_delivery_price(self):
+        return self.type.delivery_price
+
+    def get_free_delivery_amount(self):
+        return self.type.free_delivery_amount
