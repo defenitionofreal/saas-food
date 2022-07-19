@@ -1,6 +1,7 @@
 from apps.delivery.models.enums import SaleType
 from apps.order.models import Cart, CartItem
 from apps.order.services.cart_helper import CartHelper
+from apps.order.services.math_utils import get_absolute_from_percent_and_total
 from apps.order.services.product_obj_to_cart_item_dict import get_cart_item_dict_from_product
 from apps.order.tests.dummy_request import DummyRequest
 from apps.order.tests.test_cart_setup import TestSetupBase
@@ -82,6 +83,40 @@ class TestCart(TestSetupBase):
         db_cart.refresh_from_db()
 
         self.assertEqual(cart.get_customer_bonus_contribution_to_sale(), 0)
+
+    def test_bonus_accrual(self):
+        request = DummyRequest(user=self.anon_user, generate_cart_id=True)
+        db_cart = self.get_cart()
+        db_cart.session_id = request.get_cart_session_id()
+
+        bonus_accrual = 10
+        bonus = self.create_bonus(is_promo_code=False)
+        bonus.accrual = bonus_accrual
+        bonus.save()
+        db_cart.bonus = bonus
+        db_cart.save()
+
+        cart = CartHelper(request, self.institution)
+
+        # test for non promo code case
+        expected_for_non_promo_code = get_absolute_from_percent_and_total(bonus_accrual, cart.get_total_cart())
+        self.assertEqual(cart.get_bonus_accrual, expected_for_non_promo_code)
+
+        bonus.is_promo_code = True
+        bonus.save()
+        db_cart.refresh_from_db()
+
+        # test for non promo code case
+
+        expected_for_promo_code = get_absolute_from_percent_and_total(bonus_accrual, cart.get_total_cart_after_sale)
+        self.assertEqual(cart.get_bonus_accrual, expected_for_promo_code)
+
+        # test for disabled bonus
+        bonus.is_active = False
+        bonus.save()
+        db_cart.refresh_from_db()
+
+        self.assertEqual(cart.get_bonus_accrual, 0)
 
     def test_get_total_cart_after_sale(self):
         request = DummyRequest(user=self.anon_user, generate_cart_id=True)

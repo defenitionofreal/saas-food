@@ -143,6 +143,18 @@ class CartHelper:
         # i will implement this later
         return 0
 
+    @property
+    def get_bonus_accrual(self):
+        """ How much bonus amount customer will get, value >= 0 """
+        bonus = self._get_institution_bonus()
+        if bonus and bonus.is_active:
+            if bonus.is_promo_code:
+                full_sum = self.get_total_cart_after_sale
+            else:
+                full_sum = self.get_total_cart()
+            return get_absolute_from_percent_and_total(bonus.accrual, full_sum)
+        return 0
+
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
 
