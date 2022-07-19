@@ -78,6 +78,11 @@ class CartHelper:
     def _get_institution_bonus(self):
         return self.institution.bonuses.first()
 
+    def _get_delivery(self):
+        cart = self._get_cart_if_exists()
+        if cart:
+            return cart.delivery
+
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
@@ -86,6 +91,19 @@ class CartHelper:
         if cart:
             items = cart.items.all()
             return sum(i.get_total_item_price for i in items)
+
+    @property
+    def get_delivery_price(self):
+        delivery = self._get_delivery()
+        if delivery:
+            return delivery.get_delivery_price()
+
+    @property
+    def get_free_delivery_amount(self):
+        delivery = self._get_delivery()
+        if delivery:
+            return delivery.get_free_delivery_amount()
+
 
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
