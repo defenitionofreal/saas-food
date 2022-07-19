@@ -25,8 +25,16 @@ class TestCart(TestSetupBase):
         cls.prod2 = cls.create_simple_product(title='prod2', price=cls.product2_price, slug='p2')
 
     @classmethod
+    def _cart_min_amount(cls) -> int:
+        """ cart minimum amount rule """
+        value = cls.institution.min_cart_value.values_list("cost", flat=True)
+        if value:
+            return value[0]
+        return 0
+
+    @classmethod
     def create_cart(cls):
-        cls.cart = Cart.objects.create(institution=cls.institution)
+        cls.cart = Cart.objects.create(institution=cls.institution,min_amount=cls._cart_min_amount())
         prod1_dict = get_cart_item_dict_from_product(cls.prod1)
         prod2_dict = get_cart_item_dict_from_product(cls.prod2)
 
