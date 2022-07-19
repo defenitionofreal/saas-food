@@ -98,9 +98,9 @@ class CartHelper:
     @property
     def get_total_cart_after_sale(self) -> int:
         total_cart = self.get_total_cart()
-        basic_sale = self.get_sale
+        coupon_sale = self.get_sale
         customer_bonus_sale = self.get_customer_bonus_contribution_to_sale()
-        total_sale = basic_sale + customer_bonus_sale
+        total_sale = coupon_sale + customer_bonus_sale
         return total_cart - total_sale
 
     @property
