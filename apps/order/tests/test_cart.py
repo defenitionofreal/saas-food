@@ -68,13 +68,20 @@ class TestCart(TestSetupBase):
         db_cart.session_id = request.get_cart_session_id()
 
         customer_bonus = 30
-        db_cart.bonus = self.create_bonus(is_promo_code=True)
+        bonus = self.create_bonus(is_promo_code=True)
+        db_cart.bonus = bonus
         db_cart.customer_bonus = customer_bonus
         db_cart.save()
 
         cart = CartHelper(request, self.institution)
 
         self.assertEqual(cart.get_customer_bonus_contribution_to_sale(), customer_bonus)
+
+        bonus.is_promo_code = False
+        bonus.save()
+        db_cart.refresh_from_db()
+
+        self.assertEqual(cart.get_customer_bonus_contribution_to_sale(), 0)
 
     def test_get_total_cart_after_sale(self):
         request = DummyRequest(user=self.anon_user, generate_cart_id=True)
