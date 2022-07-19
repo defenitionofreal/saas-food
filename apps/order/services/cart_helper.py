@@ -8,6 +8,7 @@ from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
 # rest framework
 from rest_framework.response import Response
+
 # other
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
 
@@ -121,6 +122,18 @@ class CartHelper:
         delivery = self._get_delivery()
         if delivery:
             return delivery.get_min_delivery_order_amount()
+
+    @property
+    def get_delivery_sale(self) -> [int, None]:
+        delivery = self._get_delivery()
+        if delivery:
+            delivery_sale = delivery.get_sale_amount()
+            if delivery_sale:
+                total = self.get_total_cart_after_sale
+                if delivery.is_absolute_sale_type():
+                    return delivery_sale
+                if delivery.is_percent_sale_type():
+                    return get_absolute_from_percent_and_total(delivery_sale, total)
 
     def get_customer_bonus_contribution_to_sale(self):
         """ How much customer bonus adds to basic discount, value >= 0"""

@@ -63,6 +63,32 @@ class TestCart(TestSetupBase):
         self.assertEqual(cart.get_free_delivery_amount, delivery.free_delivery_amount)
         self.assertEqual(cart.get_min_delivery_order_amount, delivery.min_order_amount)
 
+    def test_get_delivery_sale(self):
+        request = DummyRequest(user=self.anon_user, generate_cart_id=True)
+        db_cart = self.get_cart()
+        db_cart.session_id = request.get_cart_session_id()
+
+        delivery_sale = 25
+        delivery_sale_type = SaleType.ABSOLUTE
+        delivery = self.create_delivery_obj(delivery_sale, delivery_sale_type)
+        delivery_info = self.create_delivery_info_obj(delivery)
+        delivery.save()
+        db_cart.delivery = delivery_info
+        db_cart.save()
+
+        cart = CartHelper(request, self.institution)
+
+        # test for ABSOLUTE sale type
+        self.assertEqual(cart.get_delivery_sale, delivery_sale)
+
+        # test for PERCENT sale type
+        delivery.sale_type = SaleType.PERCENT
+        delivery.save()
+        db_cart.refresh_from_db()
+
+        expected_sale_percent = get_absolute_from_percent_and_total(delivery_sale, cart.get_total_cart_after_sale)
+        self.assertEqual(cart.get_delivery_sale, expected_sale_percent)
+
     def test_customer_bonus_contribution_to_sale(self):
         request = DummyRequest(user=self.anon_user, generate_cart_id=True)
         db_cart = self.get_cart()
