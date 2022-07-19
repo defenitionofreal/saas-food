@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from phonenumber_field.modelfields import PhoneNumberField
 
+from apps.delivery.models.enums import SaleType
+
 User = get_user_model()
 
 
@@ -33,6 +35,15 @@ class DeliveryInfo(models.Model):
     def __str__(self):
         return f"{self.id}: {self.type}"
 
+    def get_delivery_sale_type(self):
+        return self.type.sale_type
+
+    def is_absolute_sale_type(self):
+        return self.get_delivery_sale_type() == SaleType.ABSOLUTE
+
+    def is_percent_sale_type(self):
+        return self.get_delivery_sale_type() == SaleType.PERCENT
+
     def get_delivery_price(self):
         return self.type.delivery_price
 
@@ -41,3 +52,6 @@ class DeliveryInfo(models.Model):
 
     def get_min_delivery_order_amount(self):
         return self.type.min_order_amount
+
+    def get_sale_amount(self):
+        return self.type.sale_amount
