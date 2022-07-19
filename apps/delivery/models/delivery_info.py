@@ -38,3 +38,6 @@ class DeliveryInfo(models.Model):
 
     def get_free_delivery_amount(self):
         return self.type.free_delivery_amount
+
+    def get_min_delivery_order_amount(self):
+        return self.type.min_order_amount
