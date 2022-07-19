@@ -5,6 +5,26 @@ from decimal import Decimal
 User = get_user_model()
 
 
+class CartItemProductKeys(models.TextChoices):
+    id = 'id'
+    title = 'title'
+    category = 'category'
+    slug = 'slug'
+    price = 'price'
+    additives = 'additives'
+    modifiers = 'modifiers'
+
+
+class CartItemModifierKeys(models.TextChoices):
+    title = 'title'
+    price = 'price'
+
+
+class CartItemAdditiveKeys(models.TextChoices):
+    title = 'title'
+    price = 'price'
+
+
 class CartItem(models.Model):
     """A model that contains data for an item in the shopping cart."""
     cart = models.ForeignKey("order.Cart",
@@ -20,28 +40,28 @@ class CartItem(models.Model):
 
     @property
     def get_product_slug(self):
-        return self.product["slug"]
+        return self.product[CartItemProductKeys.slug]
 
     @property
     def get_product_price(self):
-        return self.product["price"]
+        return self.product[CartItemProductKeys.price]
 
     @property
     def get_additives(self):
-        return self.product["additives"]
+        return self.product[CartItemProductKeys.additives]
 
     @property
     def get_modifiers(self):
-        return self.product["modifiers"]
+        return self.product[CartItemProductKeys.modifiers]
 
     @property
     def get_total_item_price(self):
         product_price = self.get_product_price
         if self.get_modifiers:
-            product_price = self.product["modifiers"]["price"]
+            product_price = self.product[CartItemProductKeys.modifiers][CartItemModifierKeys.price]
         if self.get_additives:
             for i in self.get_additives:
-                product_price += i["price"]
+                product_price += i[CartItemAdditiveKeys.price]
         quantity = self.quantity
         total_price = (product_price * quantity)
 
