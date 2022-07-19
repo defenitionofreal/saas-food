@@ -61,6 +61,20 @@ class CartHelper:
                 min_amount=self._cart_min_amount())
         return cart, cart_created
 
+    def _get_cart_if_exists(self):
+        if not self._has_cart_session_id():
+            return
+
+        if self._is_user_auth():
+            query = Cart.objects.filter(institution=self.institution,
+                                        customer=self.user,
+                                        session_id=self.session[settings.CART_SESSION_ID])
+        else:
+            query = Cart.objects.filter(institution=self.institution,
+                                        session_id=self.session[settings.CART_SESSION_ID])
+
+        return query.first()
+
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
