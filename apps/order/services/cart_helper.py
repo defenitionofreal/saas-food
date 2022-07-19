@@ -110,6 +110,20 @@ class CartHelper:
         if delivery:
             return delivery.get_min_delivery_order_amount()
 
+    def get_customer_bonus_contribution_to_sale(self):
+        """ How much customer bonus adds to basic discount, value >= 0"""
+        cart = self._get_cart_if_exists()
+        if cart:
+            customer_bonus = cart.customer_bonus
+            if customer_bonus:
+                bonus = self._get_institution_bonus()
+                if bonus and customer_bonus:
+                    is_active = bonus.is_active
+                    is_promo_code = bonus.is_promo_code
+                    if is_active and is_promo_code:
+                        return customer_bonus
+        return 0
+
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
 

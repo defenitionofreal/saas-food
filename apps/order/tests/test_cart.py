@@ -62,6 +62,20 @@ class TestCart(TestSetupBase):
         self.assertEqual(cart.get_free_delivery_amount, delivery.free_delivery_amount)
         self.assertEqual(cart.get_min_delivery_order_amount, delivery.min_order_amount)
 
+    def test_customer_bonus_contribution_to_sale(self):
+        request = DummyRequest(user=self.anon_user, generate_cart_id=True)
+        db_cart = self.get_cart()
+        db_cart.session_id = request.get_cart_session_id()
+
+        customer_bonus = 30
+        db_cart.bonus = self.create_bonus(is_promo_code=True)
+        db_cart.customer_bonus = customer_bonus
+        db_cart.save()
+
+        cart = CartHelper(request, self.institution)
+
+        self.assertEqual(cart.get_customer_bonus_contribution_to_sale(), customer_bonus)
+
     def test_get_total_cart(self):
         request = DummyRequest(user=self.anon_user, generate_cart_id=True)
         db_cart = self.get_cart()
