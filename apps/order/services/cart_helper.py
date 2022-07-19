@@ -106,19 +106,19 @@ class CartHelper:
         return total_cart - total_sale
 
     @property
-    def get_delivery_price(self):
+    def get_delivery_price(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
             return delivery.get_delivery_price()
 
     @property
-    def get_free_delivery_amount(self):
+    def get_free_delivery_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
             return delivery.get_free_delivery_amount()
 
     @property
-    def get_min_delivery_order_amount(self):
+    def get_min_delivery_order_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
             return delivery.get_min_delivery_order_amount()
