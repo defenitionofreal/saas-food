@@ -142,7 +142,7 @@ class CartHelper:
             customer_bonus = cart.customer_bonus
             if customer_bonus:
                 bonus = self._get_institution_bonus()
-                if bonus and customer_bonus:
+                if bonus:
                     is_active = bonus.is_active
                     is_promo_code = bonus.is_promo_code
                     if is_active and is_promo_code:
