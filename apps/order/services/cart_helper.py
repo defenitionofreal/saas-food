@@ -26,9 +26,6 @@ class CartHelper:
     # ======= BASIC METHODS =======
     # todo: здесь базовые методы, которые так или иначе часто необходимы
 
-    def _has_cart_session_id(self):
-        return settings.CART_SESSION_ID in self.session
-
     def _check_or_generate_session_cart_id_key(self):
         """ cart_id in sessions needed for all further requests """
         if settings.CART_SESSION_ID not in self.session:
@@ -64,37 +61,24 @@ class CartHelper:
                 min_amount=self._cart_min_amount())
         return cart, cart_created
 
-    def _get_cart_if_exists(self):
-        if not self._has_cart_session_id():
-            return
-
-        if self._is_user_auth():
-            query = Cart.objects.filter(institution=self.institution,
-                                        customer=self.user,
-                                        session_id=self.session[settings.CART_SESSION_ID])
-        else:
-            query = Cart.objects.filter(institution=self.institution,
-                                        session_id=self.session[settings.CART_SESSION_ID])
-
-        return query.first()
+    def _get_cart_obj(self):
+        """ Guaranteed to return a valid Cart  """
+        return self._cart_get_or_create()[0]
 
     def _get_institution_bonus(self):
         return self.institution.bonuses.first()
 
     def _get_delivery(self):
-        cart = self._get_cart_if_exists()
-        if cart:
-            return cart.delivery
+        cart = self._get_cart_obj()
+        return cart.delivery
 
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
     def get_total_cart(self) -> int:
-        cart = self._get_cart_if_exists()
-        if cart:
-            items = cart.items.all()
-            return sum(i.get_total_item_price for i in items)
-        return 0
+        cart = self._get_cart_obj()
+        items = cart.items.all()
+        return sum(i.get_total_item_price for i in items)
 
     @property
     def get_total_cart_after_sale(self) -> int:
@@ -137,16 +121,15 @@ class CartHelper:
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
-        cart = self._get_cart_if_exists()
-        if cart:
-            customer_bonus = cart.customer_bonus
-            if customer_bonus:
-                bonus = self._get_institution_bonus()
-                if bonus:
-                    is_active = bonus.is_active
-                    is_promo_code = bonus.is_promo_code
-                    if is_active and is_promo_code:
-                        return customer_bonus
+        cart = self._get_cart_obj()
+        customer_bonus = cart.customer_bonus
+        if customer_bonus:
+            bonus = self._get_institution_bonus()
+            if bonus:
+                is_active = bonus.is_active
+                is_promo_code = bonus.is_promo_code
+                if is_active and is_promo_code:
+                    return customer_bonus
         return 0
 
     @property
