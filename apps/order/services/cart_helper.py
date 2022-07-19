@@ -62,7 +62,9 @@ class CartHelper:
     # todo: здесь написать методы, которые разгрузят модель Cart
 
     def get_total_cart(self):
-        pass
+        cart, _ = self._cart_get_or_create()
+        items = cart.items.all()
+        return sum(i.get_total_item_price for i in items)
 
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
