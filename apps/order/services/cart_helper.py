@@ -1,6 +1,4 @@
 # core
-from decimal import Decimal
-
 from django.conf import settings
 from django.db.models import F
 # apps
@@ -90,7 +88,7 @@ class CartHelper:
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
-    def get_total_cart(self):
+    def get_total_cart(self) -> int:
         cart = self._get_cart_if_exists()
         if cart:
             items = cart.items.all()
@@ -98,7 +96,7 @@ class CartHelper:
         return 0
 
     @property
-    def get_total_cart_after_sale(self):
+    def get_total_cart_after_sale(self) -> int:
         total_cart = self.get_total_cart()
         basic_sale = self.get_sale
         customer_bonus_sale = self.get_customer_bonus_contribution_to_sale()
@@ -135,7 +133,7 @@ class CartHelper:
                 if delivery.is_percent_sale_type():
                     return get_absolute_from_percent_and_total(delivery_sale, total)
 
-    def get_customer_bonus_contribution_to_sale(self):
+    def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
         cart = self._get_cart_if_exists()
         if cart:
@@ -150,14 +148,14 @@ class CartHelper:
         return 0
 
     @property
-    def get_sale(self):
+    def get_sale(self) -> int:
         """ Basic sale amount, value >= 0"""
         # todo: this method is too big for refactoring now, but is required for other stuf
         # i will implement this later
         return 0
 
     @property
-    def get_bonus_accrual(self):
+    def get_bonus_accrual(self) -> int:
         """ How much bonus amount customer will get, value >= 0 """
         bonus = self._get_institution_bonus()
         if bonus and bonus.is_active:
