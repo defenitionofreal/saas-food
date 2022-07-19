@@ -75,6 +75,9 @@ class CartHelper:
 
         return query.first()
 
+    def _get_institution_bonus(self):
+        return self.institution.bonuses.first()
+
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
