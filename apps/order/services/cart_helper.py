@@ -104,6 +104,11 @@ class CartHelper:
         if delivery:
             return delivery.get_free_delivery_amount()
 
+    @property
+    def get_min_delivery_order_amount(self):
+        delivery = self._get_delivery()
+        if delivery:
+            return delivery.get_min_delivery_order_amount()
 
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
