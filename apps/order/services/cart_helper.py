@@ -10,7 +10,6 @@ from rest_framework.response import Response
 
 # other
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
-from apps.delivery.models.enums import SaleType
 
 
 class CartHelper:
@@ -115,6 +114,12 @@ class CartHelper:
         if delivery:
             cart_total = self.get_total_cart_after_sale
             return delivery.get_delivery_sale(cart_total)
+
+    @property
+    def get_delivery_zone(self):
+        delivery = self._get_delivery()
+        if delivery:
+            return delivery.get_delivery_zone
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
