@@ -4,6 +4,7 @@ from django.db.models import F
 # apps
 from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
+from apps.delivery.services.delivery_helper import DeliveryHelper
 # rest framework
 from rest_framework.response import Response
 
@@ -68,9 +69,11 @@ class CartHelper:
     def _get_institution_bonus(self):
         return self.institution.bonuses.first()
 
-    def _get_delivery(self):
+    def _get_delivery(self) -> [DeliveryHelper, None]:
         cart = self._get_cart_obj()
-        return cart.delivery
+        delivery = cart.delivery
+        if delivery:
+            return DeliveryHelper(delivery)
 
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
@@ -92,32 +95,26 @@ class CartHelper:
     def get_delivery_price(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.type.delivery_price
+            return delivery.delivery_price
 
     @property
     def get_free_delivery_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.type.free_delivery_amount
+            return delivery.free_delivery_amount
 
     @property
     def get_min_delivery_order_amount(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            return delivery.type.min_order_amount
+            return delivery.min_delivery_order_amount
 
     @property
     def get_delivery_sale(self) -> [int, None]:
         delivery = self._get_delivery()
         if delivery:
-            delivery_sale = delivery.type.sale_amount
-            if delivery_sale:
-                delivery_type = delivery.type.sale_type
-                total = self.get_total_cart_after_sale
-                if delivery_type == SaleType.ABSOLUTE:
-                    return delivery_sale
-                if delivery_type == SaleType.PERCENT:
-                    return get_absolute_from_percent_and_total(delivery_sale, total)
+            cart_total = self.get_total_cart_after_sale
+            return delivery.get_delivery_sale(cart_total)
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
