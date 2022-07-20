@@ -12,6 +12,9 @@ from rest_framework.response import Response
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
 
 
+# todo: when cart requested for the first time in _cart_get_or_create:
+# set this object to self.cart to prevent excess queries in every function call
+
 class CartHelper:
     """
     Main cart class with all needed funcs and counts
