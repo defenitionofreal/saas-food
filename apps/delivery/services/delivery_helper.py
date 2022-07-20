@@ -1,5 +1,9 @@
-from apps.delivery.models.enums import SaleType
+from apps.delivery.models.enums import SaleType, DeliveryType
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
+
+from turfpy.measurement import boolean_point_in_polygon
+from geojson import Point, Polygon
+import json
 
 
 class DeliveryHelper:
@@ -54,3 +58,23 @@ class DeliveryHelper:
                     return delivery_sale
                 if self.is_percent_sale_type:
                     return get_absolute_from_percent_and_total(delivery_sale, cart_total)
+
+    @property
+    def get_delivery_zone(self):
+        institution = self._get_institution()
+        zones = institution.dz.filter(is_active=True)
+        if zones.exists() and self.delivery.type.delivery_type == DeliveryType.COURIER:
+            for zone in zones:
+                address = self.delivery.address.address
+                point = Point([json.loads(address.latitude),
+                               json.loads(address.longitude)])
+                polygon = Polygon(json.loads(
+                    zone.dz_coordinates.values_list("coordinates",
+                                                    flat=True)[0]))
+                if boolean_point_in_polygon(point, polygon):
+                    return {"title": zone.title,
+                            "price": zone.price,
+                            "free_delivery_amount": zone.free_delivery_amount,
+                            "min_order_amount": zone.min_order_amount,
+                            "delivery_time": zone.delivery_time}
+        return None
