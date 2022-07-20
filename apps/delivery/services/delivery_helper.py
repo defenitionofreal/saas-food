@@ -10,6 +10,10 @@ class DeliveryHelper:
     def is_valid(self):
         return self.delivery is not None
 
+    def _get_institution(self):
+        if self.is_valid:
+            return self.delivery.type.institution.first()
+
     def get_sale_type(self):
         if self.is_valid:
             return self.delivery.type.sale_type
