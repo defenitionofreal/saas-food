@@ -68,6 +68,9 @@ class CartHelper:
     def _get_institution_bonus(self):
         return self.institution.bonuses.first()
 
+    def _get_promo_code(self):
+        return self._get_cart_obj().promo_code
+
     def _get_delivery(self) -> [DeliveryHelper, None]:
         cart = self._get_cart_obj()
         delivery = cart.delivery
