@@ -78,3 +78,34 @@ class DeliveryHelper:
                             "min_order_amount": zone.min_order_amount,
                             "delivery_time": zone.delivery_time}
         return None
+
+    def calculate_price_for_delivery_zone(self, cart_current_price: int):
+        if not self.get_delivery_zone:
+            return 0
+        if self.get_delivery_zone["free_delivery_amount"]:
+            if cart_current_price < self.get_delivery_zone["free_delivery_amount"]:
+                return self.get_delivery_zone["price"]
+        else:
+            return self.get_delivery_zone["price"]
+
+    def calculate_final_delivery_price(self, cart_current_price: int):
+        total = 0
+
+        delivery_price = self.delivery_price
+        free_delivery_amount = self.free_delivery_amount
+
+        if self.get_delivery_zone:
+            total = self.calculate_price_for_delivery_zone(cart_current_price)
+        else:
+            if free_delivery_amount:
+                if cart_current_price < free_delivery_amount:
+                    total += cart_current_price
+            else:
+                if delivery_price:
+                    total += delivery_price
+
+        delivery_sale = self.get_delivery_sale(cart_current_price)
+        if delivery_sale:
+            total -= delivery_sale
+
+        return total
