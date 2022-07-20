@@ -34,7 +34,7 @@ class TestCart(TestSetupBase):
 
     @classmethod
     def create_cart(cls):
-        cls.cart = Cart.objects.create(institution=cls.institution,min_amount=cls._cart_min_amount())
+        cls.cart = Cart.objects.create(institution=cls.institution, min_amount=cls._cart_min_amount())
         prod1_dict = get_cart_item_dict_from_product(cls.prod1)
         prod2_dict = get_cart_item_dict_from_product(cls.prod2)
 
@@ -179,3 +179,27 @@ class TestCart(TestSetupBase):
         expected = self.get_basic_total_cart_price()
         res = cart.get_total_cart()
         self.assertEqual(expected, res)
+
+    def test_final_price_with_delivery_and_bonus(self):
+        request = DummyRequest(user=self.anon_user, generate_cart_id=True)
+
+        delivery_sale = 25
+        delivery_sale_type = SaleType.ABSOLUTE
+
+        db_cart = self.get_cart()
+        db_cart.session_id = request.get_cart_session_id()
+        delivery = self.create_delivery_obj(delivery_sale, delivery_sale_type)
+        delivery_info = self.create_delivery_info_obj(delivery)
+        db_cart.delivery = delivery_info
+
+        customer_bonus = 30
+        db_cart.bonus = self.create_bonus(is_promo_code=True)
+        db_cart.customer_bonus = customer_bonus
+        db_cart.save()
+
+        cart = CartHelper(request, self.institution)
+
+        expected_final_price = self.get_basic_total_cart_price() - (delivery_sale + customer_bonus)
+
+        self.assertEqual(expected_final_price, cart.final_price)
+        db_cart.delivery = None
