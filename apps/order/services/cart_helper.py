@@ -71,6 +71,9 @@ class CartHelper:
     def _get_promo_code(self):
         return self._get_cart_obj().promo_code
 
+    def _get_customer_bonus(self) -> [int, None]:
+        return self._get_cart_obj().customer_bonus
+
     def _get_delivery(self) -> [DeliveryHelper, None]:
         cart = self._get_cart_obj()
         delivery = cart.delivery
@@ -126,8 +129,7 @@ class CartHelper:
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
-        cart = self._get_cart_obj()
-        customer_bonus = cart.customer_bonus
+        customer_bonus = self._get_customer_bonus()
         if customer_bonus:
             bonus = self._get_institution_bonus()
             if bonus:
