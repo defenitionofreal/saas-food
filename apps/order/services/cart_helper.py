@@ -127,6 +127,32 @@ class CartHelper:
         if delivery:
             return delivery.get_delivery_zone
 
+    @property
+    def is_free_delivery_by_promo_code(self) -> bool:
+        promo_code = self._get_promo_code()
+        return promo_code and promo_code.delivery_free
+
+    def calculate_final_delivery_price(self, cart_current_price) -> int:
+        """ Final delivery expenses, value >= 0  """
+        if self.is_free_delivery_by_promo_code:
+            return 0
+
+        delivery = self._get_delivery()
+        if delivery:
+            return delivery.calculate_final_delivery_price(cart_current_price)
+
+        return 0
+
+    def calculate_customer_bonus_write_off_for_final_price(self):
+        """ Amount to remove from final price, value <= 0 """
+        customer_bonus = self._get_customer_bonus()
+        bonus = self._get_institution_bonus()
+
+        if None not in [customer_bonus, bonus]:
+            if bonus.is_active and not bonus.is_promo_code:
+                return -1 * customer_bonus
+        return 0
+
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
         customer_bonus = self._get_customer_bonus()
@@ -157,6 +183,15 @@ class CartHelper:
                 full_sum = self.get_total_cart()
             return get_absolute_from_percent_and_total(bonus.accrual, full_sum)
         return 0
+
+    @property
+    def final_price(self) -> int:
+        price_after_sale = self.get_total_cart_after_sale
+        customer_bonus_write_off = self.calculate_customer_bonus_write_off_for_final_price()
+        delivery_price = self.calculate_final_delivery_price(price_after_sale)
+        price_after_sale += customer_bonus_write_off + delivery_price
+
+        return price_after_sale
 
     # ======= ACTIONS =======
     # todo: здесь методы действий покупателя
