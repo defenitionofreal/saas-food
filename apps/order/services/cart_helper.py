@@ -171,8 +171,75 @@ class CartHelper:
     @property
     def get_sale(self) -> int:
         """ Basic sale amount, value >= 0"""
-        # todo: this method is too big for refactoring now, but is required for other stuf
-        # i will implement this later
+        # todo: test and refactor this method
+        promo_code = self._get_promo_code()
+        cart = self._get_cart_obj()
+        if promo_code:
+            sale = promo_code.sale
+            # if absolute sale type
+            if promo_code.code_type == 'absolute':
+                # categories participate coupon
+                if promo_code.categories.all():
+                    items_cat = cart.items.values("product__category",
+                                                  "product__slug",
+                                                  "product__price",
+                                                  "quantity")
+                    code_cat = promo_code.categories.values_list("slug",
+                                                                      flat=True)
+                    for i in items_cat:
+                        if i["product__category"] in code_cat:
+                            sale = sale
+                    sale = sale if sale >= 0.0 else 0.0
+                    return sale
+                # products participate coupon
+                if promo_code.products.all():
+                    items = cart.items.values("product__slug",
+                                              "product__price",
+                                              "quantity")
+                    code_product = promo_code.products.values_list("slug",
+                                                                        flat=True)
+                    for i in items:
+                        if i["product__slug"] in code_product:
+                            sale = sale
+                    sale = sale if sale >= 0.0 else 0.0
+                    return sale
+
+                sale = sale if sale >= 0.0 else 0.0
+                return sale
+
+            # if percent sale type
+            if promo_code.code_type == 'percent':
+
+                # categories participate coupon
+                if promo_code.categories.all():
+                    cat_total = 0
+                    items_cat = cart.items.values("product__category",
+                                                  "product__slug",
+                                                  "product__price",
+                                                  "quantity")
+                    code_cat = promo_code.categories.values_list("slug",
+                                                                      flat=True)
+                    for i in items_cat:
+                        if i["product__category"] in code_cat:
+                            cat_total += i["product__price"] * i["quantity"]
+                    cat_total = cat_total if cat_total >= 0.0 else 0.0
+                    return get_absolute_from_percent_and_total(sale, cat_total)
+
+                # products participate coupon
+                if promo_code.products.all():
+                    products_total = 0
+                    items = cart.items.values("product__slug",
+                                              "product__price",
+                                              "quantity")
+                    code_product = promo_code.products.values_list("slug",
+                                                                        flat=True)
+                    for i in items:
+                        if i["product__slug"] in code_product:
+                            products_total += i["product__price"] * i[
+                                "quantity"]
+                    products_total = products_total if products_total >= 0.0 else 0.0
+                    return get_absolute_from_percent_and_total(sale,products_total)
+                return get_absolute_from_percent_and_total(sale, self.get_total_cart())
         return 0
 
     @property
