@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+
+from django.db.models import F
+
 from apps.order.models import Bonus
 from apps.delivery.models.enums import DeliveryType
 
@@ -243,3 +246,23 @@ class Cart(models.Model):
 
     def __str__(self):
         return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'
+
+    def __iadd__(self, other):
+        if not isinstance(other, Cart):
+            return
+
+        other_items = other.items.all().values()
+        for product_dict in other_items:
+            self.add_item(product_dict)
+
+    def add_item(self, product_dict: dict):
+        """ add new item to cart or update quantity of an item """
+        from apps.order.models import CartItem
+        cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict,
+                                                                      cart=self)
+
+        if self.items.filter(product=product_dict).exists():
+            cart_item.quantity = F("quantity") + 1
+            cart_item.save(update_fields=("quantity",))
+        else:
+            self.items.add(cart_item)
