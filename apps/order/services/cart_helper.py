@@ -188,7 +188,7 @@ class CartHelper:
                                                   "product__price",
                                                   "quantity")
                     code_cat = promo_code.categories.values_list("slug",
-                                                                      flat=True)
+                                                                 flat=True)
                     for i in items_cat:
                         if i["product__category"] in code_cat:
                             sale = sale
@@ -200,7 +200,7 @@ class CartHelper:
                                               "product__price",
                                               "quantity")
                     code_product = promo_code.products.values_list("slug",
-                                                                        flat=True)
+                                                                   flat=True)
                     for i in items:
                         if i["product__slug"] in code_product:
                             sale = sale
@@ -221,7 +221,7 @@ class CartHelper:
                                                   "product__price",
                                                   "quantity")
                     code_cat = promo_code.categories.values_list("slug",
-                                                                      flat=True)
+                                                                 flat=True)
                     for i in items_cat:
                         if i["product__category"] in code_cat:
                             cat_total += i["product__price"] * i["quantity"]
@@ -235,13 +235,13 @@ class CartHelper:
                                               "product__price",
                                               "quantity")
                     code_product = promo_code.products.values_list("slug",
-                                                                        flat=True)
+                                                                   flat=True)
                     for i in items:
                         if i["product__slug"] in code_product:
                             products_total += i["product__price"] * i[
                                 "quantity"]
                     products_total = products_total if products_total >= 0.0 else 0.0
-                    return get_absolute_from_percent_and_total(sale,products_total)
+                    return get_absolute_from_percent_and_total(sale, products_total)
                 return get_absolute_from_percent_and_total(sale, self.get_total_cart)
         return 0
 
@@ -296,4 +296,16 @@ class CartHelper:
 
     def get_cart(self):
         """ cart detail """
+        # todo: remove?
         pass
+
+    # ======= OTHER =======
+
+    @property
+    def is_not_empty(self):
+        cart = self.get_cart_obj()
+        return cart.items.exists()
+
+    @property
+    def is_empty(self):
+        return not self.is_not_empty
