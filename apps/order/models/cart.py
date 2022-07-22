@@ -260,21 +260,21 @@ class Cart(models.Model):
     def __iadd__(self, other):
         if not isinstance(other, Cart):
             return
-
-        other_items = other.items.all().values()
-        for product_dict in other_items:
-            self.add_item(product_dict)
-
+        other_items = other.items.all()
+        for i in other_items:
+            product_dict = i.product
+            quantity = i.quantity
+            self.add_item(product_dict, quantity)
         return self
 
-    def add_item(self, product_dict: dict):
+    def add_item(self, product_dict: dict, quantity=1):
         """ add new item to cart or update quantity of an item """
         from apps.order.models import CartItem
         cart_item, cart_item_created = CartItem.objects.get_or_create(product=product_dict,
                                                                       cart=self)
 
         if self.items.filter(product=product_dict).exists():
-            cart_item.quantity = F("quantity") + 1
+            cart_item.quantity = F("quantity") + quantity
             cart_item.save(update_fields=("quantity",))
         else:
             self.items.add(cart_item)
