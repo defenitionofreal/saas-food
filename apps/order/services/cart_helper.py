@@ -86,6 +86,7 @@ class CartHelper:
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
+    @property
     def get_total_cart(self) -> int:
         cart = self.get_cart_obj()
         items = cart.items.all()
