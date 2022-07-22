@@ -41,6 +41,29 @@ class CartHelperSerializer(serializers.ModelSerializer):
         cart_model_obj = self.cart.get_cart_obj()
         super().__init__(instance=cart_model_obj, data=serializers.empty, **kwargs)
 
+    class Meta:
+        model = Cart
+        fields = (
+            'id', 'customer', 'created_at', 'delivery', 'updated_at', 'items',
+            'promo_code', 'customer_bonus', 'min_amount',
+
+            # properties
+
+            'get_total_cart', 'get_total_cart_after_sale',
+            'get_sale', 'get_bonus_accrual',
+            'get_delivery_price', 'get_free_delivery_amount',
+            'get_delivery_sale', 'get_min_delivery_order_amount',
+            'get_delivery_zone', 'final_price'
+        )
+
+    # ======= HELPER METHODS =======
+
+    @property
+    def is_empty(self):
+        return self.cart.is_empty
+
+    # ======= OUTPUT DATA =======
+
     # model fields
 
     items = ItemsSerializer(read_only=True, many=True)
@@ -89,23 +112,8 @@ class CartHelperSerializer(serializers.ModelSerializer):
     def get_final_price(self, obj):
         return self.cart.final_price
 
-    class Meta:
-        model = Cart
-        fields = (
-            'id', 'customer', 'created_at', 'delivery', 'updated_at', 'items',
-            'promo_code', 'customer_bonus', 'min_amount',
 
-            # properties
-
-            'get_total_cart', 'get_total_cart_after_sale',
-            'get_sale', 'get_bonus_accrual',
-            'get_delivery_price', 'get_free_delivery_amount',
-            'get_delivery_sale', 'get_min_delivery_order_amount',
-            'get_delivery_zone', 'final_price'
-        )
-
-
-# does not use anywhere
+# is not used anywhere
 class CartItemSerializer(serializers.ModelSerializer):
     """Serializer for the CartItem model."""
 
