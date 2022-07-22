@@ -271,6 +271,13 @@ class CartHelper:
 
     def add_item(self, product_dict) -> Response:
         """ add new item to cart or update quantity of an item """
+
+        """
+        TODO: i've implemented this method in cart model because it is required
+        we should better call this from there, because it is not big difference
+        which text is returned in response since result is basically same
+        """
+
         cart, cart_created = self._cart_get_or_create()
         cart_item, cart_item_created = CartItem.objects.get_or_create(
             product=product_dict, cart=cart)
