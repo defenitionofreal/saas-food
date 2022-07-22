@@ -13,9 +13,6 @@ from rest_framework.response import Response
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
 
 
-# todo: when cart requested for the first time in _cart_get_or_create:
-# set this object to self.cart to prevent excess queries in every function call
-
 class CartHelper:
     """
     Main cart class with all needed funcs and counts
@@ -25,6 +22,8 @@ class CartHelper:
         self.user = request.user
         self.session = request.session
         self.institution = institution
+        # cache cart when requested first time
+        self.cart_cached = None
         # what else ?
 
     # ======= BASIC METHODS =======
@@ -51,6 +50,9 @@ class CartHelper:
 
     def _cart_get_or_create(self) -> tuple:
         """ get or create cart """
+        if self.cart_cached:
+            return self.cart_cached, False
+
         self._check_or_generate_session_cart_id_key()
         session_id = self.session[settings.CART_SESSION_ID]
         min_amount = self._cart_min_amount()
@@ -59,6 +61,7 @@ class CartHelper:
                                               min_amount=min_amount,
                                               institution=self.institution,
                                               user=self.user)
+        self.cart_cached = cart
         return cart, is_created
 
     def get_cart_obj(self):
