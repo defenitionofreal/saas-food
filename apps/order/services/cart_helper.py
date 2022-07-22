@@ -64,7 +64,7 @@ class CartHelper:
                 min_amount=self._cart_min_amount())
         return cart, cart_created
 
-    def _get_cart_obj(self):
+    def get_cart_obj(self):
         """ Guaranteed to return a valid Cart  """
         return self._cart_get_or_create()[0]
 
@@ -72,13 +72,13 @@ class CartHelper:
         return self.institution.bonuses.first()
 
     def _get_promo_code(self):
-        return self._get_cart_obj().promo_code
+        return self.get_cart_obj().promo_code
 
     def _get_customer_bonus(self) -> [int, None]:
-        return self._get_cart_obj().customer_bonus
+        return self.get_cart_obj().customer_bonus
 
     def _get_delivery(self) -> [DeliveryHelper, None]:
-        cart = self._get_cart_obj()
+        cart = self.get_cart_obj()
         delivery = cart.delivery
         if delivery:
             return DeliveryHelper(delivery)
@@ -87,13 +87,13 @@ class CartHelper:
     # todo: здесь написать методы, которые разгрузят модель Cart
 
     def get_total_cart(self) -> int:
-        cart = self._get_cart_obj()
+        cart = self.get_cart_obj()
         items = cart.items.all()
         return sum(i.get_total_item_price for i in items)
 
     @property
     def get_total_cart_after_sale(self) -> int:
-        total_cart = self.get_total_cart()
+        total_cart = self.get_total_cart
         coupon_sale = self.get_sale
         customer_bonus_sale = self.get_customer_bonus_contribution_to_sale()
         total_sale = coupon_sale + customer_bonus_sale
@@ -173,7 +173,7 @@ class CartHelper:
         """ Basic sale amount, value >= 0"""
         # todo: test and refactor this method
         promo_code = self._get_promo_code()
-        cart = self._get_cart_obj()
+        cart = self.get_cart_obj()
         if promo_code:
             sale = promo_code.sale
             # if absolute sale type
@@ -239,7 +239,7 @@ class CartHelper:
                                 "quantity"]
                     products_total = products_total if products_total >= 0.0 else 0.0
                     return get_absolute_from_percent_and_total(sale,products_total)
-                return get_absolute_from_percent_and_total(sale, self.get_total_cart())
+                return get_absolute_from_percent_and_total(sale, self.get_total_cart)
         return 0
 
     @property
@@ -250,7 +250,7 @@ class CartHelper:
             if bonus.is_promo_code:
                 full_sum = self.get_total_cart_after_sale
             else:
-                full_sum = self.get_total_cart()
+                full_sum = self.get_total_cart
             return get_absolute_from_percent_and_total(bonus.accrual, full_sum)
         return 0
 
