@@ -52,6 +52,7 @@ class Cart(models.Model):
                                   null=True,
                                   unique=True)
 
+    # +
     @property
     def get_total_cart(self):
         total = 0
@@ -59,18 +60,21 @@ class Cart(models.Model):
             total += i.get_total_item_price
         return total
 
+    # +
     @property
     def get_delivery_price(self):
         if self.delivery is not None:
             if self.delivery.type.delivery_price:
                 return self.delivery.type.delivery_price
 
+    # +
     @property
     def get_free_delivery_amount(self):
         if self.delivery is not None:
             if self.delivery.type.free_delivery_amount:
                 return self.delivery.type.free_delivery_amount
 
+    # +
     @property
     def get_delivery_sale(self):
         if self.delivery is not None:
@@ -86,11 +90,13 @@ class Cart(models.Model):
                     return round((delivery_sale / Decimal('100')) * total)
         return None
 
+    # +
     @property
     def get_min_delivery_order_amount(self):
         if self.delivery is not None:
             return self.delivery.type.min_order_amount
 
+    # +
     @property
     def get_delivery_zone(self):
         zones = self.institution.dz.filter(is_active=True)
@@ -110,6 +116,7 @@ class Cart(models.Model):
                             "delivery_time": zone.delivery_time}
         return None
 
+    # +
     @property
     def get_sale(self):
         if self.promo_code:
@@ -181,6 +188,7 @@ class Cart(models.Model):
                 return round((sale / Decimal('100')) * self.get_total_cart)
         return None
 
+    # +
     @property
     def get_total_cart_after_sale(self):
         total = self.get_total_cart
@@ -193,6 +201,7 @@ class Cart(models.Model):
                 return total - (sale + self.customer_bonus)
         return total - sale
 
+    # +
     @property
     def get_bonus_accrual(self):
         bonus = Bonus.objects.get(institution=self.institution)
@@ -203,6 +212,7 @@ class Cart(models.Model):
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
             return total_accrual
 
+    # +
     @property
     def final_price(self):
         total = self.get_total_cart
@@ -254,6 +264,8 @@ class Cart(models.Model):
         other_items = other.items.all().values()
         for product_dict in other_items:
             self.add_item(product_dict)
+
+        return self
 
     def add_item(self, product_dict: dict):
         """ add new item to cart or update quantity of an item """
