@@ -2,8 +2,9 @@
 from django.conf import settings
 from django.db.models import F
 # apps
+from apps.order.services.cart_access import cart_get_or_create
 from apps.order.services.generate_cart_key import _generate_cart_key
-from apps.order.models import Cart, CartItem
+from apps.order.models import CartItem
 from apps.delivery.services.delivery_helper import DeliveryHelper
 # rest framework
 from rest_framework.response import Response
@@ -54,55 +55,11 @@ class CartHelper:
         session_id = self.session[settings.CART_SESSION_ID]
         min_amount = self._cart_min_amount()
 
-        # try to get current session's cart
-        session_cart: Cart = Cart.objects.filter(institution=self.institution,
-                                                 session_id=session_id).first()
-
-        if self._is_user_auth():
-            # try to get user's cart from database
-            db_cart: Cart = Cart.objects.filter(institution=self.institution,
-                                                customer=self.user).first()
-            if db_cart and session_cart:
-                if db_cart.id == session_cart.id:
-                    return db_cart, False
-
-                db_cart += session_cart
-                session_cart.delete()
-                db_cart.session_id = session_id
-                db_cart.save()
-                return db_cart, False
-            elif db_cart and not session_cart:
-                db_cart.session_id = session_id
-                db_cart.save()
-                return db_cart, False
-            elif not db_cart and session_cart:
-                session_cart.customer = self.user
-                session_cart.save()
-                return session_cart, False
-            else:
-                # create new cart for this user
-                cart, cart_created = Cart.objects.get_or_create(
-                    institution=self.institution,
-                    customer=self.user,
-                    session_id=session_id,
-                    min_amount=min_amount)
-                return cart, cart_created
-        else:
-            session_cart_belongs_to_user = session_cart and session_cart.customer is not None
-            if session_cart_belongs_to_user:
-                """
-                invalidate session_id for existing cart
-                to prevent anonymous access to someone cart
-                """
-                session_cart.session_id = None
-                session_cart.save()
-
-            # create new anonymous cart
-            cart, cart_created = Cart.objects.get_or_create(
-                institution=self.institution,
-                session_id=session_id,
-                min_amount=min_amount)
-            return cart, cart_created
+        cart, is_created = cart_get_or_create(session_id=session_id,
+                                              min_amount=min_amount,
+                                              institution=self.institution,
+                                              user=self.user)
+        return cart, is_created
 
     def get_cart_obj(self):
         """ Guaranteed to return a valid Cart  """
