@@ -4,7 +4,7 @@ from django.db.models import F
 # apps
 from apps.order.services.cart_access import cart_get_or_create
 from apps.order.services.generate_cart_key import _generate_cart_key
-from apps.order.models import CartItem
+from apps.order.models import CartItem, PromoCodeUser
 from apps.delivery.services.delivery_helper import DeliveryHelper
 # rest framework
 from rest_framework.response import Response
@@ -95,6 +95,15 @@ class CartHelper:
         delivery = cart.delivery
         if delivery:
             return DeliveryHelper(delivery)
+
+    def _get_promo_code_per_user_obj(self, promo_code_obj) -> [PromoCodeUser, None]:
+        try:
+            if self._is_user_auth():
+                coupon_per_user, created = PromoCodeUser.objects.get_or_create(
+                    code=promo_code_obj, user=self.user)
+                return coupon_per_user
+        except:
+            return None
 
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
