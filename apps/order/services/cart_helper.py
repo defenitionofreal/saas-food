@@ -82,12 +82,9 @@ class CartHelper:
         """ How much bonus points set up to this cart to get write off """
         return self.get_cart_obj().customer_bonus
 
-    def _get_user_bonus_points(self) -> [int, None]:
-        """ How much bonus points customer have at all """
+    def _get_user_bonus_obj(self) -> [int, None]:
         if self._is_user_auth():
-            user_bonus = self.institution.user_bonuses.filter(user=self.user).first()
-            if user_bonus:
-                return user_bonus.bonus
+            return self.institution.user_bonuses.filter(user=self.user).first()
 
     def _get_delivery(self) -> [DeliveryHelper, None]:
         cart = self.get_cart_obj()

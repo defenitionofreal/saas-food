@@ -57,7 +57,7 @@ class TestCart(TestSetupBase):
         db_cart.session_id = request.get_cart_session_id()
 
         cart = CartHelper(request, self.institution)
-        user_bonus_points = cart._get_user_bonus_points()
+        user_bonus_points = cart._get_user_bonus_obj().bonus
         self.assertEqual(user_bonus_points, bonus_amount)
 
     def test_cart_delivery_data(self):
