@@ -48,9 +48,12 @@ class CartHelper:
             return value[0]
         return 0
 
-    def _cart_get_or_create(self) -> tuple:
+    def refresh_cached_cart(self):
+        self._cart_get_or_create(force_refresh_cache=True)
+
+    def _cart_get_or_create(self, force_refresh_cache=False) -> tuple:
         """ get or create cart """
-        if self.cart_cached:
+        if self.cart_cached and not force_refresh_cache:
             return self.cart_cached, False
 
         self._check_or_generate_session_cart_id_key()
