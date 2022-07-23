@@ -407,15 +407,20 @@ class CartHelper:
 
         return Response({"detail": "Code successfully added."}, status=status.HTTP_200_OK)
 
+    def remove_product_or_decrease_quantity_by_id(self, cart_item_id: int) -> Response:
+        """ remove item from cart or decrease quantity"""
+        cart = self.get_cart_obj()
+        cart_item: CartItem = cart.items.filter(id=cart_item_id).first()
 
-    def remove_item(self):
-        """ remove item from cart """
-        pass
-
-    def get_cart(self):
-        """ cart detail """
-        # todo: remove?
-        pass
+        if cart_item:
+            if cart_item.quantity > 1:
+                cart_item.quantity = F("quantity") - 1
+                cart_item.save(update_fields=("quantity",))
+            else:
+                cart.items.remove(cart_item)
+            return Response({"detail": "Product quantity updated"})
+        else:
+            return Response({"detail": "This product not in a cart"})
 
     # ======= OTHER =======
 
