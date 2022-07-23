@@ -304,6 +304,48 @@ class CartHelper:
             return Response({"detail": "Cart created and product added"},
                             status=201)
 
+    def add_customer_bonus(self, bonus_input: int) -> Response:
+        """ Add customer bonus points to the cart """
+        cart = self.get_cart_obj()
+        customer_bonus_points = self._get_customer_bonus_points()
+        bonus_obj = self._get_institution_bonus_obj()
+        user_bonus_obj = self._get_user_bonus_obj()
+        promo_code = self._get_promo_code()
+
+        if customer_bonus_points is not None:
+            return Response({"detail": "Bonuses already applied."})
+
+        if not bonus_obj or bonus_obj.is_active is False:
+            return Response({"detail": "Loyalty program is not active"})
+
+        if not user_bonus_obj:
+            return Response({"detail": "You dont have any bonuses yet."})
+
+        user_bonus_amount_available = user_bonus_obj.bonus
+        if bonus_input > user_bonus_amount_available:
+            return Response({"detail": "Not enough bonuses."})
+
+        bonus_write_off_percent = bonus_obj.write_off
+
+        if promo_code is not None:
+            if bonus_obj.is_promo_code is True:
+                total_cart = cart.get_total_cart_after_sale
+                sale = get_absolute_from_percent_and_total(bonus_write_off_percent, total_cart)
+            else:
+                return Response({"detail": "Use bonuses with promocode is not allowed."})
+        else:
+            total_cart = cart.get_total_cart
+            sale = get_absolute_from_percent_and_total(bonus_write_off_percent, total_cart)
+
+        if bonus_input > sale:
+            return Response({"detail": f"Write off no more than {bonus_write_off_percent}% "
+                                       f"of total price. ({sale} bonuses)"})
+        cart.customer_bonus = bonus_input
+        cart.save()
+        user_bonus_obj.bonus -= bonus_input
+        user_bonus_obj.save()
+        return Response({"detail": f"{bonus_input} bonuses have been successfully redeemed"})
+
     def remove_item(self):
         """ remove item from cart """
         pass
