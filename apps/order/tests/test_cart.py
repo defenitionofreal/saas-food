@@ -49,6 +49,17 @@ class TestCart(TestSetupBase):
     def get_basic_total_cart_price(self):
         return self.product1_price * self.quantity_p1 + self.product2_price * self.quantity_p2
 
+    def test_cart_can_get_user_bonus_amount(self):
+        bonus_amount = 10000
+        self.create_user_bonus(bonus_amount)
+        request = DummyRequest(user=self.user, generate_cart_id=True)
+        db_cart = self.get_cart()
+        db_cart.session_id = request.get_cart_session_id()
+
+        cart = CartHelper(request, self.institution)
+        user_bonus_points = cart._get_user_bonus_points()
+        self.assertEqual(user_bonus_points, bonus_amount)
+
     def test_cart_delivery_data(self):
         request = DummyRequest(user=self.anon_user, generate_cart_id=True)
         db_cart = self.get_cart()
@@ -134,7 +145,7 @@ class TestCart(TestSetupBase):
         cart = CartHelper(request, self.institution)
 
         # test for non promo code case
-        expected_for_non_promo_code = get_absolute_from_percent_and_total(bonus_accrual, cart.get_total_cart())
+        expected_for_non_promo_code = get_absolute_from_percent_and_total(bonus_accrual, cart.get_total_cart)
         self.assertEqual(cart.get_bonus_accrual, expected_for_non_promo_code)
 
         bonus.is_promo_code = True
@@ -178,7 +189,7 @@ class TestCart(TestSetupBase):
         cart = CartHelper(request, self.institution)
 
         expected = self.get_basic_total_cart_price()
-        res = cart.get_total_cart()
+        res = cart.get_total_cart
         self.assertEqual(expected, res)
 
     def test_final_price_with_delivery_and_bonus(self):
