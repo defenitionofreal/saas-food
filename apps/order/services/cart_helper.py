@@ -362,81 +362,51 @@ class CartHelper:
 
     def add_promo_code(self, promo_code_obj) -> Response:
         coupon = PromoCodeHelper(promo_code_obj)
-
         cart = self.get_cart_obj()
         total_cart_price = self.get_total_cart
-        coupon_sale = coupon.sale
-        coupon_cart_total = coupon.cart_total
-        try:
-            if not self._has_promo_code:
-                if cart.customer_bonus is not None:
-                    bonus = self._get_institution_bonus_obj()
-                    if bonus and bonus.is_promo_code is False:
-                        return Response({"detail": "Use promo code with bonuses is not allowed."},
-                                        status=status.HTTP_400_BAD_REQUEST)
 
-                if coupon.is_active is True:
-                    if coupon.is_absolute_sale and total_cart_price <= coupon.sale:
-                        return Response({"detail": f"Sale is bigger: {total_cart_price}"},
-                                        status=status.HTTP_400_BAD_REQUEST)
+        if self._has_promo_code:
+            return Response({"detail": "Promo code already applied."}, status=status.HTTP_400_BAD_REQUEST)
 
-                    if coupon.is_percent_sale and coupon_sale > 100:
-                        return Response({"detail": "Sale is bigger 100%"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-
-                    if not coupon.can_be_used_by_cart_total(cart_total_price=total_cart_price):
-                        return Response({"detail": f"Total cart price have to be more {coupon_cart_total}"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-
-                    if not coupon.can_be_used_today_by_start_date:
-                        return Response({"detail": f"Code period not started yet"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-
-                    if not coupon.can_be_used_today_by_finish_date:
-                        return Response({"detail": f"Code period expired"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-
-                    if promo_code_obj.categories.all():
-                        x = set(cart.items.values_list('product__category', flat=True))
-                        y = set(promo_code_obj.categories.values_list('promocode__categories__slug', flat=True))
-                        if not x.intersection(y):
-                            return Response(
-                                {"detail": "No categories tied with coupon."},
+        if cart.customer_bonus is not None:
+            bonus = self._get_institution_bonus_obj()
+            if bonus and bonus.is_promo_code is False:
+                return Response({"detail": "Use promo code with bonuses is not allowed."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-                    if promo_code_obj.products.all():
-                        x = set(cart.items.values_list('product__slug', flat=True))
-                        y = set(promo_code_obj.products.values_list('promocode__products__slug', flat=True))
-                        if not x.intersection(y):
-                            return Response({"detail": "No products tied with coupon."},
-                                            status=status.HTTP_400_BAD_REQUEST)
+        validation = coupon.can_be_applied_to_cart(total_cart_price)
+        if not validation.is_ok:
+            return validation.false_response
 
-                    if not coupon.has_num_uses_left:
-                        return Response({"detail": "Max level exceeded for coupon."},
-                                        status=status.HTTP_400_BAD_REQUEST)
-
-                    coupon.increase_num_uses()
-
-                    coupon_per_user: PromoCodeUser = self._get_promo_code_per_user_obj(promo_code_obj=promo_code_obj)
-                    if coupon_per_user:
-                        customer_can_use__code = coupon.can_be_used_by_user_with_use_count(coupon_per_user.num_uses)
-                        if not customer_can_use__code:
-                            return Response({"detail": "User's max level exceeded for coupon."},
-                                            status=status.HTTP_400_BAD_REQUEST)
-                        coupon_per_user.increase_num_uses()
-
-                    cart.promo_code = promo_code_obj
-                    cart.save()
-                    return Response({"detail": "Code successfully added."},
-                                    status=status.HTTP_200_OK)
-                else:
-                    return Response({"detail": "Code is not active."},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"detail": "Promo code already applied."},
+        if promo_code_obj.categories.all():
+            x = set(cart.items.values_list('product__category', flat=True))
+            y = set(promo_code_obj.categories.values_list('promocode__categories__slug', flat=True))
+            if not x.intersection(y):
+                return Response({"detail": "No categories tied with coupon."},
                                 status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"detail": f"{e}"})
+
+        if promo_code_obj.products.all():
+            x = set(cart.items.values_list('product__slug', flat=True))
+            y = set(promo_code_obj.products.values_list('promocode__products__slug', flat=True))
+            if not x.intersection(y):
+                return Response({"detail": "No products tied with coupon."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        coupon.increase_num_uses()
+
+        coupon_per_user: PromoCodeUser = self._get_promo_code_per_user_obj(promo_code_obj=promo_code_obj)
+        if coupon_per_user:
+            customer_can_use__code = coupon.can_be_used_by_user_with_use_count(coupon_per_user.num_uses)
+            if not customer_can_use__code:
+                return Response({"detail": "User's max level exceeded for coupon."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            coupon_per_user.increase_num_uses()
+
+        cart.promo_code = promo_code_obj
+        cart.save()
+
+        return Response({"detail": "Code successfully added."}, status=status.HTTP_200_OK)
+
 
     def remove_item(self):
         """ remove item from cart """
