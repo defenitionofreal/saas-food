@@ -74,7 +74,7 @@ class CartHelper:
     def _get_promo_code(self):
         return self.get_cart_obj().promo_code
 
-    def _get_customer_bonus(self) -> [int, None]:
+    def _get_customer_bonus_points(self) -> [int, None]:
         return self.get_cart_obj().customer_bonus
 
     def _get_delivery(self) -> [DeliveryHelper, None]:
@@ -149,7 +149,7 @@ class CartHelper:
 
     def calculate_customer_bonus_write_off_for_final_price(self):
         """ Amount to remove from final price, value <= 0 """
-        customer_bonus = self._get_customer_bonus()
+        customer_bonus = self._get_customer_bonus_points()
         bonus = self._get_institution_bonus()
 
         if None not in [customer_bonus, bonus]:
@@ -159,7 +159,7 @@ class CartHelper:
 
     def get_customer_bonus_contribution_to_sale(self) -> int:
         """ How much customer bonus adds to basic discount, value >= 0"""
-        customer_bonus = self._get_customer_bonus()
+        customer_bonus = self._get_customer_bonus_points()
         if customer_bonus:
             bonus = self._get_institution_bonus()
             if bonus:
