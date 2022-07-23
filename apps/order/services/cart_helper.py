@@ -79,6 +79,7 @@ class CartHelper:
         return self.get_cart_obj().promo_code
 
     def _get_customer_bonus_points(self) -> [int, None]:
+        """ How much bonus points set up to this cart to get write off """
         return self.get_cart_obj().customer_bonus
 
     def _get_delivery(self) -> [DeliveryHelper, None]:
