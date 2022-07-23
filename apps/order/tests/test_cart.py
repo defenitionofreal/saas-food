@@ -93,6 +93,7 @@ class TestCart(TestSetupBase):
         delivery.sale_type = SaleType.PERCENT
         delivery.save()
         db_cart.refresh_from_db()
+        cart.refresh_cached_cart()
 
         expected_sale_percent = get_absolute_from_percent_and_total(delivery_sale, cart.get_total_cart_after_sale)
         self.assertEqual(cart.get_delivery_sale, expected_sale_percent)
