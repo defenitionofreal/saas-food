@@ -72,7 +72,7 @@ class CartHelper:
         """ Guaranteed to return a valid Cart  """
         return self._cart_get_or_create()[0]
 
-    def _get_institution_bonus(self):
+    def _get_institution_bonus_obj(self):
         return self.institution.bonuses.first()
 
     def _get_promo_code(self):
@@ -162,7 +162,7 @@ class CartHelper:
     def calculate_customer_bonus_write_off_for_final_price(self):
         """ Amount to remove from final price, value <= 0 """
         customer_bonus = self._get_customer_bonus_points()
-        bonus = self._get_institution_bonus()
+        bonus = self._get_institution_bonus_obj()
 
         if None not in [customer_bonus, bonus]:
             if bonus.is_active and not bonus.is_promo_code:
@@ -173,7 +173,7 @@ class CartHelper:
         """ How much customer bonus adds to basic discount, value >= 0"""
         customer_bonus = self._get_customer_bonus_points()
         if customer_bonus:
-            bonus = self._get_institution_bonus()
+            bonus = self._get_institution_bonus_obj()
             if bonus:
                 is_active = bonus.is_active
                 is_promo_code = bonus.is_promo_code
@@ -258,7 +258,7 @@ class CartHelper:
     @property
     def get_bonus_accrual(self) -> int:
         """ How much bonus amount customer will get, value >= 0 """
-        bonus = self._get_institution_bonus()
+        bonus = self._get_institution_bonus_obj()
         if bonus and bonus.is_active:
             if bonus.is_promo_code:
                 full_sum = self.get_total_cart_after_sale
