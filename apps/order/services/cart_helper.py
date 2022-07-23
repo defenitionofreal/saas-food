@@ -49,6 +49,7 @@ class CartHelper:
         return 0
 
     def refresh_cached_cart(self):
+        """ Cache refresh is not necessary during  regular work, but useful for test purposes """
         self._cart_get_or_create(force_refresh_cache=True)
 
     def _cart_get_or_create(self, force_refresh_cache=False) -> tuple:
