@@ -1,6 +1,10 @@
 import datetime
 
+from rest_framework import status
+from rest_framework.response import Response
+
 from apps.delivery.models.enums import SaleType
+from apps.order.services.validation_check import ValidationCheck
 
 
 def get_today_date():
@@ -101,3 +105,41 @@ class PromoCodeHelper:
         if not max_uses_by_user:
             return True
         return max_uses_by_user > use_count
+
+    def can_be_applied_to_cart(self, total_cart_price) -> ValidationCheck:
+
+        if self.is_active is False:
+            r = Response({"detail": "Code is not active."}, status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if self.is_absolute_sale and total_cart_price <= self.sale:
+            r = Response({"detail": f"Sale is bigger: {total_cart_price}"},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if self.is_percent_sale and self.sale > 100:
+            r = Response({"detail": "Sale is bigger 100%"},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if not self.can_be_used_by_cart_total(total_cart_price):
+            r = Response({"detail": f"Total cart price have to be more {self.cart_total}"},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if not self.can_be_used_today_by_start_date:
+            r = Response({"detail": f"Code period not started yet"},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if not self.can_be_used_today_by_finish_date:
+            r = Response({"detail": f"Code period expired"},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        if not self.has_num_uses_left:
+            r = Response({"detail": "Max level exceeded for coupon."},
+                         status=status.HTTP_400_BAD_REQUEST)
+            return ValidationCheck(is_ok=False, response=r)
+
+        return ValidationCheck(is_ok=True)
