@@ -310,11 +310,9 @@ class CartHelper:
 
     def add_customer_bonus(self, bonus_input: int) -> Response:
         """ Add customer bonus points to the cart """
-        cart = self.get_cart_obj()
         customer_bonus_points = self._get_customer_bonus_points()
         bonus_obj = self._get_institution_bonus_obj()
         user_bonus_obj = self._get_user_bonus_obj()
-        promo_code = self._get_promo_code()
 
         if customer_bonus_points is not None:
             return Response({"detail": "Bonuses already applied."})
@@ -331,19 +329,20 @@ class CartHelper:
 
         bonus_write_off_percent = bonus_obj.write_off
 
-        if promo_code is not None:
+        if self._has_promo_code:
             if bonus_obj.is_promo_code is True:
-                total_cart = cart.get_total_cart_after_sale
+                total_cart = self.get_total_cart_after_sale
                 sale = get_absolute_from_percent_and_total(bonus_write_off_percent, total_cart)
             else:
                 return Response({"detail": "Use bonuses with promocode is not allowed."})
         else:
-            total_cart = cart.get_total_cart
+            total_cart = self.get_total_cart
             sale = get_absolute_from_percent_and_total(bonus_write_off_percent, total_cart)
 
         if bonus_input > sale:
             return Response({"detail": f"Write off no more than {bonus_write_off_percent}% "
                                        f"of total price. ({sale} bonuses)"})
+        cart = self.get_cart_obj()
         cart.customer_bonus = bonus_input
         cart.save()
         user_bonus_obj.bonus -= bonus_input
