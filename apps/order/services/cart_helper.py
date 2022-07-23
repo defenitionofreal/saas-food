@@ -78,6 +78,10 @@ class CartHelper:
     def _get_promo_code(self):
         return self.get_cart_obj().promo_code
 
+    @property
+    def _has_promo_code(self):
+        return self._get_promo_code() is not None
+
     def _get_customer_bonus_points(self) -> [int, None]:
         """ How much bonus points set up to this cart to get write off """
         return self.get_cart_obj().customer_bonus
