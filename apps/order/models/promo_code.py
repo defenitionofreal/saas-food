@@ -48,4 +48,3 @@ class PromoCodeUser(models.Model):
     def increase_num_uses(self):
         self.num_uses += 1
         self.save()
-        
