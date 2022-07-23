@@ -44,3 +44,8 @@ class PromoCodeUser(models.Model):
 
     def __str__(self):
         return f'{self.user.phone}: {self.code}'
+
+    def increase_num_uses(self):
+        self.num_uses += 1
+        self.save()
+        
