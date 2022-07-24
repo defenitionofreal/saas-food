@@ -54,6 +54,7 @@ class Cart(models.Model):
         if not isinstance(other, Cart):
             return
         other_items = other.items.all()
+        print(other_items)
         for i in other_items:
             product_dict = i.product
             quantity = i.quantity
@@ -70,4 +71,6 @@ class Cart(models.Model):
             cart_item.quantity = F("quantity") + quantity
             cart_item.save(update_fields=("quantity",))
         else:
+            cart_item.quantity = quantity
+            cart_item.save()
             self.items.add(cart_item)
