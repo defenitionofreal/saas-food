@@ -88,7 +88,8 @@ class CartHelper:
         """ How much bonus points set up to this cart to get write off """
         return self.get_cart_obj().customer_bonus
 
-    def _get_user_bonus_obj(self) -> [int, None]:
+    def _get_user_bonus_obj(self):
+        """ Returns DB object from UserBonus table"""
         if self._is_user_auth():
             return self.institution.user_bonuses.filter(user=self.user).first()
 
@@ -406,7 +407,6 @@ class CartHelper:
         return Response({"detail": "Code successfully added."}, status=status.HTTP_200_OK)
 
     def remove_product_or_decrease_quantity_by_id(self, cart_item_id: int) -> Response:
-        """ remove item from cart or decrease quantity"""
         cart = self.get_cart_obj()
         cart_item: CartItem = cart.items.filter(id=cart_item_id).first()
 
