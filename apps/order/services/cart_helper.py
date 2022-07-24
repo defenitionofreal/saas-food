@@ -99,13 +99,11 @@ class CartHelper:
             return DeliveryHelper(delivery)
 
     def _get_promo_code_per_user_obj(self, promo_code_obj) -> [PromoCodeUser, None]:
-        try:
-            if self._is_user_auth():
-                coupon_per_user, created = PromoCodeUser.objects.get_or_create(
-                    code=promo_code_obj, user=self.user)
-                return coupon_per_user
-        except:
-            return None
+        # we can get bad error if promo_code_obj will be invalid
+        if self._is_user_auth() and promo_code_obj:
+            coupon_per_user, created = PromoCodeUser.objects.get_or_create(code=promo_code_obj,
+                                                                           user=self.user)
+            return coupon_per_user
 
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
