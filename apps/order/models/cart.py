@@ -54,7 +54,6 @@ class Cart(models.Model):
         if not isinstance(other, Cart):
             return
         other_items = other.items.all()
-        print(other_items)
         for i in other_items:
             product_dict = i.product
             quantity = i.quantity
