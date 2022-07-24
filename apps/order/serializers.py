@@ -33,7 +33,23 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class CartHelperSerializer(serializers.ModelSerializer):
-    """Serializer for the Cart model."""
+    # model fields
+
+    items = ItemsSerializer(read_only=True, many=True)
+    delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
+
+    # property methods
+
+    get_total_cart = serializers.SerializerMethodField()
+    get_total_cart_after_sale = serializers.SerializerMethodField()
+    get_sale = serializers.SerializerMethodField()
+    get_bonus_accrual = serializers.SerializerMethodField()
+    get_delivery_price = serializers.SerializerMethodField()
+    get_free_delivery_amount = serializers.SerializerMethodField()
+    get_delivery_sale = serializers.SerializerMethodField()
+    get_min_delivery_order_amount = serializers.SerializerMethodField()
+    get_delivery_zone = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
 
     def __init__(self, request, institution, **kwargs):
         self.cart = CartHelper(request=request, institution=institution)
@@ -62,25 +78,7 @@ class CartHelperSerializer(serializers.ModelSerializer):
     def is_empty(self):
         return self.cart.is_empty
 
-    # ======= OUTPUT DATA =======
-
-    # model fields
-
-    items = ItemsSerializer(read_only=True, many=True)
-    delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
-
-    # property methods
-
-    get_total_cart = serializers.SerializerMethodField()
-    get_total_cart_after_sale = serializers.SerializerMethodField()
-    get_sale = serializers.SerializerMethodField()
-    get_bonus_accrual = serializers.SerializerMethodField()
-    get_delivery_price = serializers.SerializerMethodField()
-    get_free_delivery_amount = serializers.SerializerMethodField()
-    get_delivery_sale = serializers.SerializerMethodField()
-    get_min_delivery_order_amount = serializers.SerializerMethodField()
-    get_delivery_zone = serializers.SerializerMethodField()
-    final_price = serializers.SerializerMethodField()
+    # ======= SERIALIZED FIELDS METHODS =======
 
     def get_get_total_cart(self, obj):
         return self.cart.get_total_cart
