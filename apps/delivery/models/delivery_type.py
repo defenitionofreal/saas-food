@@ -37,7 +37,6 @@ class Delivery(models.Model):
     # if total bigger than this, delivery is free if delivery_price (optional)
     free_delivery_amount = models.DecimalField(max_digits=10,
                                                decimal_places=2,
-                                               default=0,
                                                blank=True,
                                                null=True
                                                )

@@ -1,8 +1,10 @@
 from apps.product.models import Product
-from ..models.cart_item import CartItemProductKeys as pkeys
+from apps.order.models.cart_item import CartItemProductKeys as pkeys
 
 
-def get_cart_item_dict_from_product(product: Product, modifiers: dict = None, additives: list = None):
+def get_cart_item_dict_from_product(product: Product,
+                                    modifiers: dict = None,
+                                    additives: list = None):
     if product:
         modifiers = modifiers if modifiers else {}
         additives = additives if additives else []

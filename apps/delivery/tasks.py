@@ -2,7 +2,7 @@
 from celery import shared_task
 # core
 from apps.delivery.services.google_file_parser import google_file_to_dict
-from apps.delivery.models import DeliveryZone, DeliveryZoneСoordinates, \
+from apps.delivery.models import DeliveryZone, DeliveryZoneCoordinates, \
     DeliveryZoneFile
 from apps.company.models import Institution
 import logging
@@ -26,13 +26,13 @@ def google_map_file_upload_task(filename, pk):
         # create map coordinates
         if delivery_zone_created is True:
             objs = [
-                DeliveryZoneСoordinates(
+                DeliveryZoneCoordinates(
                     zone=delivery_zone,
                     coordinates=i
                 )
                 for i in coordinates[0]
             ]
-            DeliveryZoneСoordinates.objects.bulk_create(objs)
+            DeliveryZoneCoordinates.objects.bulk_create(objs)
         else:
             # rm index from db & file that was uploaded
             DeliveryZoneFile.objects.get(institution=institution,

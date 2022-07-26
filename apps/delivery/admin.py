@@ -1,7 +1,7 @@
 from django.contrib import admin
 from apps.delivery.models import (DeliveryZoneFile,
                                   DeliveryZone,
-                                  DeliveryZoneСoordinates,
+                                  DeliveryZoneCoordinates,
                                   Delivery,
                                   DeliveryInfo)
 
@@ -18,8 +18,8 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
     autocomplete_fields = ("institution",)
 
 
-@admin.register(DeliveryZoneСoordinates)
-class DeliveryZoneСoordinatesAdmin(admin.ModelAdmin):
+@admin.register(DeliveryZoneCoordinates)
+class DeliveryZoneCoordinatesAdmin(admin.ModelAdmin):
     search_fields = ("zone",)
     autocomplete_fields = ("zone",)
 

@@ -12,7 +12,9 @@ class CartAPIView(APIView):
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
-        cart_serializer = CartHelperSerializer(request=request, institution=institution, context={"request": request})
+        cart_serializer = CartHelperSerializer(request=request,
+                                               institution=institution,
+                                               context={"request": request})
         if cart_serializer.is_empty:
             return Response({"detail": "Cart is empty."})
         return Response(cart_serializer.data)

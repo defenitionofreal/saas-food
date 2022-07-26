@@ -1,4 +1,5 @@
 from apps.delivery.models.enums import SaleType, DeliveryType
+from apps.delivery.services.delivery_zone_helper import DeliveryZoneHelper
 from apps.order.services.math_utils import get_absolute_from_percent_and_total
 
 from turfpy.measurement import boolean_point_in_polygon
@@ -22,6 +23,10 @@ class DeliveryHelper:
         if self.is_valid:
             return self.delivery.type.sale_type
 
+    def get_delivery_type(self):
+        if self.is_valid:
+            return self.delivery.type.delivery_type
+
     @property
     def is_absolute_sale_type(self):
         return self.get_sale_type() == SaleType.ABSOLUTE
@@ -29,6 +34,17 @@ class DeliveryHelper:
     @property
     def is_percent_sale_type(self):
         return self.get_sale_type() == SaleType.PERCENT
+
+    @property
+    def delivery_address(self):
+        if self.is_valid:
+            ad = self.delivery.address
+            if ad:
+                return ad.address
+
+    @property
+    def is_courier_type(self):
+        return self.get_delivery_type() == DeliveryType.COURIER
 
     @property
     def delivery_price(self) -> [int, None]:
@@ -60,33 +76,35 @@ class DeliveryHelper:
                     return get_absolute_from_percent_and_total(delivery_sale, cart_total)
 
     @property
-    def get_delivery_zone(self):
+    def get_delivery_zone(self) -> [DeliveryZoneHelper, None]:
         institution = self._get_institution()
         zones = institution.dz.filter(is_active=True)
-        if zones.exists() and self.delivery.type.delivery_type == DeliveryType.COURIER:
+        address = self.delivery_address
+
+        if zones.exists() and self.is_courier_type and address:
             for zone in zones:
-                address = self.delivery.address.address
                 point = Point([json.loads(address.latitude),
                                json.loads(address.longitude)])
                 polygon = Polygon(json.loads(
                     zone.dz_coordinates.values_list("coordinates",
                                                     flat=True)[0]))
                 if boolean_point_in_polygon(point, polygon):
-                    return {"title": zone.title,
-                            "price": zone.price,
-                            "free_delivery_amount": zone.free_delivery_amount,
-                            "min_order_amount": zone.min_order_amount,
-                            "delivery_time": zone.delivery_time}
+                    return DeliveryZoneHelper(title=zone.title,
+                                              price=zone.price,
+                                              free_delivery_amount=zone.free_delivery_amount,
+                                              min_order_amount=zone.min_order_amount,
+                                              delivery_time=zone.delivery_time)
+
         return None
 
     def calculate_price_for_delivery_zone(self, cart_current_price: int):
-        if not self.get_delivery_zone:
-            return 0
-        if self.get_delivery_zone["free_delivery_amount"]:
-            if cart_current_price < self.get_delivery_zone["free_delivery_amount"]:
-                return self.get_delivery_zone["price"]
-        else:
-            return self.get_delivery_zone["price"]
+        zone = self.get_delivery_zone
+        if zone:
+            free_amount = zone.free_delivery_amount
+            is_full_price = not free_amount or cart_current_price < free_amount
+            if is_full_price:
+                return zone.price
+        return 0
 
     def calculate_final_delivery_price(self, cart_current_price: int):
         total = 0

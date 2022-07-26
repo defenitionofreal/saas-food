@@ -64,6 +64,7 @@ THIRD_PART_APPS = [
     # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_extensions',
 ]
 
 INTERNAL_APPS = [

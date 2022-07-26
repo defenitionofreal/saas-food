@@ -109,7 +109,8 @@ class PromoCodeHelper:
     def can_be_applied_to_cart(self, total_cart_price) -> ValidationCheck:
 
         if self.is_active is False:
-            r = Response({"detail": "Code is not active."}, status=status.HTTP_400_BAD_REQUEST)
+            r = Response({"detail": "Code is not active."},
+                         status=status.HTTP_400_BAD_REQUEST)
             return ValidationCheck(is_ok=False, response=r)
 
         if self.is_absolute_sale and total_cart_price <= self.sale:
@@ -123,7 +124,8 @@ class PromoCodeHelper:
             return ValidationCheck(is_ok=False, response=r)
 
         if not self.can_be_used_by_cart_total(total_cart_price):
-            r = Response({"detail": f"Total cart price have to be more {self.cart_total}"},
+            r = Response({
+                             "detail": f"Total cart price have to be more {self.cart_total}"},
                          status=status.HTTP_400_BAD_REQUEST)
             return ValidationCheck(is_ok=False, response=r)
 

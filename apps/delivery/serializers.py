@@ -3,7 +3,7 @@ from apps.delivery.models import (Delivery,
                                   DeliveryZoneFile,
                                   DeliveryInfo,
                                   DeliveryZone,
-                                  DeliveryZoneСoordinates)
+                                  DeliveryZoneCoordinates)
 from apps.base.services.delete_file import delete_old_file
 from apps.company.serializers import BasicInstitutionSerializer
 from apps.location.serializers import AddressLinkCustomerSerializer
@@ -72,5 +72,5 @@ class DeliveryInfoCustomerSerializer(serializers.ModelSerializer):
 #     zone = DeliveryZoneSerializer(many=False)
 #
 #     class Meta:
-#         model = DeliveryZoneСoordinates
+#         model = DeliveryZoneCoordinates
 #         fields = "__all__"

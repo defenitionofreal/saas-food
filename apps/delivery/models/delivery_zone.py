@@ -19,7 +19,9 @@ class DeliveryZone(models.Model):
                                            default=0)
     free_delivery_amount = models.DecimalField(max_digits=10,
                                                decimal_places=2,
-                                               default=0)
+                                               blank=True,
+                                               null=True
+                                               )
     delivery_time = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
@@ -27,7 +29,7 @@ class DeliveryZone(models.Model):
         return f'{self.institution} -> {self.title}'
 
 
-class DeliveryZoneСoordinates(models.Model):
+class DeliveryZoneCoordinates(models.Model):
     """
     Delivery zone coordinates model
     """

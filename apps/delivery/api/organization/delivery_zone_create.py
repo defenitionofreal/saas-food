@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from apps.delivery.models import DeliveryZone, DeliveryZoneСoordinates
+from apps.delivery.models import DeliveryZone, DeliveryZoneCoordinates
 from apps.company.models import Institution
 from apps.company.services.compare_institution import _find_wrong_inst_id
 
@@ -51,7 +51,7 @@ class DeliveryZoneCreateAPIView(APIView):
             delivery_time=delivery_time)
 
         if zone_created is True:
-            DeliveryZoneСoordinates.objects.create(zone=delivery_zone,
+            DeliveryZoneCoordinates.objects.create(zone=delivery_zone,
                                                    coordinates=coordinates)
 
         return Response({"detail": "delivery zone created"},
