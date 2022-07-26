@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from apps.company.models import Institution
-from apps.delivery.models import Delivery, DeliveryInfo, DeliveryZone, DeliveryZoneСoordinates
+from apps.delivery.models import Delivery, DeliveryInfo, DeliveryZone, DeliveryZoneCoordinates
 from apps.delivery.models.enums import SaleType, DeliveryType
 from apps.location.models import Address, AddressLink
 
@@ -53,5 +53,5 @@ class TestDeliverySetup(TestCase):
                       '[ 37.60993804221867, 55.74562109508482 ], ' \
                       '[ 37.649151288418906, 55.74495799748623 ], ' \
                       '[ 37.647581672276246, 55.7717111831524 ] ]]'
-        DeliveryZoneСoordinates.objects.create(zone=dz, coordinates=coordinates)
+        DeliveryZoneCoordinates.objects.create(zone=dz, coordinates=coordinates)
         return dz
