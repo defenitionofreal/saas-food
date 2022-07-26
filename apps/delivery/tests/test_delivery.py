@@ -52,14 +52,10 @@ class TestDeliveryHelper(TestDeliverySetup):
         dz_price_fda_greater = delivery.calculate_price_for_delivery_zone(cart_price_greater_fda)
         self.assertEqual(dz_price_fda_greater, 0)
 
+        # test no free delivery amount
 
-        # todo: uncomment later
-        # # test no free delivery amount
-        #
-        # delivery_zone.free_delivery_amount = None
-        # delivery_zone.save()
-        #
-        # dz_no_free_amount  = delivery.calculate_price_for_delivery_zone(10000000)
-        # self.assertEqual(dz_no_free_amount, zone_delivery_price)
+        delivery_zone.free_delivery_amount = None
+        delivery_zone.save()
 
-
+        dz_no_free_amount = delivery.calculate_price_for_delivery_zone(10000000)
+        self.assertEqual(dz_no_free_amount, zone_delivery_price)
