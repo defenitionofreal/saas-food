@@ -152,7 +152,9 @@ class CartHelper:
     def get_delivery_zone(self):
         delivery = self._get_delivery()
         if delivery:
-            return delivery.get_delivery_zone
+            delivery_zone = delivery.get_delivery_zone
+            if delivery_zone:
+                return delivery_zone.as_dict
 
     @property
     def is_free_delivery_by_promo_code(self) -> bool:
