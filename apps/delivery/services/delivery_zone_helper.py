@@ -5,3 +5,13 @@ class DeliveryZoneHelper:
         self.free_delivery_amount = free_delivery_amount
         self.min_order_amount = min_order_amount
         self.delivery_time = delivery_time
+
+    @property
+    def as_dict(self):
+        return {
+            "title": self.title,
+            "price": self.price,
+            "free_delivery_amount": self.free_delivery_amount,
+            "min_order_amount": self.min_order_amount,
+            "delivery_time": self.delivery_time
+        }
