@@ -77,8 +77,10 @@ class CartHelper:
     def _get_institution_bonus_obj(self):
         return self.institution.bonuses.first()
 
-    def _get_promo_code(self):
-        return self.get_cart_obj().promo_code
+    def _get_promo_code(self) -> [PromoCodeHelper, None]:
+        code = self.get_cart_obj().promo_code
+        if code:
+            return PromoCodeHelper(code)
 
     @property
     def _has_promo_code(self):
@@ -158,7 +160,9 @@ class CartHelper:
     @property
     def is_free_delivery_by_promo_code(self) -> bool:
         promo_code = self._get_promo_code()
-        return promo_code and promo_code.delivery_free
+        if promo_code:
+            return promo_code.is_free_delivery
+        return False
 
     def calculate_final_delivery_price(self, cart_current_price) -> int:
         """ Final delivery expenses, value >= 0  """
@@ -200,16 +204,16 @@ class CartHelper:
         promo_code = self._get_promo_code()
         cart = self.get_cart_obj()
         if promo_code:
-            sale = promo_code.sale
+            sale = promo_code.promo_code.sale
             # if absolute sale type
             if promo_code.code_type == 'absolute':
                 # categories participate coupon
-                if promo_code.categories.all():
+                if promo_code.promo_code.categories.all():
                     items_cat = cart.items.values("product__category",
                                                   "product__slug",
                                                   "product__price",
                                                   "quantity")
-                    code_cat = promo_code.categories.values_list("slug",
+                    code_cat = promo_code.promo_code.categories.values_list("slug",
                                                                  flat=True)
                     for i in items_cat:
                         if i["product__category"] in code_cat:
@@ -217,11 +221,11 @@ class CartHelper:
                     sale = sale if sale >= 0.0 else 0.0
                     return sale
                 # products participate coupon
-                if promo_code.products.all():
+                if promo_code.promo_code.products.all():
                     items = cart.items.values("product__slug",
                                               "product__price",
                                               "quantity")
-                    code_product = promo_code.products.values_list("slug",
+                    code_product = promo_code.promo_code.products.values_list("slug",
                                                                    flat=True)
                     for i in items:
                         if i["product__slug"] in code_product:
@@ -233,16 +237,16 @@ class CartHelper:
                 return sale
 
             # if percent sale type
-            if promo_code.code_type == 'percent':
+            if promo_code.promo_code.code_type == 'percent':
 
                 # categories participate coupon
-                if promo_code.categories.all():
+                if promo_code.promo_code.categories.all():
                     cat_total = 0
                     items_cat = cart.items.values("product__category",
                                                   "product__slug",
                                                   "product__price",
                                                   "quantity")
-                    code_cat = promo_code.categories.values_list("slug",
+                    code_cat = promo_code.promo_code.categories.values_list("slug",
                                                                  flat=True)
                     for i in items_cat:
                         if i["product__category"] in code_cat:
@@ -251,12 +255,12 @@ class CartHelper:
                     return get_absolute_from_percent_and_total(sale, cat_total)
 
                 # products participate coupon
-                if promo_code.products.all():
+                if promo_code.promo_code.products.all():
                     products_total = 0
                     items = cart.items.values("product__slug",
                                               "product__price",
                                               "quantity")
-                    code_product = promo_code.products.values_list("slug",
+                    code_product = promo_code.promo_code.products.values_list("slug",
                                                                    flat=True)
                     for i in items:
                         if i["product__slug"] in code_product:
