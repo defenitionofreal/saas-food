@@ -4,7 +4,10 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 # TODO: institution ManyToMany
+# TODO: There will be a problem if sale type is percent and sale > 100.
+# We should prevent such code on creation or on edit
 class PromoCode(models.Model):
     """
     Promo code model for orders
