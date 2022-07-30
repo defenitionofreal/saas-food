@@ -25,28 +25,33 @@ class PromoCodeHelper:
 
     @property
     def is_active(self) -> bool:
-        if self.is_valid:
-            return self.promo_code.is_active
+        if not self.is_valid:
+            return False
+        return self.promo_code.is_active
 
     @property
     def is_free_delivery(self) -> bool:
-        if self.is_valid:
-            return self.promo_code.delivery_free
+        if not self.is_valid:
+            return False
+        return self.promo_code.delivery_free
 
     @property
     def sale(self) -> [int, None]:
-        if self.is_valid:
-            return self.promo_code.sale
+        if not self.is_valid:
+            return False
+        return self.promo_code.sale
 
     @property
     def cart_total(self) -> [int, None]:
-        if self.is_valid:
-            return self.promo_code.cart_total
+        if not self.is_valid:
+            return False
+        return self.promo_code.cart_total
 
     @property
     def code_type(self) -> [SaleType, None]:
-        if self.is_valid:
-            return self.promo_code.code_type
+        if not self.is_valid:
+            return False
+        return self.promo_code.code_type
 
     @property
     def is_absolute_sale(self) -> bool:
@@ -130,8 +135,8 @@ class PromoCodeHelper:
 
         if not self.can_be_used_by_cart_total(total_cart_price):
             r = Response({
-                             "detail": f"Total cart price have to be more {self.cart_total}"},
-                         status=status.HTTP_400_BAD_REQUEST)
+                "detail": f"Total cart price have to be more {self.cart_total}"},
+                status=status.HTTP_400_BAD_REQUEST)
             return ValidationCheck(is_ok=False, response=r)
 
         if not self.can_be_used_today_by_start_date:
