@@ -29,7 +29,6 @@ class CartHelper:
         # what else ?
 
     # ======= BASIC METHODS =======
-    # todo: здесь базовые методы, которые так или иначе часто необходимы
 
     def _check_or_generate_session_cart_id_key(self):
         """ cart_id in sessions needed for all further requests """
@@ -108,7 +107,6 @@ class CartHelper:
             return coupon_per_user
 
     # ======= CONDITIONS & DEDUCTIONS =======
-    # todo: здесь написать методы, которые разгрузят модель Cart
 
     @property
     def get_total_cart(self) -> int:
@@ -292,8 +290,7 @@ class CartHelper:
 
         return price_after_sale
 
-    # ======= ACTIONS =======
-    # todo: здесь методы действий покупателя
+    # ======= CUSTOMER ACTIONS =======
 
     def add_item(self, product_dict) -> Response:
         """ add new item to cart or update quantity of an item """
