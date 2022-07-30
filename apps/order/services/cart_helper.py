@@ -418,6 +418,7 @@ class CartHelper:
                 cart_item.save(update_fields=("quantity",))
             else:
                 cart.items.remove(cart_item)
+                cart_item.delete()
             return Response({"detail": "Product quantity updated"})
         else:
             return Response({"detail": "This product not in a cart"})
