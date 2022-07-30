@@ -29,6 +29,11 @@ class PromoCodeHelper:
             return self.promo_code.is_active
 
     @property
+    def is_free_delivery(self) -> bool:
+        if self.is_valid:
+            return self.promo_code.delivery_free
+
+    @property
     def sale(self) -> [int, None]:
         if self.is_valid:
             return self.promo_code.sale
