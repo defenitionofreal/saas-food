@@ -62,6 +62,18 @@ class PromoCodeHelper:
         return self.code_type == SaleType.PERCENT
 
     @property
+    def has_categories(self):
+        if not self.is_valid:
+            return False
+        return self.promo_code.categories.exists()
+
+    @property
+    def has_products(self):
+        if not self.is_valid:
+            return False
+        return self.promo_code.products.exists()
+
+    @property
     def has_num_uses_left(self) -> bool:
         if not self.is_valid:
             return False
