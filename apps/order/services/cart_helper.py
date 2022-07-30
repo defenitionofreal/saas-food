@@ -94,8 +94,7 @@ class CartHelper:
             return self.institution.user_bonuses.filter(user=self.user).first()
 
     def _get_delivery(self) -> [DeliveryHelper, None]:
-        cart = self.get_cart_obj()
-        delivery = cart.delivery
+        delivery = self.get_cart_obj().delivery
         if delivery:
             return DeliveryHelper(delivery)
 
