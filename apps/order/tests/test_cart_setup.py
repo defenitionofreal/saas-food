@@ -45,6 +45,14 @@ class TestSetupBase(APITestCase):
                                                      phone='+79111112233', domain=domain)
 
     @classmethod
+    def get_cart_min_amount(cls) -> int:
+        """ cart minimum amount rule """
+        value = cls.institution.min_cart_value.values_list("cost", flat=True)
+        if value:
+            return value[0]
+        return 0
+
+    @classmethod
     def create_category(cls):
         cls.category = Category.objects.create(title='cat', slug='cat')
 
