@@ -30,3 +30,6 @@ prod:
 
 test:
 	python manage.py test
+
+test-backend:
+	docker-compose exec backend python manage.py test
