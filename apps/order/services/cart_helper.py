@@ -198,75 +198,47 @@ class CartHelper:
     @property
     def get_sale(self) -> int:
         """ Basic sale amount, value >= 0"""
-        # todo: test and refactor this method
         promo_code = self._get_promo_code()
-        cart = self.get_cart_obj()
         if promo_code:
-            sale = promo_code.promo_code.sale
-            # if absolute sale type
-            if promo_code.code_type == 'absolute':
-                # categories participate coupon
-                if promo_code.promo_code.categories.all():
-                    items_cat = cart.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = promo_code.promo_code.categories.values_list("slug",
-                                                                 flat=True)
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
-                # products participate coupon
-                if promo_code.promo_code.products.all():
-                    items = cart.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = promo_code.promo_code.products.values_list("slug",
-                                                                   flat=True)
-                    for i in items:
-                        if i["product__slug"] in code_product:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
+            sale = promo_code.sale
+            promo_has_categories = promo_code.has_categories
+            promo_has_products = promo_code.has_products
+            cart = self.get_cart_obj()
+
+            product__category = 'product__category'
+            product__slug = 'product__slug'
+            product__price = 'product__price'
+            quantity = 'quantity'
+
+            common_query = cart.items.values(product__category,
+                                             product__slug,
+                                             product__price,
+                                             quantity)
+
+            code_cat = promo_code.promo_code.categories.values_list("slug", flat=True)
+            code_product = promo_code.promo_code.products.values_list("slug", flat=True)
+
+            query_product_code_category = [i for i in common_query if i[product__category] in code_cat]
+            query_product_code_product = [i for i in common_query if i[product__slug] in code_product]
+
+            if promo_code.is_absolute_sale:
+                can_use_absolute_sale = any((query_product_code_category, query_product_code_product))
+                if can_use_absolute_sale:
                     return sale
 
-                sale = sale if sale >= 0.0 else 0.0
-                return sale
+            if promo_code.is_percent_sale:
+                target_query = []
 
-            # if percent sale type
-            if promo_code.promo_code.code_type == 'percent':
+                if promo_has_categories:
+                    target_query = query_product_code_category
+                elif promo_has_products:
+                    target_query = query_product_code_product
 
-                # categories participate coupon
-                if promo_code.promo_code.categories.all():
-                    cat_total = 0
-                    items_cat = cart.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = promo_code.promo_code.categories.values_list("slug",
-                                                                 flat=True)
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            cat_total += i["product__price"] * i["quantity"]
-                    cat_total = cat_total if cat_total >= 0.0 else 0.0
-                    return get_absolute_from_percent_and_total(sale, cat_total)
+                total = sum(i[product__price] * i[quantity] for i in target_query)
+                if total <= 0:
+                    total = self.get_total_cart
 
-                # products participate coupon
-                if promo_code.promo_code.products.all():
-                    products_total = 0
-                    items = cart.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = promo_code.promo_code.products.values_list("slug",
-                                                                   flat=True)
-                    for i in items:
-                        if i["product__slug"] in code_product:
-                            products_total += i["product__price"] * i[
-                                "quantity"]
-                    products_total = products_total if products_total >= 0.0 else 0.0
-                    return get_absolute_from_percent_and_total(sale, products_total)
-                return get_absolute_from_percent_and_total(sale, self.get_total_cart)
+                return get_absolute_from_percent_and_total(sale, total)
         return 0
 
     @property
