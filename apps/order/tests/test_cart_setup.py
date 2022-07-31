@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from apps.company.models import Institution
 from apps.delivery.models import DeliveryInfo, Delivery
 from apps.delivery.models.enums import SaleType, DeliveryType
-from apps.order.models import Bonus, UserBonus
+from apps.order.models import Bonus, UserBonus, PromoCode
 from apps.product.models import Category, Product
 
 User = get_user_model()
@@ -61,7 +61,7 @@ class TestSetupBase(APITestCase):
                                     accrual=accrual, is_promo_code=is_promo_code)
 
     @classmethod
-    def create_simple_product(cls, title, price, slug):
+    def create_simple_product(cls, title, price, slug) -> Product:
         # maybe get or create
         return Product.objects.create(category=cls.category, title=title, description='d', price=price,
                                       weight=1, cook_time=1, slug=slug)
@@ -79,3 +79,10 @@ class TestSetupBase(APITestCase):
 
     def create_delivery_info_obj(self, delivery: Delivery) -> DeliveryInfo:
         return DeliveryInfo.objects.create(type=delivery)
+
+    def create_promo_code(self, sale: int, code_type: SaleType, cart_total=None,
+                          delivery_free=False, title='title') -> PromoCode:
+        code = PromoCode.objects.create(institution=self.institution, title=title, code_type=code_type,
+                                        sale=sale, cart_total=cart_total, delivery_free=delivery_free,
+                                        is_active=True)
+        return code
