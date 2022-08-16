@@ -8,8 +8,7 @@ class ItemsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ("id", "cart", "product", "quantity", "get_additives",
-                  "get_modifiers", "get_total_item_price")
+        fields = ("id", "cart", "product", "quantity", "get_total_item_price")
 
 
 class CartSerializer(serializers.ModelSerializer):
