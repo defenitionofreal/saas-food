@@ -24,7 +24,7 @@ class PromoCode(models.Model):
     date_finish = models.DateField(blank=True, null=True)
     code_use = models.PositiveIntegerField(blank=True, null=True)
     code_use_by_user = models.PositiveIntegerField(blank=True, null=True)
-    num_uses = models.PositiveIntegerField(default=0, editable=False)
+    num_uses = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=False)
 
     def __str__(self):

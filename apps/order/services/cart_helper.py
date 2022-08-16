@@ -5,6 +5,7 @@ from django.db.models import F
 from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
 from apps.order.serializers import CartSerializer
+from apps.order.services.coupon_helper import CouponHelper
 from apps.product.models import Product
 # rest framework
 from rest_framework.response import Response
@@ -229,3 +230,8 @@ class CartHelper:
             return Response(serializer.data)
         else:
             return Response({"detail": "Cart is empty."})
+
+    def add_coupon(self, code) -> Response:
+        cart, _ = self._cart_get_or_create()
+        coupon = CouponHelper(code, cart, self.user)
+        return coupon.main()

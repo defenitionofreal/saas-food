@@ -29,11 +29,15 @@ class OrderItemAdmin(admin.ModelAdmin):
 @admin.register(PromoCode)
 class PromoCodeAdmin(admin.ModelAdmin):
     search_fields = ("id",)
+    list_display = ("id", "code", "num_uses", "code_use", "code_use_by_user")
 
 
 @admin.register(PromoCodeUser)
 class PromoCodeUserAdmin(admin.ModelAdmin):
     search_fields = ("id",)
+    list_display = ("id", "user", "code", "num_uses")
+    fields = ("code", "user")
+    readonly_fields = ("num_uses",)
 
 
 @admin.register(Bonus)
