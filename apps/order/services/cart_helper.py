@@ -5,6 +5,7 @@ from django.db.models import F
 from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
 from apps.order.serializers import CartSerializer
+from apps.product.models import Product
 # rest framework
 from rest_framework.response import Response
 from rest_framework import status
@@ -60,6 +61,121 @@ class CartHelper:
                 min_amount=self._cart_min_amount())
         return cart, cart_created
 
+    def _form_product_additives(self, product, additives):
+        product_additives = product.additives \
+            .values("category_additive__title", "category_additive__price") \
+            .filter(is_active=True, institution=self.institution,
+                    category_additive__title__in=[additive['title']
+                                                  for additive in
+                                                  additives]
+                    ).order_by('category_additive__title')
+
+        additives_map = {additive['title']: idx
+                         for idx, additive in
+                         enumerate(additives)}
+
+        # check for a additive in DB and set the right price from DB
+        for i in product_additives:
+            idx = additives_map.get(i['category_additive__title'])
+            if idx is not None:
+                additives[idx]["price"] = int(
+                    i["category_additive__price"])
+
+        # check if request json has not wanted values and clean it if does
+        difference = list(set(i["title"] for i in additives) -
+                          set([i["category_additive__title"]
+                               for i in product_additives]))
+        if difference:
+            for i in difference:
+                additives.remove(
+                    [additive for additive in additives
+                     if additive["title"] == i][0])
+
+        # check if product dont have any additives at all in DB
+        if not product_additives and additives:
+            additives = []
+
+    def _form_product_modifiers(self, product, modifiers):
+        product_modifiers = product.modifiers \
+            .values("title", "modifiers_price__price",
+                    "modifiers_price__product__slug") \
+            .filter(institution=self.institution,
+                    modifiers_price__product__slug=product.slug)
+        if product_modifiers and modifiers:
+            if modifiers["title"] in [m["title"] for m in product_modifiers]:
+                # todo: цена берется первого в ряду модификатора, исправить!
+                modifiers["price"] = int(product_modifiers[0]["modifiers_price__price"])
+            else:
+                modifiers.clear()
+        if not product_modifiers and modifiers:
+            modifiers.clear()
+
+    def _form_product_dict(self, product_slug) -> dict:
+        product = Product.objects.filter(slug=product_slug)
+        if product.exists():
+            product = product.first()
+            product_dict = {
+                "id": product.id,
+                "category": product.category.slug,
+                "title": product.title,
+                "slug": product.slug,
+                "price": product.price,
+                "modifiers": self.request.data['modifiers'] if "modifiers" in self.request.data else {},
+                "additives": self.request.data['additives'] if "additives" in self.request.data else []
+            }
+
+            self._form_product_additives(product, product_dict["additives"])
+            self._form_product_modifiers(product, product_dict["modifiers"])
+
+            # # ==== check for additives ====
+            # product_additives = product.additives \
+            #     .values("category_additive__title", "category_additive__price") \
+            #     .filter(is_active=True, institution=self.institution,
+            #             category_additive__title__in=[additive['title']
+            #                                           for additive in
+            #                                           product_dict["additives"]]
+            #             ).order_by('category_additive__title')
+            #
+            # additives_map = {additive['title']: idx
+            #                  for idx, additive in enumerate(product_dict["additives"])}
+            #
+            # # check for a additive in DB and set the right price from DB
+            # for i in product_additives:
+            #     idx = additives_map.get(i['category_additive__title'])
+            #     if idx is not None:
+            #         product_dict["additives"][idx]["price"] = int(
+            #             i["category_additive__price"])
+            #
+            # # check if request json has not wanted values and clean it if does
+            # difference = list(set(i["title"] for i in product_dict["additives"]) -
+            #                   set([i["category_additive__title"]
+            #                        for i in product_additives]))
+            # if difference:
+            #     for i in difference:
+            #         product_dict["additives"].remove(
+            #             [additive for additive in product_dict["additives"]
+            #              if additive["title"] == i][0])
+            #
+            # # check if product dont have anu additives at all in DB
+            # if not product_additives and product_dict["additives"]:
+            #     product_dict["additives"] = []
+
+            # # ==== check for modifiers ====
+            # product_modifiers = product.modifiers \
+            #     .values("title", "modifiers_price__price",
+            #             "modifiers_price__product__slug") \
+            #     .filter(institution=self.institution,
+            #             modifiers_price__product__slug=product.slug)
+            # if product_modifiers and product_dict["modifiers"]:
+            #     if product_dict["modifiers"]["title"] in [m["title"] for m in product_modifiers]:
+            #         product_dict["modifiers"]["price"] = int(product_modifiers[0]["modifiers_price__price"])
+            #     else:
+            #         product_dict["modifiers"].clear()
+            # if not product_modifiers and product_dict["modifiers"]:
+            #     product_dict["modifiers"].clear()
+
+            return product_dict
+
     # ======= CONDITIONS & DEDUCTIONS =======
     # todo: здесь написать методы, которые разгрузят модель Cart
 
@@ -76,7 +192,7 @@ class CartHelper:
         cart, cart_created = self._cart_get_or_create()
         cart_item, cart_item_created = CartItem.objects.get_or_create(
             product=product_dict, cart=cart)
-
+        print("dict product:", self._form_product_dict("margarita"))
         if not cart_created:
             if cart.items.filter(product=product_dict).exists():
                 cart_item.quantity = F("quantity") + 1
