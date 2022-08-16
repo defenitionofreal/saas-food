@@ -24,8 +24,6 @@ class CartHelper:
         self.institution = institution
 
     # ======= BASIC METHODS =======
-    # todo: здесь базовые методы, которые так или иначе часто необходимы
-
     def _check_or_generate_session_cart_id_key(self):
         """ cart_id in sessions needed for all further requests """
         if settings.CART_SESSION_ID not in self.session:
@@ -134,16 +132,12 @@ class CartHelper:
             return product_dict
 
     # ======= CONDITIONS & DEDUCTIONS =======
-    # todo: здесь написать методы, которые разгрузят модель Cart
-
     def get_total_cart(self):
         cart, _ = self._cart_get_or_create()
         items = cart.items.all()
         return sum(i.get_total_item_price for i in items)
 
     # ======= ACTIONS =======
-    # todo: здесь методы действий покупателя
-
     def add_item(self, product_dict) -> Response:
         """ add new item to cart or update quantity of an item """
         cart, cart_created = self._cart_get_or_create()
