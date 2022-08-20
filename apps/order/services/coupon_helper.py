@@ -70,22 +70,43 @@ class CouponHelper:
                                 status=status.HTTP_400_BAD_REQUEST)
 
     def tied_categories_rule(self) -> Response:
-        if self.coupon.categories.all():
-            x = set(self.cart.items.values_list(
-                'product__category', flat=True))
+        if self.coupon.categories.all() and not self.coupon.products.all():
+            x = set(self.cart.items.values_list('product__category',
+                                                flat=True))
             y = set(self.coupon.categories.values_list(
                 'promocode__categories__slug', flat=True))
             if not x.intersection(y):
                 return Response({"detail": "No categories tied with coupon."},
                                 status=status.HTTP_400_BAD_REQUEST)
-    # todo: категории и товары вместе , а сейчас работают раздельно только!
+
     def tied_products_rule(self) -> Response:
-        if self.coupon.products.all():
+        if self.coupon.products.all() and not self.coupon.categories.all():
             x = set(self.cart.items.values_list('product__slug', flat=True))
             y = set(self.coupon.products.values_list(
                 'promocode__products__slug', flat=True))
             if not x.intersection(y):
                 return Response({"detail": "No products tied with coupon."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def tied_products_and_categories_together_rule(self) -> Response:
+        if self.coupon.products.all() and self.coupon.categories.all():
+            coupon_items = []
+            coupon_categories = self.coupon.categories.all()
+            coupon_products = self.coupon.products.values_list("slug",
+                                                               flat=True)
+            cart_items = self.cart.items.values_list("product__slug",
+                                                     flat=True)
+            for category in coupon_categories:
+                for product in category.products.values_list("slug",
+                                                             flat=True):
+                    coupon_items.append(product)
+            for p in coupon_products:
+                coupon_items.append(p)
+
+            is_included = all(item in coupon_items for item in cart_items)
+
+            if not is_included:
+                return Response({"detail": "No items tied with coupon."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
     def num_uses_rule(self):
@@ -112,6 +133,7 @@ class CouponHelper:
         dates_rule = self.dates_rule()
         tied_categories_rule = self.tied_categories_rule()
         tied_products_rule = self.tied_products_rule()
+        tied_products_and_categories_together_rule = self.tied_products_and_categories_together_rule()
         num_uses_rule = self.num_uses_rule()
         user_num_uses_rule = self.user_num_uses_rule()
 
@@ -135,6 +157,8 @@ class CouponHelper:
                     return tied_categories_rule
                 elif tied_products_rule is not None:
                     return tied_products_rule
+                elif tied_products_and_categories_together_rule is not None:
+                    return tied_products_and_categories_together_rule
                 elif num_uses_rule is not None:
                     return num_uses_rule
                 elif isinstance(user_num_uses_rule, Response):
