@@ -94,7 +94,7 @@ class CouponHelper:
                 return Response({"detail": "Max level exceeded for coupon."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    def user_num_uses_rule(self):
+    def user_num_uses_rule(self) -> [Response, PromoCodeUser]:
         if self.user.is_authenticated and self.coupon.code_use_by_user is not None:
             coupon_per_user, _ = PromoCodeUser.objects.get_or_create(
                 code=self.coupon, user=self.user)
@@ -103,9 +103,7 @@ class CouponHelper:
                     "detail": "User's max level exceeded for coupon."},
                     status=status.HTTP_400_BAD_REQUEST)
             else:
-                # todo: счетчик должен работать если промокод применился
-                coupon_per_user.num_uses += 1
-                coupon_per_user.save()
+                return coupon_per_user
 
     def main(self) -> Response:
         coupon_with_bonus_rule = self.coupon_with_bonus_rule()
@@ -139,13 +137,14 @@ class CouponHelper:
                     return tied_products_rule
                 elif num_uses_rule is not None:
                     return num_uses_rule
-                elif user_num_uses_rule is not None:
+                elif isinstance(user_num_uses_rule, Response):
                     return user_num_uses_rule
                 else:
+                    if isinstance(user_num_uses_rule, PromoCodeUser):
+                        user_num_uses_rule.num_uses += 1
+                        user_num_uses_rule.save()
                     self.coupon.num_uses += 1
                     self.coupon.save()
-                    # coupon_per_user.num_uses += 1
-                    # coupon_per_user.save()
                     self.cart.promo_code = self.coupon
                     self.cart.save()
                     return Response({"detail": "Code successfully added."},
