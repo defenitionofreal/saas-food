@@ -1,11 +1,17 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from decimal import Decimal
+
+from phonenumber_field.modelfields import PhoneNumberField
+
 from apps.order.models import Bonus
+from apps.order.models.enums.order_status import OrderStatus
+
 from apps.delivery.models.enums import DeliveryType
+from apps.payment.models.enums import PaymentType
 
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
+from decimal import Decimal
 import json
 
 User = get_user_model()
@@ -44,10 +50,22 @@ class Cart(models.Model):
                                              null=True)
     items = models.ManyToManyField("order.CartItem",
                                    related_name="cart_items")
+    code = models.CharField(max_length=5, blank=True, null=True)
+    status = models.CharField(max_length=10,
+                              choices=OrderStatus.choices,
+                              default=OrderStatus.DRAFT)
+    payment_type = models.CharField(max_length=20,
+                                    choices=PaymentType.choices,
+                                    default=PaymentType.ONLINE)
+    name = models.CharField(max_length=255, default="имя")
+    phone = PhoneNumberField(blank=True, null=True)
+    comment = models.TextField(max_length=1000, blank=True)
     session_id = models.CharField(max_length=50,
                                   blank=True,
                                   null=True,
                                   unique=True)
+    # paid field should be for an online payment only?
+    paid = models.BooleanField(default=False)
 
     @property
     def get_total_cart(self):
@@ -106,6 +124,24 @@ class Cart(models.Model):
                             "min_order_amount": zone.min_order_amount,
                             "delivery_time": zone.delivery_time}
         return None
+
+    @property
+    def delivery_cost(self):
+        cost = self.get_delivery_price
+        if self.delivery.type.free_delivery_amount:
+            if self.get_total_cart_after_sale > self.delivery.type.free_delivery_amount:
+                cost = 0
+
+        if self.get_delivery_zone:
+            cost = self.get_delivery_zone["price"]
+            if self.get_delivery_zone["free_delivery_amount"]:
+                if self.get_total_cart_after_sale > self.get_delivery_zone["free_delivery_amount"]:
+                    cost = 0
+
+        if self.promo_code and self.promo_code.delivery_free is True:
+            cost = 0
+
+        return cost
 
     @property
     def get_sale(self):
@@ -242,4 +278,11 @@ class Cart(models.Model):
         return total
 
     def __str__(self):
-        return f'Cart {self.id}: {self.institution} -> {self.customer}, {self.get_total_cart}'
+        return f'{self.id}: {self.institution}, {self.customer}, {self.get_total_cart}'
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            from apps.order.services.generate_order_number import \
+                _generate_order_number
+            self.code = _generate_order_number(1, 3)
+        super().save(*args, **kwargs)

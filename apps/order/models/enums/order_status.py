@@ -11,6 +11,7 @@ class OrderStatus(models.TextChoices):
        - customer see statuses: PLACED, ACCEPTED, COOKING, READY, ON_THE_WAY,
          DELIVERED
     """
+    DRAFT = "draft", "Draft"
     # basic
     PLACED = "placed", "Placed"  # размещен
     ACCEPTED = "accepted", "Accepted"  # принят
