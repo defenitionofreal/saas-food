@@ -26,4 +26,4 @@ class AddressLink(models.Model):
                                   unique=True)
 
     def __str__(self):
-        return f"User ID: {self.user.id} | Address: {self.address}"
+        return f"User ID: {self.user.id if self.user else None} | Address: {self.address}"

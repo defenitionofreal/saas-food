@@ -53,6 +53,17 @@ class CartHelper:
                 customer=self.user,
                 session_id=self.session[settings.CART_SESSION_ID],
                 min_amount=self._cart_min_amount())
+
+            if self.user.phone:
+                cart.phone = self.user.phone
+                cart.save()
+            if self.user.email:
+                cart.email = self.user.email
+                cart.save()
+            if self.user.addresslink_set.all().first():
+                print("user.addresslink.first()", self.user.addresslink_set.all().first())
+                pass
+
         else:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,

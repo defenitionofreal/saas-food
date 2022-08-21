@@ -32,8 +32,18 @@ class Cart(models.Model):
                                  on_delete=models.CASCADE,
                                  related_name='cart_customer',
                                  null=True, blank=True)
+    # dates part
+    delivery_date = models.DateField(blank=True,
+                                     null=True)
+    time_from = models.DateTimeField(blank=True,
+                                     null=True)
+    time_till = models.DateTimeField(blank=True,
+                                     null=True)
+    confirmed_date = models.DateTimeField(blank=True,
+                                          null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # sales part
     promo_code = models.ForeignKey("order.PromoCode",
                                    on_delete=models.SET_NULL,
                                    related_name="cart_promo_code",
@@ -41,25 +51,34 @@ class Cart(models.Model):
                                    blank=True)
     customer_bonus = models.PositiveIntegerField(blank=True,
                                                  null=True)
+    # order min amount rule
+    min_amount = models.PositiveIntegerField(blank=True,
+                                             null=True)
+
+    # user info part
+    name = models.CharField(max_length=255, default="имя")
+    phone = PhoneNumberField(blank=True,
+                             null=True)
+    email = models.EmailField(blank=True,
+                              null=True)
+    comment = models.TextField(max_length=1000, blank=True)
     delivery = models.ForeignKey("delivery.DeliveryInfo",
                                  on_delete=models.SET_NULL,
                                  null=True,
                                  blank=True,
                                  related_name="cart_delivery")
-    min_amount = models.PositiveIntegerField(blank=True,
-                                             null=True)
-    items = models.ManyToManyField("order.CartItem",
-                                   related_name="cart_items")
-    code = models.CharField(max_length=5, blank=True, null=True)
-    status = models.CharField(max_length=10,
-                              choices=OrderStatus.choices,
-                              default=OrderStatus.DRAFT)
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)
-    name = models.CharField(max_length=255, default="имя")
-    phone = PhoneNumberField(blank=True, null=True)
-    comment = models.TextField(max_length=1000, blank=True)
+    # order main stuff
+    items = models.ManyToManyField("order.CartItem",
+                                   related_name="cart_items")
+    code = models.CharField(max_length=5,
+                            blank=True,
+                            null=True)
+    status = models.CharField(max_length=10,
+                              choices=OrderStatus.choices,
+                              default=OrderStatus.DRAFT)
     session_id = models.CharField(max_length=50,
                                   blank=True,
                                   null=True,
