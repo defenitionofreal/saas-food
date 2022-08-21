@@ -89,8 +89,8 @@ class Cart(models.Model):
     @property
     def get_total_cart(self):
         total = 0
-        for i in self.items.all():
-            total += i.get_total_item_price
+        if self.items.all():
+            total = sum([i.get_total_item_price for i in self.items.all()])
         return total
 
     @property
@@ -231,6 +231,7 @@ class Cart(models.Model):
                     return round((sale / Decimal('100')) * products_total)
 
                 return round((sale / Decimal('100')) * self.get_total_cart)
+            # TODO:  дописать код для ситуации когда и товары и категории выбраны вместе!
         return None
 
     @property
