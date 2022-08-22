@@ -165,9 +165,11 @@ class Cart(models.Model):
     @property
     def get_sale(self):
         if self.promo_code:
+            print("here 0")
             sale = self.promo_code.sale
             # if absolute sale type
             if self.promo_code.code_type == 'absolute':
+                print("here what")
                 # categories participate coupon
                 if self.promo_code.categories.all():
                     items_cat = self.items.values("product__category",
@@ -194,14 +196,30 @@ class Cart(models.Model):
                     sale = sale if sale >= 0.0 else 0.0
                     return sale
 
+                # categories and products participate coupon
+                if self.promo_code.categories.all() and self.promo_code.products.all():
+                    items = self.items.values("product__category",
+                                              "product__slug",
+                                              "product__price",
+                                              "quantity")
+                    code_cat = self.promo_code.categories.values_list("slug", flat=True)
+                    code_product = self.promo_code.products.values_list("slug", flat=True)
+
+                    for i in items:
+                        if i["product__category"] in code_cat or i["product__slug"] in code_product:
+                            sale = sale
+                    sale = sale if sale >= 0.0 else 0.0
+                    return sale
+
                 sale = sale if sale >= 0.0 else 0.0
                 return sale
 
             # if percent sale type
             if self.promo_code.code_type == 'percent':
-
+                print("here 1")
                 # categories participate coupon
-                if self.promo_code.categories.all():
+                if self.promo_code.categories.all() and not self.promo_code.products.all():
+                    print("here 2")
                     cat_total = 0
                     items_cat = self.items.values("product__category",
                                                   "product__slug",
@@ -216,7 +234,8 @@ class Cart(models.Model):
                     return round((sale / Decimal('100')) * cat_total)
 
                 # products participate coupon
-                if self.promo_code.products.all():
+                if self.promo_code.products.all() and not self.promo_code.categories.all():
+                    print("here 3")
                     products_total = 0
                     items = self.items.values("product__slug",
                                               "product__price",
@@ -230,8 +249,29 @@ class Cart(models.Model):
                     products_total = products_total if products_total >= 0.0 else 0.0
                     return round((sale / Decimal('100')) * products_total)
 
+                # categories and products participate coupon
+                if self.promo_code.categories.all() and self.promo_code.products.all():
+                    print("here 4")
+                    items_total = 0
+                    items = self.items.values("product__category",
+                                              "product__slug",
+                                              "product__price",
+                                              "quantity")
+                    code_cat = self.promo_code.categories.values_list(
+                        "slug", flat=True)
+                    code_product = self.promo_code.products.values_list(
+                        "slug", flat=True)
+
+                    for i in items:
+                        if i["product__category"] in code_cat or i["product__slug"] in code_product:
+                            items_total += i["product__price"] * i["quantity"]
+                    items_total = items_total if items_total >= 0.0 else 0.0
+                    return round((sale / Decimal('100')) * items_total)
+
                 return round((sale / Decimal('100')) * self.get_total_cart)
-            # TODO:  дописать код для ситуации когда и товары и категории выбраны вместе!
+            # TODO:  НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ НА:
+            #  если не выбраны товары или категории, то купон действует на всю корзину
+            #  если вы выбраны то купон действует только на выбранные товары и считает скидку после суммы этих товаров в корзине
         return None
 
     @property
