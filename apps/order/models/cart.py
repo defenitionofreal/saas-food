@@ -12,6 +12,8 @@ from apps.payment.models.enums import PaymentType
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
 from decimal import Decimal
+
+from itertools import product as pr
 import json
 
 User = get_user_model()
@@ -165,113 +167,58 @@ class Cart(models.Model):
     @property
     def get_sale(self):
         if self.promo_code:
-            print("here 0")
             sale = self.promo_code.sale
-            # if absolute sale type
+            count_sale = 0
+            coupon_categories = self.promo_code.categories.all()
+            coupon_products = self.promo_code.products.all()
+            cart_items = self.items.values("product__category",
+                                           "product__slug",
+                                           "product__price",
+                                           "quantity")
+            # only categories products
+            if coupon_categories and not coupon_products:
+                for cat in coupon_categories:
+                    products = cat.products.filter(is_active=True).only("slug")
+                    for product, item in pr(products, cart_items):
+                        if product.slug in item["product__slug"]:
+                            count_sale += item["product__price"] * item["quantity"]
+
+            # only still products
+            if coupon_products and not coupon_categories:
+                for product, item in pr(coupon_products, cart_items):
+                    if product.slug in item["product__slug"]:
+                        count_sale += item["product__price"] * item["quantity"]
+
+            # categories and products together
+            if coupon_products and coupon_categories:
+                coupon_items = []
+                for cat in coupon_categories:
+                    products = cat.products.filter(is_active=True).only("slug")
+                    for product in products:
+                        coupon_items.append(product.slug)
+                for product in coupon_products:
+                    coupon_items.append(product.slug)
+                for item in cart_items:
+                    if item["product__slug"] in coupon_items:
+                        count_sale += item["product__price"] * item["quantity"]
+
+            # no cats and no products, so look to the cart total
+            if not coupon_products and not coupon_categories:
+                count_sale = self.get_total_cart
+
             if self.promo_code.code_type == 'absolute':
-                print("here what")
-                # categories participate coupon
-                if self.promo_code.categories.all():
-                    items_cat = self.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = self.promo_code.categories.values_list("slug",
-                                                                      flat=True)
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
-                # products participate coupon
-                if self.promo_code.products.all():
-                    items = self.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = self.promo_code.products.values_list("slug",
-                                                                        flat=True)
-                    for i in items:
-                        if i["product__slug"] in code_product:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
+                final_sale = sale if sale >= 0.0 else 0.0
+                return final_sale
 
-                # categories and products participate coupon
-                if self.promo_code.categories.all() and self.promo_code.products.all():
-                    items = self.items.values("product__category",
-                                              "product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_cat = self.promo_code.categories.values_list("slug", flat=True)
-                    code_product = self.promo_code.products.values_list("slug", flat=True)
-
-                    for i in items:
-                        if i["product__category"] in code_cat or i["product__slug"] in code_product:
-                            sale = sale
-                    sale = sale if sale >= 0.0 else 0.0
-                    return sale
-
-                sale = sale if sale >= 0.0 else 0.0
-                return sale
-
-            # if percent sale type
             if self.promo_code.code_type == 'percent':
-                print("here 1")
-                # categories participate coupon
-                if self.promo_code.categories.all() and not self.promo_code.products.all():
-                    print("here 2")
-                    cat_total = 0
-                    items_cat = self.items.values("product__category",
-                                                  "product__slug",
-                                                  "product__price",
-                                                  "quantity")
-                    code_cat = self.promo_code.categories.values_list("slug",
-                                                                      flat=True)
-                    for i in items_cat:
-                        if i["product__category"] in code_cat:
-                            cat_total += i["product__price"] * i["quantity"]
-                    cat_total = cat_total if cat_total >= 0.0 else 0.0
-                    return round((sale / Decimal('100')) * cat_total)
+                final_sale = round((sale / Decimal('100')) * count_sale)
+                return final_sale
 
-                # products participate coupon
-                if self.promo_code.products.all() and not self.promo_code.categories.all():
-                    print("here 3")
-                    products_total = 0
-                    items = self.items.values("product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_product = self.promo_code.products.values_list("slug",
-                                                                        flat=True)
-                    for i in items:
-                        if i["product__slug"] in code_product:
-                            products_total += i["product__price"] * i[
-                                "quantity"]
-                    products_total = products_total if products_total >= 0.0 else 0.0
-                    return round((sale / Decimal('100')) * products_total)
-
-                # categories and products participate coupon
-                if self.promo_code.categories.all() and self.promo_code.products.all():
-                    print("here 4")
-                    items_total = 0
-                    items = self.items.values("product__category",
-                                              "product__slug",
-                                              "product__price",
-                                              "quantity")
-                    code_cat = self.promo_code.categories.values_list(
-                        "slug", flat=True)
-                    code_product = self.promo_code.products.values_list(
-                        "slug", flat=True)
-
-                    for i in items:
-                        if i["product__category"] in code_cat or i["product__slug"] in code_product:
-                            items_total += i["product__price"] * i["quantity"]
-                    items_total = items_total if items_total >= 0.0 else 0.0
-                    return round((sale / Decimal('100')) * items_total)
-
-                return round((sale / Decimal('100')) * self.get_total_cart)
             # TODO:  НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ НА:
-            #  если не выбраны товары или категории, то купон действует на всю корзину
-            #  если вы выбраны то купон действует только на выбранные товары и считает скидку после суммы этих товаров в корзине
+            #  + если не выбраны товары или категории, то купон действует на всю корзину
+            #  + если выбраны то купон действует только на выбранные товары и считает скидку после суммы этих товаров в корзине
+            #  - проблема с счетом если есть модификаторы и добавки, считает стандартную цену!
+            #  - в абсолютной скидке , отнимать значение от каждой позиции, если не выбран товар или категория то отнимат от общей суммы корзины !
         return None
 
     @property

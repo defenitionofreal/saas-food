@@ -141,12 +141,6 @@ class CouponHelper:
             if coupon_with_bonus_rule is not None:
                 return coupon_with_bonus_rule
             if self._is_coupon_active():
-                # rules_list = [sale_rule, total_cart_rule, dates_rule,
-                #               tied_categories_rule, tied_products_rule,
-                #               num_uses_rule, user_num_uses_rule]
-                # for res in rules_list:
-                #     if res is not None:
-                #         return res
                 if sale_rule is not None:
                     return sale_rule
                 elif total_cart_rule is not None:
