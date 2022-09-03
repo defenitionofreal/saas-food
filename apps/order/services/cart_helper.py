@@ -6,6 +6,7 @@ from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
 from apps.order.serializers import CartSerializer
 from apps.order.services.coupon_helper import CouponHelper
+from apps.order.services.bonus_helper import BonusHelper
 from apps.product.models import Product
 # rest framework
 from rest_framework.response import Response
@@ -246,3 +247,8 @@ class CartHelper:
         cart, _ = self._cart_get_or_create()
         coupon = CouponHelper(code, cart, self.user)
         return coupon.main()
+
+    def add_bonuses(self, amount):
+        cart, _ = self._cart_get_or_create()
+        bonus = BonusHelper(amount, cart, self.user)
+        return bonus.main()

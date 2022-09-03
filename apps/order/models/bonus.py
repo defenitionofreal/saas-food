@@ -34,7 +34,7 @@ class UserBonus(models.Model):
                                     related_name="user_bonuses")
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,
                              blank=True)
-    bonus = models.PositiveIntegerField()
+    bonus = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f'{self.institution.domain}: {self.user.phone} with {self.bonus} points'
