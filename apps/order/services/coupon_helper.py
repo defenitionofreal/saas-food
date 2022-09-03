@@ -103,7 +103,7 @@ class CouponHelper:
             for p in coupon_products:
                 coupon_items.append(p)
 
-            is_included = all(item in coupon_items for item in cart_items)
+            is_included = any(item in coupon_items for item in cart_items)
 
             if not is_included:
                 return Response({"detail": "No items tied with coupon."},

@@ -5,6 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.order.models import Bonus
 from apps.order.models.enums.order_status import OrderStatus
+from apps.order.services.total_item_price import total_item_cart_price
 
 from apps.delivery.models.enums import DeliveryType
 from apps.payment.models.enums import PaymentType
@@ -174,20 +175,23 @@ class Cart(models.Model):
             cart_items = self.items.values("product__category",
                                            "product__slug",
                                            "product__price",
-                                           "quantity")
+                                           "quantity",
+                                           "product__modifiers",
+                                           "product__additives")
+
             # only categories products
             if coupon_categories and not coupon_products:
                 for cat in coupon_categories:
                     products = cat.products.filter(is_active=True).only("slug")
                     for product, item in pr(products, cart_items):
-                        if product.slug in item["product__slug"]:
-                            count_sale += item["product__price"] * item["quantity"]
+                        if product.slug == item["product__slug"]:
+                            count_sale += total_item_cart_price(item)
 
             # only still products
             if coupon_products and not coupon_categories:
                 for product, item in pr(coupon_products, cart_items):
                     if product.slug in item["product__slug"]:
-                        count_sale += item["product__price"] * item["quantity"]
+                        count_sale += total_item_cart_price(item)
 
             # categories and products together
             if coupon_products and coupon_categories:
@@ -200,7 +204,7 @@ class Cart(models.Model):
                     coupon_items.append(product.slug)
                 for item in cart_items:
                     if item["product__slug"] in coupon_items:
-                        count_sale += item["product__price"] * item["quantity"]
+                        count_sale += total_item_cart_price(item)
 
             # no cats and no products, so look to the cart total
             if not coupon_products and not coupon_categories:
@@ -217,7 +221,7 @@ class Cart(models.Model):
             # TODO:  НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ НА:
             #  + если не выбраны товары или категории, то купон действует на всю корзину
             #  + если выбраны то купон действует только на выбранные товары и считает скидку после суммы этих товаров в корзине
-            #  - проблема с счетом если есть модификаторы и добавки, считает стандартную цену!
+            #  + проблема с счетом если есть модификаторы и добавки, считает стандартную цену!
             #  - в абсолютной скидке , отнимать значение от каждой позиции, если не выбран товар или категория то отнимат от общей суммы корзины !
         return None
 
@@ -284,12 +288,12 @@ class Cart(models.Model):
 
         return total
 
-    def __str__(self):
-        return f'{self.id}: {self.institution}, {self.customer}, {self.get_total_cart}'
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            from apps.order.services.generate_order_number import \
-                _generate_order_number
-            self.code = _generate_order_number(1, 3)
-        super().save(*args, **kwargs)
+    # def __str__(self):
+    #     return f'{self.id}: {self.institution}, {self.customer}, {self.get_total_cart}'
+    #
+    # def save(self, *args, **kwargs):
+    #     if not self.code:
+    #         from apps.order.services.generate_order_number import \
+    #             _generate_order_number
+    #         self.code = _generate_order_number(1, 3)
+    #     super().save(*args, **kwargs)

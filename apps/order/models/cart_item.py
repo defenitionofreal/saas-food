@@ -36,6 +36,7 @@ class CartItem(models.Model):
 
     @property
     def get_total_item_price(self):
+        # TODO: use total_item_cart_price func
         product_price = self.get_product_price
         if self.get_modifiers:
             product_price = self.product["modifiers"]["price"]
