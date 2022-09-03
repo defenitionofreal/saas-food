@@ -211,18 +211,20 @@ class Cart(models.Model):
                 count_sale = self.get_total_cart
 
             if self.promo_code.code_type == 'absolute':
+                # simple rule withdraw sale amount from total cart
+                # TODO:  МОЖЕТ НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ absolute?
+                #  в абсолютной скидке , отнимать значение от каждой позиции,
+                #  если не выбран товар или категория, отнимат от суммы корзины
+                #  а если значение больше суммы товара???
                 final_sale = sale if sale >= 0.0 else 0.0
                 return final_sale
 
             if self.promo_code.code_type == 'percent':
+                # sale percentage of the amount from all products
+                # included in the coupon rule
                 final_sale = round((sale / Decimal('100')) * count_sale)
                 return final_sale
 
-            # TODO:  НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ НА:
-            #  + если не выбраны товары или категории, то купон действует на всю корзину
-            #  + если выбраны то купон действует только на выбранные товары и считает скидку после суммы этих товаров в корзине
-            #  + проблема с счетом если есть модификаторы и добавки, считает стандартную цену!
-            #  - в абсолютной скидке , отнимать значение от каждой позиции, если не выбран товар или категория то отнимат от общей суммы корзины !
         return None
 
     @property
