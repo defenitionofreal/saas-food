@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.product.serializers import ProductSerializer
 from apps.order.models import Cart, CartItem, PromoCode, Bonus, Order
+from apps.order.services.bonus_helper import BonusHelper
 from apps.delivery.serializers import DeliveryInfoCustomerSerializer
 
 
@@ -16,18 +17,24 @@ class CartSerializer(serializers.ModelSerializer):
 
     items = ItemsSerializer(read_only=True, many=True)
     delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
+    max_bonus_write_off = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
         fields = (
             'id', 'customer', 'created_at', 'delivery', 'updated_at', 'items',
             'promo_code', 'customer_bonus', 'min_amount', 'get_total_cart',
-            'get_total_cart_after_sale', 'get_sale', 'get_bonus_accrual',
+            'get_total_cart_after_sale', 'get_sale',
+            'get_bonus_accrual', 'max_bonus_write_off',
             'get_delivery_price', 'get_free_delivery_amount',
             'get_delivery_sale', 'get_min_delivery_order_amount',
             'get_delivery_zone',
-            'final_price'
+            'final_price', "code", "status", "paid"
         )
+
+    def get_max_bonus_write_off(self, instance):
+        bonus = BonusHelper(0, instance, instance.customer)
+        return bonus.max_write_off_amount()
 
 
 class CartItemSerializer(serializers.ModelSerializer):

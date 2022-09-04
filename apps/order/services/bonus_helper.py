@@ -4,6 +4,10 @@ from apps.order.models.bonus import UserBonus, Bonus
 from decimal import Decimal
 
 
+# TODO: начислять бонусы если статус в заказе оплачен,
+#  заберать обратно бонсы если статус в заказе отменен
+#  подумать, можно ли начислять бонусы в заказе, если в заказе было списание бонусов!
+
 class BonusHelper:
     def __init__(self, amount, cart, user):
         self.amount = amount
@@ -65,29 +69,38 @@ class BonusHelper:
             return True
         return False
 
-    def _max_write_off_amount(self):
+    def _is_allowed_use_bonuses_with_apllied_coupon(self):
+        if self.cart.promo_code is not None:
+            if self._is_use_bonuses_with_coupon() is False:
+                return Response(
+                    {"detail": "Use bonuses with coupon is not allowed."},
+                    status=status.HTTP_400_BAD_REQUEST)
+        return True
+
+    def max_write_off_amount(self):
         """
         Count max value that customer could write off from bonus balance
         """
         total_cart = self.cart.get_total_cart
         write_off_amount = 0
-        if self.cart.promo_code is not None:
-            if self._is_use_bonuses_with_coupon() is True:
+        if self.bonus_rule.is_active:
+            if self.cart.promo_code is not None:
+                if self._is_use_bonuses_with_coupon() is True:
+                    write_off_amount = round((self.bonus_rule.write_off / Decimal("100")) * total_cart)
+                # else false и нужно вернуть ошибку что нельзя с купоном бонусы списать
+            else:
                 write_off_amount = round((self.bonus_rule.write_off / Decimal("100")) * total_cart)
-            # TODO: здесь false и нужно вернуть ошибку что нельзя с купоном бонсы списать
-        else:
-            write_off_amount = round((self.bonus_rule.write_off / Decimal("100")) * total_cart)
         return write_off_amount
 
     def _is_input_amount_smaller_write_off_amount(self):
         """
         Check if input amount smaller than amount that customer could write off
         """
-        if self.amount <= self._max_write_off_amount():
+        if self.amount <= self.max_write_off_amount():
             return True
         return Response(
             {"detail": f"Write off no more than {self.bonus_rule.write_off}% of total price. "
-                       f"({self._max_write_off_amount()} bonuses)"},
+                       f"({self.max_write_off_amount()} bonuses)"},
             status=status.HTTP_400_BAD_REQUEST)
 
     def main(self):
@@ -96,16 +109,12 @@ class BonusHelper:
         customer_has_bonuses = self._is_customer_has_bonuses()
         input_sm_user_bonuses = self._is_input_amount_smaller_user_amount()
         input_sm_write_off = self._is_input_amount_smaller_write_off_amount()
+        bonus_with_applied_coupon = self._is_allowed_use_bonuses_with_apllied_coupon()
 
-        if self.cart.promo_code is not None:
-            if self._is_use_bonuses_with_coupon() is False:
-                return Response(
-                    {"detail": "Use bonuses with coupon is not allowed."},
-                    status=status.HTTP_400_BAD_REQUEST)
-
-        rule_list = [cart_has_bonuses,
-                     active_bonus_rule,
+        rule_list = [active_bonus_rule,
+                     cart_has_bonuses,
                      customer_has_bonuses,
+                     bonus_with_applied_coupon,
                      input_sm_user_bonuses,
                      input_sm_write_off]
 
