@@ -21,7 +21,29 @@ class CheckoutAPIView(APIView):
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
         session = self.request.session
+
         user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        order = Cart.objects.filter(
+            institution=institution,
+            customer=user,
+            session_id=session[settings.CART_SESSION_ID]).first()
+        if not order:
+            return Response({"detail": "Fill in cart"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if order.payment_type is None:
+            return Response({"detail": "Select payment type"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if order.delivery is None:
+            pass
+
+
+
 
         # check if request data exists
         if "name" not in request.data:

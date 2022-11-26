@@ -13,7 +13,8 @@ from apps.showcase.api import (products_client_list,
                                products_client_detail,
                                delivery_client_list,
                                address_list,
-                               delivery_zone_list)
+                               delivery_zone_list,
+                               payment_type_list)
 
 from apps.showcase.api.customer_actions import (delivery_info_create)
 
@@ -50,5 +51,7 @@ urlpatterns = [
     path('<str:domain>/delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
     path('<str:domain>/delivery-info/add/', delivery_info_create.DeliveryInfoAPIView.as_view()),
     path('<str:domain>/address/', address_list.AddressListAPIView.as_view()),
-    path('<str:domain>/delivery-zone/', delivery_zone_list.DeliveryZoneListAPIView.as_view())
+    path('<str:domain>/delivery-zone/', delivery_zone_list.DeliveryZoneListAPIView.as_view()),
+    # payment
+    path('<str:domain>/payment/type/', payment_type_list.PaymentTypeClientListAPIView.as_view()),
 ]

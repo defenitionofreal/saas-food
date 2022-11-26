@@ -11,10 +11,14 @@ from apps.location.serializers import AddressLinkCustomerSerializer
 
 class DeliverySerializer(serializers.ModelSerializer):
     """ Delivery serializer """
+    institution = serializers.SerializerMethodField()
 
     class Meta:
         model = Delivery
         exclude = ['user']
+
+    def get_institution(self, instance):
+        return [affiliate.title for affiliate in instance.institution.all()]
 
 
 class DeliveryInfoSerializer(serializers.ModelSerializer):

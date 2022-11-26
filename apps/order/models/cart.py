@@ -70,6 +70,11 @@ class Cart(models.Model):
                                  null=True,
                                  blank=True,
                                  related_name="cart_delivery")
+    # delivery_type = models.ForeignKey("delivery.Delivery",
+    #                                   on_delete=models.SET_NULL,
+    #                                   null=True,
+    #                                   blank=True,
+    #                                   related_name="cart_delivery_type")
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)

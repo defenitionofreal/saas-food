@@ -252,3 +252,10 @@ class CartHelper:
         cart, _ = self._cart_get_or_create()
         bonus = BonusHelper(amount, cart, self.user)
         return bonus.main()
+
+    def add_payment_type(self, payment_type):
+        cart, _ = self._cart_get_or_create()
+        cart.payment_type = payment_type
+        cart.save()
+        return Response({"detail": f"{payment_type} selected"},
+                        status=status.HTTP_201_CREATED)
