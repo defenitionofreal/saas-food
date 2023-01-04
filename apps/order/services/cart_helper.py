@@ -2,8 +2,10 @@
 from django.conf import settings
 from django.db.models import F
 # apps
+from apps.delivery.models import DeliveryInfo
 from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
+from apps.order.models.enums import OrderStatus
 from apps.order.serializers import CartSerializer
 from apps.order.services.coupon_helper import CouponHelper
 from apps.order.services.bonus_helper import BonusHelper
@@ -45,12 +47,22 @@ class CartHelper:
             return value[0]
         return 0
 
+    def _get_user_delivery_info(self):
+        if self._is_user_auth():
+            delivery_info = DeliveryInfo.objects.get(user=self.user)
+        else:
+            delivery_info = DeliveryInfo.objects.get(
+                session_id=self.session.session_key
+            )
+        return delivery_info
+
     def _cart_get_or_create(self) -> tuple:
         """ get or create cart """
         self._check_or_generate_session_cart_id_key()
         if self._is_user_auth():
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
+                status=OrderStatus.DRAFT,
                 customer=self.user,
                 session_id=self.session[settings.CART_SESSION_ID],
                 min_amount=self._cart_min_amount())
@@ -68,8 +80,14 @@ class CartHelper:
         else:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
+                status=OrderStatus.DRAFT,
                 session_id=self.session[settings.CART_SESSION_ID],
                 min_amount=self._cart_min_amount())
+
+        if self._get_user_delivery_info():
+            cart.delivery = self._get_user_delivery_info()
+            cart.save()
+
         return cart, cart_created
 
     def _form_product_additives(self, product, additives) -> list:
@@ -194,6 +212,7 @@ class CartHelper:
             if settings.CART_SESSION_ID in self.session:
                 cart = Cart.objects.filter(
                     institution=self.institution,
+                    status=OrderStatus.DRAFT,
                     session_id=self.session[settings.CART_SESSION_ID]).first()
                 if cart and not cart.customer:
                     cart.customer = self.user
@@ -226,6 +245,7 @@ class CartHelper:
             else:
                 self._check_or_generate_session_cart_id_key()
                 cart = Cart.objects.filter(institution=self.institution,
+                                           status=OrderStatus.DRAFT,
                                            session_id=self.session[
                                                settings.CART_SESSION_ID],
                                            customer=self.user).first()
