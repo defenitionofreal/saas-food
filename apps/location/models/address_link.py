@@ -22,8 +22,7 @@ class AddressLink(models.Model):
     # if user is a guest
     session_id = models.CharField(max_length=50,
                                   blank=True,
-                                  null=True,
-                                  unique=True)
+                                  null=True)
 
     def __str__(self):
         return f"User ID: {self.user.id if self.user else None} | Address: {self.address}"

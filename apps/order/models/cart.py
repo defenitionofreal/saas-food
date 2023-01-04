@@ -89,8 +89,7 @@ class Cart(models.Model):
                               default=OrderStatus.DRAFT)
     session_id = models.CharField(max_length=50,
                                   blank=True,
-                                  null=True,
-                                  unique=True)
+                                  null=True)
     # paid field should be for an online payment only?
     paid = models.BooleanField(default=False)
 

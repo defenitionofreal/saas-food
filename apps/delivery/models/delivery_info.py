@@ -27,8 +27,7 @@ class DeliveryInfo(models.Model):
     # if user is guest
     session_id = models.CharField(max_length=50,
                                   blank=True,
-                                  null=True,
-                                  unique=True)  # ? unique
+                                  null=True)
 
     def __str__(self):
         return f"{self.id}: {self.type}"

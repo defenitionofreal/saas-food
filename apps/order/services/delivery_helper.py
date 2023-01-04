@@ -2,7 +2,6 @@
 from apps.location.models import Address, AddressLink
 from apps.delivery.models.enums import DeliveryType
 from apps.delivery.models import DeliveryInfo
-from apps.order.services.cart_helper import CartHelper
 # rest framework
 from rest_framework.response import Response
 from rest_framework import status
