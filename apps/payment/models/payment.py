@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.company.models import Institution
 import uuid
@@ -24,19 +23,20 @@ class Payment(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name="payment_user")
-    order = models.ForeignKey("order.Order",
+    order = models.ForeignKey("order.Cart",
                               on_delete=models.CASCADE,
                               related_name="payment_order")
     # The payment id provided by the payment gateway
     code = models.CharField(max_length=255,
                             blank=True,
                             null=True)
-    type = models.CharField(max_length=20,
-                            choices=PaymentType.choices,
-                            default=PaymentType.ONLINE)
     status = models.CharField(max_length=10,
                               choices=PaymentStatus.choices,
                               default=PaymentStatus.NEW)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @property
+    def payment_type(self):
+        return self.order.payment_type
