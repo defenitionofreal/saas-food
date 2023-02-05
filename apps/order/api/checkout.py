@@ -51,8 +51,8 @@ class CheckoutAPIView(APIView):
                                                                     flat=True):
             return Response({"detail": "Wrong payment type"},
                             status=status.HTTP_400_BAD_REQUEST)
-        payment_type = institution.payment_type.get(type=payment_type).type
 
+        payment_type = institution.payment_type.get(type=payment_type).type
         # change order values
         order.name = name
         order.phone = phone
@@ -72,18 +72,28 @@ class CheckoutAPIView(APIView):
             order.save()
             payment.status = PaymentStatus.PENDING
             payment.save()
+            # send notifications
 
         if payment_type == PaymentType.CARD:
             order.status = OrderStatus.PLACED
             order.save()
             payment.status = PaymentStatus.PENDING
             payment.save()
+            # send notifications
 
         if payment_type == PaymentType.ONLINE:
             order.status = OrderStatus.PLACED
             order.save()
             payment.status = PaymentStatus.PENDING
             payment.save()
+
+            # todo: STRIPE and more
+            from django.db import transaction
+            from apps.payment.services.stripe.helper import StripeClient
+            if gateway == "stripe":
+                with transaction.atomic():
+                    # todo: узнать полный url как хост чтобы передать ссылку
+                    pass
 
         return Response({})
 
