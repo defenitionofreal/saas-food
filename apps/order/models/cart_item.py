@@ -12,6 +12,16 @@ class CartItem(models.Model):
                              null=True,
                              blank=True,
                              related_name="products_cart")
+    item = models.ForeignKey("product.Product",
+                             on_delete=models.CASCADE,
+                             blank=True,
+                             null=True)
+    modifier = models.ForeignKey("product.ModifierPrice",
+                                 on_delete=models.CASCADE,
+                                 blank=True,
+                                 null=True)
+    additives = models.ManyToManyField("product.Additive",
+                                       blank=True)
     product = models.JSONField(default=dict)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -23,10 +33,6 @@ class CartItem(models.Model):
         return self.product["slug"]
 
     @property
-    def get_product_price(self):
-        return self.product["price"]
-
-    @property
     def get_additives(self):
         return self.product["additives"]
 
@@ -35,15 +41,19 @@ class CartItem(models.Model):
         return self.product["modifiers"]
 
     @property
-    def get_total_item_price(self):
-        # TODO: use total_item_cart_price func
-        product_price = self.get_product_price
+    def get_product_price(self):
+        product_price = self.product["price"]
         if self.get_modifiers:
             product_price = self.product["modifiers"]["price"]
         if self.get_additives:
             for i in self.get_additives:
                 product_price += i["price"]
+        return product_price
+
+    @property
+    def get_total_item_price(self):
+        # TODO: use total_item_cart_price func
+        product_price = self.get_product_price
         quantity = self.quantity
         total_price = (product_price * quantity)
-
         return Decimal(total_price)

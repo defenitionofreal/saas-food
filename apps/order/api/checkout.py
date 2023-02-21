@@ -14,6 +14,7 @@ from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment
 
 from django.conf import settings
+from django.db import transaction
 
 
 class CheckoutAPIView(APIView):
@@ -22,11 +23,11 @@ class CheckoutAPIView(APIView):
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
-        session = self.request.session
-        user = self.request.user
+        user, session = self.request.user, self.request.session
 
         name = request.data['name']
         phone = request.data['phone']
+        email = request.data['email']
         comment = request.data['comment']
         payment_type = request.data['payment_type']
         gateway = request.data['gateway']
@@ -53,49 +54,54 @@ class CheckoutAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         payment_type = institution.payment_type.get(type=payment_type).type
+
         # change order values
-        order.name = name
-        order.phone = phone
+        order.name = name if name else user.first_name
+        order.phone = phone if phone else user.phone
+        order.email = email if email else user.email
         order.comment = comment
         order.payment_type = payment_type
         order.save()
 
-        # payment create
-        payment, payment_created = Payment.objects.update_or_create(
-            institution=institution,
-            user=user,
-            order=order,
-            defaults={"total": order.final_price})
+        with transaction.atomic():
+            # payment create
+            payment, payment_created = Payment.objects.update_or_create(
+                institution=institution,
+                user=user,
+                order=order,
+                defaults={"total": order.final_price})
 
-        if payment_type == PaymentType.CASH:
-            order.status = OrderStatus.PLACED
-            order.save()
-            payment.status = PaymentStatus.PENDING
-            payment.save()
-            # send notifications
+            if payment_type == PaymentType.CASH:
+                order.status = OrderStatus.PLACED
+                order.save()
+                payment.status = PaymentStatus.PENDING
+                payment.save()
+                # send notifications
 
-        if payment_type == PaymentType.CARD:
-            order.status = OrderStatus.PLACED
-            order.save()
-            payment.status = PaymentStatus.PENDING
-            payment.save()
-            # send notifications
+            if payment_type == PaymentType.CARD:
+                order.status = OrderStatus.PLACED
+                order.save()
+                payment.status = PaymentStatus.PENDING
+                payment.save()
+                # send notifications
 
-        if payment_type == PaymentType.ONLINE:
-            order.status = OrderStatus.PLACED
-            order.save()
-            payment.status = PaymentStatus.PENDING
-            payment.save()
+            if payment_type == PaymentType.ONLINE:
+                order.status = OrderStatus.PLACED
+                order.save()
+                payment.status = PaymentStatus.PENDING
+                payment.save()
 
-            # todo: STRIPE and more
-            from django.db import transaction
-            from apps.payment.services.stripe.helper import StripeClient
-            if gateway == "stripe":
-                with transaction.atomic():
+                # todo: STRIPE and more
+                from apps.payment.services.stripe.helper import StripeClient
+                if gateway == "stripe":
                     # todo: узнать полный url как хост чтобы передать ссылку
-                    pass
+                    stripe = StripeClient(host="http://localhost:8000",
+                                          api_key=settings.STRIPE_SK)
+                    stripe.create_checkout_session(mode="payment",
+                                                   customer_email=email,
+                                                   line_items=[])
 
-        return Response({})
+            return Response({})
 
             # # if customer choose pay by yoomoney
             # if gateway == "yoomoney":

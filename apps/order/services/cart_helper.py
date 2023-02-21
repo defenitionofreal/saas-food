@@ -76,7 +76,6 @@ class CartHelper:
             if self.user.addresslink_set.all().first():
                 print("user.addresslink.first()", self.user.addresslink_set.all().first())
                 pass
-
         else:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
@@ -169,11 +168,13 @@ class CartHelper:
         return sum(i.get_total_item_price for i in items)
 
     # ======= ACTIONS =======
-    def add_item(self, product_dict) -> Response:
+    def add_item(self, product_dict, product) -> Response:
         """ add new item to cart or update quantity of an item """
         cart, cart_created = self._cart_get_or_create()
         cart_item, cart_item_created = CartItem.objects.get_or_create(
-            product=product_dict, cart=cart)
+            item=product,
+            product=product_dict,
+            cart=cart)
 
         if not cart_created:
             if cart.items.filter(product=product_dict).exists():
@@ -243,7 +244,6 @@ class CartHelper:
                 else:
                     cart, cart_created = self._cart_get_or_create()
             else:
-                self._check_or_generate_session_cart_id_key()
                 cart = Cart.objects.filter(institution=self.institution,
                                            status=OrderStatus.DRAFT,
                                            session_id=self.session[
@@ -279,3 +279,6 @@ class CartHelper:
         cart.save()
         return Response({"detail": f"{payment_type} selected"},
                         status=status.HTTP_201_CREATED)
+
+    def checkout(self):
+        pass

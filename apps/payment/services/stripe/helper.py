@@ -10,10 +10,10 @@ SECRET_KEY = os.environ.get("STRIPE_SK")
 
 class StripeClient:
     # todo прописать свой хост
-    def __init__(self):
+    def __init__(self, host: str, api_key: str):
         self.base_url = "https://api.stripe.com/v1"
-        self.host = "http://localhost:8000"
-        self.api_key = SECRET_KEY
+        self.host = host  # ссылка филиала
+        self.api_key = api_key  # ключ компании
         self.headers = {"Content-Type": "application/x-www-form-urlencoded",
                         "Authorization": f"Bearer {self.api_key}"}
 

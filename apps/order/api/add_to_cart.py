@@ -25,4 +25,4 @@ class AddToCartAPIView(APIView):
         product = get_object_or_404(Product, slug=product_slug)
         cart = CartHelper(request, institution)
         product_dict = cart.form_product_dict(product.slug)
-        return cart.add_item(product_dict)
+        return cart.add_item(product_dict, product)
