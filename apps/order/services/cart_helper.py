@@ -102,7 +102,7 @@ class CartHelper:
 
     def _get_product_additives(self, product, additives_req) -> list:
         """
-
+        If req is not empty, check that additives exists and related to product
         """
         additives_list = []
 
@@ -142,7 +142,9 @@ class CartHelper:
 
     def _get_cart_item_hash(self, **kwargs):
         """
-
+        Generate unique cart item hash to check if item with that parameters
+        already exists at a cart.
+        It helps to add new product or update quantity.
         """
         fields = {
             key: value.id
