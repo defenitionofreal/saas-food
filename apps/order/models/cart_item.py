@@ -22,37 +22,27 @@ class CartItem(models.Model):
                                  null=True)
     additives = models.ManyToManyField("product.Additive",
                                        blank=True)
-    product = models.JSONField(default=dict)
     quantity = models.PositiveIntegerField(default=1)
+    item_hash = models.CharField(max_length=255,
+                                 unique=True,
+                                 blank=True,
+                                 null=True)
 
     def __str__(self):
-        return f'{self.product}, {self.quantity}'
-
-    @property
-    def get_product_slug(self):
-        return self.product["slug"]
-
-    @property
-    def get_additives(self):
-        return self.product["additives"]
-
-    @property
-    def get_modifiers(self):
-        return self.product["modifiers"]
+        return f'{self.item}, {self.quantity}'
 
     @property
     def get_product_price(self):
-        product_price = self.product["price"]
-        if self.get_modifiers:
-            product_price = self.product["modifiers"]["price"]
-        if self.get_additives:
-            for i in self.get_additives:
-                product_price += i["price"]
-        return product_price
+        price = self.item.price
+        if self.modifier:
+            price = self.modifier.price
+        if self.additives.all():
+            for additive in self.additives.all():
+                price += additive.price
+        return price
 
     @property
     def get_total_item_price(self):
-        # TODO: use total_item_cart_price func
         product_price = self.get_product_price
         quantity = self.quantity
         total_price = (product_price * quantity)

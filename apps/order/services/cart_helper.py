@@ -9,11 +9,17 @@ from apps.order.models.enums import OrderStatus
 from apps.order.serializers import CartSerializer
 from apps.order.services.coupon_helper import CouponHelper
 from apps.order.services.bonus_helper import BonusHelper
+from apps.product.models.modifiers_price import ModifierPrice
+from apps.product.models.additive import Additive
 from apps.product.models import Product
 # rest framework
 from rest_framework.response import Response
 from rest_framework import status
 # other
+from typing import Optional
+
+import json
+import hashlib
 
 
 class CartHelper:
@@ -49,11 +55,16 @@ class CartHelper:
 
     def _get_user_delivery_info(self):
         if self._is_user_auth():
-            delivery_info = DeliveryInfo.objects.get(user=self.user)
+            delivery_info = DeliveryInfo.objects.filter(user=self.user)
         else:
-            delivery_info = DeliveryInfo.objects.get(
+            delivery_info = DeliveryInfo.objects.filter(
                 session_id=self.session.session_key
             )
+        if delivery_info.exists():
+            delivery_info = delivery_info.first()
+        else:
+            delivery_info = None
+
         return delivery_info
 
     def _cart_get_or_create(self) -> tuple:
@@ -89,77 +100,62 @@ class CartHelper:
 
         return cart, cart_created
 
-    def _form_product_additives(self, product, additives) -> list:
-        product_additives = product.additives \
-            .values("category_additive__title", "category_additive__price") \
-            .filter(is_active=True, institution=self.institution,
-                    category_additive__title__in=[additive['title']
-                                                  for additive in
-                                                  additives]
-                    ).order_by('category_additive__title')
+    def _get_product_additives(self, product, additives_req) -> list:
+        """
 
-        additives_map = {additive['title']: idx for idx, additive in
-                         enumerate(additives)}
+        """
+        additives_list = []
 
-        # check for a additive in DB and set the right price from DB
-        for i in product_additives:
-            idx = additives_map.get(i['category_additive__title'])
-            if idx is not None:
-                additives[idx]["price"] = int(i["category_additive__price"])
+        if additives_req:
+            additives_qs = Additive.objects.filter(
+                is_active=True,
+                institution=self.institution,
+                category__is_active=True,
+                category__product_additives__id=product.id
+            ).only("id", "title", "description", "image")
 
-        # check if request json has not wanted values and clean it if does
-        difference = list(set(i["title"] for i in additives) -
-                          set([i["category_additive__title"]
-                               for i in product_additives]))
-        if difference:
-            for i in difference:
-                additives.remove(
-                    [additive for additive in additives
-                     if additive["title"] == i][0])
+            additives_req_map = {str(additive['title']).lower(): idx
+                                 for idx, additive in enumerate(additives_req)}
 
-        # check if product dont have any additives at all in DB
-        if not product_additives and additives:
-            additives = []
+            for additive in additives_qs:
+                idx = additives_req_map.get(additive.title.lower())
+                if idx is not None:
+                    additives_list.append(additive)
 
-        return additives
+        return additives_list
 
-    def _form_product_modifiers(self, product, modifiers) -> dict:
-        product_modifiers = product.modifiers \
-            .values("title", "modifiers_price__price",
-                    "modifiers_price__product__slug") \
-            .filter(institution=self.institution,
-                    modifiers_price__product__slug=product.slug)
-        if product_modifiers and modifiers:
-            if not any(modifiers["title"] in mod["title"]
-                       for mod in product_modifiers):
-                modifiers.clear()
-            else:
-                for mod in product_modifiers:
-                    if modifiers["title"] == mod["title"]:
-                        modifiers["price"] = int(mod["modifiers_price__price"])
-        else:
-            modifiers.clear()
+    def _get_product_modifier(self, product, modifiers_req) -> Optional[ModifierPrice]:
+        """
+        Takes product object and modifiers data from body via POST request.
+        If data from request is equal to products modifier relation then
+        :return modifier_price.
+        """
+        if modifiers_req:
+            product_modifiers = product.modifiers.filter(
+                institution=self.institution,
+                modifiers_price__product__slug=product.slug
+            ).only("id", "title")
 
-        return modifiers
+            for modifier in product_modifiers:
+                if modifiers_req["title"].lower() == modifier.title.lower():
+                    return modifier.modifiers_price.first()
 
-    def form_product_dict(self, product_slug) -> dict:
-        product = Product.objects.filter(slug=product_slug)
-        if product.exists():
-            product = product.first()
-            product_dict = {
-                "id": product.id,
-                "category": product.category.slug,
-                "title": product.title,
-                "slug": product.slug,
-                "price": int(product.price),
-                "modifiers": self._form_product_modifiers(
-                    product, self.request.data['modifiers'])
-                    if "modifiers" in self.request.data else {},
-                "additives": self._form_product_additives(
-                    product, self.request.data['additives'])
-                    if "additives" in self.request.data else []
-            }
-            return product_dict
+    def _get_cart_item_hash(self, **kwargs):
+        """
+
+        """
+        fields = {
+            key: value.id
+            if key == "modifier_id" and value else [i.id for i in value]
+            if key == "additive_ids" and value else value
+            for key, value in kwargs.items()
+        }
+        product_fields_json = json.dumps(fields, sort_keys=True)
+        hash_obj = hashlib.sha256()
+        hash_obj.update(product_fields_json.encode('utf-8'))
+        item_hash = hash_obj.hexdigest()
+
+        return item_hash
 
     # ======= CONDITIONS & DEDUCTIONS =======
     def get_total_cart(self):
@@ -168,16 +164,32 @@ class CartHelper:
         return sum(i.get_total_item_price for i in items)
 
     # ======= ACTIONS =======
-    def add_item(self, product_dict, product) -> Response:
+    def add_item(self, product) -> Response:
         """ add new item to cart or update quantity of an item """
+
         cart, cart_created = self._cart_get_or_create()
+
+        modifiers_req = self.request.data.get("modifiers", None)
+        additives_req = self.request.data.get("additives", [])
+
+        modifier_price = self._get_product_modifier(product, modifiers_req)
+        additives_list = self._get_product_additives(product, additives_req)
+        item_hash = self._get_cart_item_hash(cart_id=cart.id,
+                                             item_id=product.id,
+                                             modifier_id=modifier_price,
+                                             additive_ids=additives_list)
+
         cart_item, cart_item_created = CartItem.objects.get_or_create(
             item=product,
-            product=product_dict,
-            cart=cart)
+            modifier=modifier_price,
+            cart=cart,
+            item_hash=item_hash
+        )
+        cart_item.additives.add(*additives_list)
+        cart_item.save()
 
         if not cart_created:
-            if cart.items.filter(product=product_dict).exists():
+            if cart.items.filter(item_hash=cart_item.item_hash).exists():
                 cart_item.quantity = F("quantity") + 1
                 cart_item.save(update_fields=("quantity",))
                 return Response({"detail": "Product quantity updated"},
@@ -193,6 +205,7 @@ class CartHelper:
 
     def remove_item(self, product_id) -> Response:
         """ remove item from cart """
+        # TODO: CHECK CART ITEM HASH!!!
         cart, cart_created = self._cart_get_or_create()
 
         if cart.items.filter(id=product_id).exists():

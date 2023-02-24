@@ -12,6 +12,7 @@ class CartAdmin(admin.ModelAdmin):
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
     search_fields = ("id",)
+    readonly_fields = ("item_hash",)
 
 
 @admin.register(Order)
