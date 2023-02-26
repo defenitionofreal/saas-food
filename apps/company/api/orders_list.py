@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from apps.order.models import Order
-from apps.order.serializers import OrderSerializer
 
 #TODO: филтры и сортировки
 class OrderListAPIView(APIView):
@@ -13,5 +12,5 @@ class OrderListAPIView(APIView):
     def get(self, request):
         query = Order.objects.filter(institution__user=self.request.user)\
             .select_related("institution")
-        serializer = OrderSerializer(query, many=True)
+        serializer = None
         return Response(serializer.data)

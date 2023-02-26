@@ -41,7 +41,7 @@ class Product(models.Model):
                                    default=WeightUnit.GRAM)
     weight = models.FloatField(max_length=50)
     cook_time = models.PositiveIntegerField()
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True)  # ? how uniqie if many cafes with same products
 
     def __str__(self):
         return self.title

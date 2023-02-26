@@ -71,8 +71,7 @@ class CouponHelper:
 
     def tied_categories_rule(self) -> Response:
         if self.coupon.categories.all() and not self.coupon.products.all():
-            x = set(self.cart.items.values_list('product__category',
-                                                flat=True))
+            x = set(self.cart.items.values_list('item__category', flat=True))
             y = set(self.coupon.categories.values_list(
                 'promocode__categories__slug', flat=True))
             if not x.intersection(y):
@@ -81,7 +80,7 @@ class CouponHelper:
 
     def tied_products_rule(self) -> Response:
         if self.coupon.products.all() and not self.coupon.categories.all():
-            x = set(self.cart.items.values_list('product__slug', flat=True))
+            x = set(self.cart.items.values_list('item__slug', flat=True))
             y = set(self.coupon.products.values_list(
                 'promocode__products__slug', flat=True))
             if not x.intersection(y):
@@ -94,7 +93,7 @@ class CouponHelper:
             coupon_categories = self.coupon.categories.all()
             coupon_products = self.coupon.products.values_list("slug",
                                                                flat=True)
-            cart_items = self.cart.items.values_list("product__slug",
+            cart_items = self.cart.items.values_list("item__slug",
                                                      flat=True)
             for category in coupon_categories:
                 for product in category.products.values_list("slug",

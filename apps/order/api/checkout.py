@@ -8,7 +8,6 @@ from apps.company.models import Institution
 from apps.order.models import Cart, Order
 from apps.order.models.enums import OrderStatus
 from apps.order.services.cart_helper import CartHelper
-from apps.order.serializers import OrderSerializer
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment

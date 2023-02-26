@@ -74,7 +74,7 @@ class CartHelper:
             cart, cart_created = Cart.objects.get_or_create(
                 institution=self.institution,
                 status=OrderStatus.DRAFT,
-                customer=self.user,
+                customer_id=self.user.id,
                 session_id=self.session[settings.CART_SESSION_ID],
                 min_amount=self._cart_min_amount())
 
@@ -207,7 +207,6 @@ class CartHelper:
 
     def remove_item(self, product_id) -> Response:
         """ remove item from cart """
-        # TODO: CHECK CART ITEM HASH!!!
         cart, cart_created = self._cart_get_or_create()
 
         if cart.items.filter(id=product_id).exists():
@@ -263,7 +262,7 @@ class CartHelper:
                                            status=OrderStatus.DRAFT,
                                            session_id=self.session[
                                                settings.CART_SESSION_ID],
-                                           customer=self.user).first()
+                                           customer_id=self.user.id).first()
                 if not cart:
                     return Response(
                         {"detail": "Cart does not exist. (auth cart)"},

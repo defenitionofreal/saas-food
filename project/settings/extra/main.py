@@ -170,7 +170,7 @@ DELIVERY_SESSION_ID = 'delivery_id'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  #.cache
 # 2 weeks
-SESSION_COOKIE_AGE = 12000 #60 * 60 * 24 * 7 * 2
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2
 # if window closed session still live
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_SECURE = False

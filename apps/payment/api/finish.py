@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from apps.company.models import Institution
-from apps.order.models import Cart, Order
-from apps.order.serializers import OrderSerializer
+from apps.order.models import Cart
+
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment

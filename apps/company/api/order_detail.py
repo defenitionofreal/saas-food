@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
-from apps.order.serializers import OrderSerializer
 from apps.order.models import Order
 
 
@@ -18,7 +17,7 @@ class OrderDetailAPIView(APIView):
         order = get_object_or_404(Order.objects,
                                   institution__user=self.request.user,
                                   pk=order_pk)
-        serializer = OrderSerializer(order)
+        serializer = None
         return Response(serializer.data)
 
     def put(self, request, order_pk):
@@ -28,7 +27,7 @@ class OrderDetailAPIView(APIView):
         order = get_object_or_404(Order.objects,
                                   institution__user=self.request.user,
                                   pk=order_pk)
-        serializer = OrderSerializer(order, data=request.data)
+        serializer = None
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from apps.product.serializers import ProductSerializer
-from apps.order.models import Cart, CartItem, PromoCode, Bonus, Order
+
+from apps.order.models import Cart, CartItem, PromoCode, Bonus
 from apps.order.services.bonus_helper import BonusHelper
 from apps.delivery.serializers import DeliveryInfoCustomerSerializer
 
@@ -63,32 +63,6 @@ class CartSerializer(serializers.ModelSerializer):
             "time_till": instance.time_till
         }
         return delivery_info
-
-
-class CartItemSerializer(serializers.ModelSerializer):
-    """Serializer for the CartItem model."""
-
-    cart = CartSerializer(read_only=True)
-    product = ProductSerializer(read_only=True)
-
-    class Meta:
-        model = CartItem
-        fields = (
-            'id', 'cart', 'item', 'quantity'
-        )
-
-
-class OrderSerializer(serializers.ModelSerializer):
-    """Serializer for an Order model."""
-
-    class Meta:
-        model = Order
-        fields = ["id", "institution_name", "payment_type", "name", "phone",
-                  "comment", "delivery", "items", "total", "coupon_sale",
-                  "bonus_write_off", "total_after_sale", "delivery_cost",
-                  "delivery_sale", "bonus_accrual", "final_price",
-                  "code", "status", "paid"]
-
 
 # ======== for organizations only ===========
 

@@ -5,7 +5,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.order.models import Bonus
 from apps.order.models.enums.order_status import OrderStatus
-from apps.order.services.total_item_price import total_item_cart_price
 
 from apps.delivery.models.enums import DeliveryType
 from apps.payment.models.enums import PaymentType
@@ -14,7 +13,7 @@ from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
 from decimal import Decimal
 
-from itertools import product as pr
+import itertools
 import json
 
 User = get_user_model()
@@ -172,43 +171,38 @@ class Cart(models.Model):
     @property
     def get_sale(self):
         if self.promo_code:
-            sale = self.promo_code.sale
             count_sale = 0
+            sale = self.promo_code.sale
             coupon_categories = self.promo_code.categories.all()
             coupon_products = self.promo_code.products.all()
-            cart_items = self.items.values("product__category",
-                                           "product__slug",
-                                           "product__price",
-                                           "quantity",
-                                           "product__modifiers",
-                                           "product__additives")
+            cart_items = self.items.only("item", "quantity", "modifier", "additives")
+
+            print("CART ITEMS QS", cart_items)
 
             # only categories products
             if coupon_categories and not coupon_products:
                 for cat in coupon_categories:
-                    products = cat.products.filter(is_active=True).only("slug")
-                    for product, item in pr(products, cart_items):
-                        if product.slug == item["product__slug"]:
-                            count_sale += total_item_cart_price(item)
+                    products = cat.products.filter(is_active=True).only("id")
+                    for product, cart_item in itertools.product(products, cart_items):
+                        if product.id == cart_item.item.id:
+                            count_sale += cart_item.get_total_item_price
 
             # only still products
             if coupon_products and not coupon_categories:
-                for product, item in pr(coupon_products, cart_items):
-                    if product.slug in item["product__slug"]:
-                        count_sale += total_item_cart_price(item)
+                for product, cart_item in itertools.product(coupon_products, cart_items):
+                    if product.id == cart_item.item.id:
+                        count_sale += cart_item.get_total_item_price
 
             # categories and products together
             if coupon_products and coupon_categories:
-                coupon_items = []
-                for cat in coupon_categories:
-                    products = cat.products.filter(is_active=True).only("slug")
-                    for product in products:
-                        coupon_items.append(product.slug)
-                for product in coupon_products:
-                    coupon_items.append(product.slug)
-                for item in cart_items:
-                    if item["product__slug"] in coupon_items:
-                        count_sale += total_item_cart_price(item)
+                coupon_items = [product.id
+                                for cat in coupon_categories
+                                for product in cat.products.filter(is_active=True).only("id")]
+                coupon_items += [product.id for product in coupon_products]
+                coupon_items = list(set(coupon_items))
+                matching_items = cart_items.filter(item_id__in=coupon_items)
+                for cart_item in matching_items:
+                    count_sale += cart_item.get_total_item_price
 
             # no cats and no products, so look to the cart total
             if not coupon_products and not coupon_categories:
