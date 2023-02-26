@@ -177,7 +177,7 @@ class Cart(models.Model):
             coupon_products = self.promo_code.products.all()
             cart_items = self.items.only("item", "quantity", "modifier", "additives")
 
-            print("CART ITEMS QS", cart_items)
+            # print("CART ITEMS QS", cart_items) # fixme: repeats 5 times!
 
             # only categories products
             if coupon_categories and not coupon_products:
