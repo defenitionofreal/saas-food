@@ -69,11 +69,6 @@ class Cart(models.Model):
                                  null=True,
                                  blank=True,
                                  related_name="cart_delivery")
-    # delivery_type = models.ForeignKey("delivery.Delivery",
-    #                                   on_delete=models.SET_NULL,
-    #                                   null=True,
-    #                                   blank=True,
-    #                                   related_name="cart_delivery_type")
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)
@@ -294,7 +289,6 @@ class Cart(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            from apps.order.services.generate_order_number import \
-                _generate_order_number
-            self.code = _generate_order_number(1, 3)
+            from apps.order.services.generate_order_number import generate_order_number
+            self.code = generate_order_number(1, 3)
         super().save(*args, **kwargs)

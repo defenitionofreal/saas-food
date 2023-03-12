@@ -40,11 +40,7 @@ class CustomUser(AbstractUser):
     objects = user_manager.UserManager()
 
     def __str__(self):
-        return (
-            f"ID: {self.id}, "
-            f"Name: {self.last_name} {self.first_name} {self.middle_name},"
-            f"Phone: {str(self.phone)}, Email: {self.email}"
-        )
+        return str(self.phone) if self.phone else self.email
 
     class Meta:
         verbose_name = 'User'

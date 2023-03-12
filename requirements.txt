@@ -1,5 +1,6 @@
 amqp==5.0.9
 asgiref==3.4.1
+attrs==22.2.0
 billiard==3.6.4.0
 celery==5.2.3
 certifi==2021.5.30
@@ -10,6 +11,7 @@ click-plugins==1.1.1
 click-repl==0.2.0
 coreapi==2.3.3
 coreschema==0.0.4
+coverage==7.2.1
 curlify==2.2.1
 Deprecated==1.2.13
 Django==3.2.7
@@ -29,11 +31,13 @@ django-timezone-field==4.2.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.8.0
 drf-yasg==1.20.0
+exceptiongroup==1.1.0
 flake8==4.0.1
 geojson==2.5.0
 gunicorn==20.1.0
 idna==3.2
 inflection==0.5.1
+iniconfig==2.0.0
 itypes==1.2.0
 Jinja2==3.0.3
 kombu==5.2.3
@@ -44,6 +48,7 @@ numpy==1.22.4
 packaging==21.3
 phonenumbers==8.12.39
 Pillow==8.4.0
+pluggy==1.0.0
 prompt-toolkit==3.0.24
 psycopg2-binary==2.9.1
 pycodestyle==2.8.0
@@ -51,6 +56,9 @@ pyflakes==2.4.0
 PyJWT==2.1.0
 pykml==0.2.0
 pyparsing==3.0.6
+pytest==7.2.2
+pytest-cov==4.0.0
+pytest-django==4.5.2
 python-crontab==2.6.0
 python-dateutil==2.8.2
 pytz==2021.3
@@ -63,6 +71,7 @@ scipy==1.8.1
 Shapely==1.8.2
 six==1.16.0
 sqlparse==0.4.2
+tomli==2.0.1
 turfpy==0.0.7
 ua-parser==0.10.0
 uritemplate==4.1.1

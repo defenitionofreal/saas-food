@@ -56,11 +56,11 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_delivery_info(self, instance):
         delivery_info = {
-            "type": instance.delivery.delivery_type.delivery_type if instance.delivery else None,
-            "address": instance.delivery.address.address if instance.delivery else None,
-            "date": instance.delivery_date,
-            "time_from": instance.time_from,
-            "time_till": instance.time_till
+            "type": instance.delivery.type.delivery_type if instance.delivery else None,
+            "address": instance.delivery.address.address.city if instance.delivery else None,  # fixme: json ser
+            "date": instance.delivery_date,  # todo: инфа должна быть в delivery_info ?
+            "time_from": instance.time_from, # todo: инфа должна быть в delivery_info ?
+            "time_till": instance.time_till  # todo: инфа должна быть в delivery_info ?
         }
         return delivery_info
 

@@ -2,6 +2,9 @@ from typing import Union
 import requests
 import time
 import os
+import hashlib
+import hmac
+import json
 
 
 PUBLIC_KEY = os.environ.get("STRIPE_PK")
@@ -38,7 +41,8 @@ class StripeClient:
                     "product_data": {"name": i["title"]},
                     "unit_amount": cls._valid_price_format(i["price"])
                 },
-                "quantity": i["quantity"]
+                "quantity": i["quantity"],
+                "description": i["description"]
             }
             items_list.append(product)
 
@@ -58,10 +62,15 @@ class StripeClient:
             line_items_dict[f"line_items[{i}][price_data][unit_amount]"] = line_item["price_data"]["unit_amount"]
             line_items_dict[f"line_items[{i}][price_data][currency]"] = line_item["price_data"]["currency"]
             line_items_dict[f"line_items[{i}][quantity]"] = line_item["quantity"]
+            # for j, option in enumerate(line_item.get("options", [])):
+            #     line_items_dict[f"line_items[{i}][price_data][product_data][options][{j}][name]"] = option.get("name")
+            #     line_items_dict[f"line_items[{i}][price_data][product_data][options][{j}][value]"] = option.get("value")
 
         return line_items_dict
 
-    def create_checkout_session(self, mode: str, customer_email: str, line_items: list = None) -> dict:
+    def create_checkout_session(self, mode: str, customer_email: str,
+                                line_items: list = None,
+                                order_id: str = None) -> dict:
         """
 
         doc.url: https://stripe.com/docs/api/checkout/sessions
@@ -83,7 +92,8 @@ class StripeClient:
             "cancel_url": cancel_url,
             "mode": mode,
             "customer_email": customer_email,
-            "expires_at": int(time.time() + 30 * 60)
+            "expires_at": int(time.time() + 30 * 60),
+            "metadata[order_id]": order_id if order_id else ""
         }
         line_items_keys = self._get_line_items_dict(line_items)
         payload.update(line_items_keys)
@@ -91,6 +101,7 @@ class StripeClient:
         try:
             r = requests.post(url, data=payload, headers=self.headers, timeout=30)
             if r.status_code != 200:
+                print("YOOO",  r.json())
                 message = {"status": "error",
                            "status_code": r.status_code,
                            "message": r.json()["error"]["message"]}
@@ -105,9 +116,69 @@ class StripeClient:
                        "message": f"{e}"}
             return message
 
-#
-# items = [{"title": "test one", "price": 900, "quantity": 1},
-#          {"title": "test two", "price": 120, "quantity": 3},
-#          {"title": "test three", "price": 24.7, "quantity": 2}]
-# print("STRIPE TEST:", StripeClient().create_checkout_session(mode="payment", customer_email="tester@gmail.com", line_items=items))
-#
+    @staticmethod
+    def _construct_webhook_event(payload, sig_header, endpoint_secret):
+        """ """
+        timestamp, signature = sig_header.split(',', 1)
+        timestamp = int(timestamp.split('=')[1])
+        signature = signature.split('=')[1]
+
+        if abs(time.time() - timestamp) > 300:
+            # Request is more than 5 minutes old, reject it.
+            return None
+
+        body = json.loads(payload.decode('utf-8'))
+        body_string = f"{timestamp}.{payload.decode('utf-8')}"
+
+        hash_value = hmac.new(
+            endpoint_secret.encode('utf-8'),
+            body_string.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        print("COMPARE SIG", hmac.compare_digest(hash_value, signature))
+        if hash_value != signature:
+            # Signature does not match, reject the request.
+            print("WRONG SIG")
+            return None
+
+        return body
+
+    # @staticmethod
+    # def _verify_webhook_signature(payload, secret, signature):
+    #     # Compute the expected signature using the secret and the payload
+    #     expected_signature = hmac.new(secret.encode('utf-8'),
+    #                                   msg=payload.encode('utf-8'),
+    #                                   digestmod=hashlib.sha256).hexdigest()
+    #
+    #     # Compare the expected signature to the actual signature
+    #     return hmac.compare_digest(expected_signature, signature)
+
+    # todo:  check needed
+    def webhook(self, request):
+        """  """
+        from django.http import HttpResponse
+        if request.method == 'POST':
+            payload = request.body
+            sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+            event = None
+            try:
+                # Get the api_key from the Stripe object metadata
+                stripe_obj = json.loads(payload)['data']['object']
+                api_key = stripe_obj.get('metadata', {}).get('api_key')
+
+                event = self._construct_webhook_event(
+                    payload, sig_header, api_key
+                )
+            except ValueError as e:
+                # Invalid payload
+                return HttpResponse(status=400)
+
+            # Handle the event
+            if event.type == 'charge.succeeded':
+                charge = event.data.object
+                order_id = event.data.object.metadata
+                print("CHARGE:", charge)
+                print("order ID", order_id)
+                # do something with the payment_intent
+            if event.type == 'charge.failed':
+                print("FAILED CHARGE")

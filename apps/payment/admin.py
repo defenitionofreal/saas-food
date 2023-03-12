@@ -2,7 +2,8 @@ from django.contrib import admin
 
 from apps.payment.models import (PaymentTypeInstitution,
                                  Payment,
-                                 YooMoney)
+                                 YooMoney,
+                                 StripeIntegration)
 
 
 @admin.register(Payment)
@@ -19,5 +20,11 @@ class PaymentTypeInstitutionAdmin(admin.ModelAdmin):
 @admin.register(YooMoney)
 class YooMoneyAdmin(admin.ModelAdmin):
     list_display = ["id", "user", "wallet"]
+    search_fields = ("id",)
+
+
+@admin.register(StripeIntegration)
+class StripeIntegrationAdmin(admin.ModelAdmin):
+    list_display = ["id", "user", "api_key"]
     search_fields = ("id",)
 

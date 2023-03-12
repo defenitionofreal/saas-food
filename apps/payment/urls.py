@@ -6,4 +6,5 @@ app_name = 'payment'
 # TODO: (yoomoney) пока беспонтовая вьюшка
 urlpatterns = [
     path("success/", FinishPaymentAPIView.as_view()),
+    #path("webhook/stripe/")
 ]

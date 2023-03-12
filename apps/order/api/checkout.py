@@ -5,12 +5,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.permissions import IsAuthenticated
 
 from apps.company.models import Institution
-from apps.order.models import Cart, Order
+from apps.order.models import Cart
 from apps.order.models.enums import OrderStatus
 from apps.order.services.cart_helper import CartHelper
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment
+from apps.payment.services.stripe.helper import StripeClient
 
 from django.conf import settings
 from django.db import transaction
@@ -20,7 +21,7 @@ class CheckoutAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, domain):
+    def post(self, request, domain):
         institution = Institution.objects.get(domain=domain)
         user, session = self.request.user, self.request.session
 
@@ -85,20 +86,40 @@ class CheckoutAPIView(APIView):
                 # send notifications
 
             if payment_type == PaymentType.ONLINE:
-                order.status = OrderStatus.PLACED
-                order.save()
-                payment.status = PaymentStatus.PENDING
-                payment.save()
-
                 # todo: STRIPE and more
-                from apps.payment.services.stripe.helper import StripeClient
                 if gateway == "stripe":
-                    # todo: узнать полный url как хост чтобы передать ссылку
-                    stripe = StripeClient(host="http://localhost:8000",
-                                          api_key=settings.STRIPE_SK)
-                    stripe.create_checkout_session(mode="payment",
-                                                   customer_email=email,
-                                                   line_items=[])
+                    institution_stripe = institution.user.stripe_integration.first()
+                    items_list = []
+                    for cart_item in order.items.all():
+                        item_dict = {
+                            "title": cart_item.item.title,
+                            "price": cart_item.get_product_price,
+                            "quantity": cart_item.quantity,
+                            "description": f"{cart_item.modifier.modifier.title if cart_item.modifier else ''}"
+                                           f"{cart_item.additives.values_list('title', flat=True)}"
+                             }
+                        items_list.append(item_dict)
+
+                    stripe = StripeClient(
+                        host="http://localhost:8000",  # todo: self host
+                        api_key=institution_stripe.api_key
+                    )
+                    msg = stripe.create_checkout_session(
+                        mode="payment",
+                        customer_email=email,
+                        line_items=items_list,
+                        order_id=str(order.id)
+                    )
+
+                if gateway == "yoomoney":
+                    pass
+
+                # todo: change order and payment statuses
+                # order.status = OrderStatus.PLACED
+                # order.save()
+                # payment.status = PaymentStatus.PENDING
+                # payment.save()
+                return Response(msg)
 
             return Response({})
 

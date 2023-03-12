@@ -137,10 +137,3 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.institution.title} | {self.status} | {self.paid}"
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            from apps.order.services.generate_order_number import \
-                _generate_order_number
-            self.code = _generate_order_number(1, 3)
-        super().save(*args, **kwargs)
