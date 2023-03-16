@@ -6,6 +6,13 @@ import hashlib
 import hmac
 import json
 
+from django.http import HttpResponse
+
+from apps.order.models.cart import Cart
+from apps.order.models.enums.order_status import OrderStatus
+from apps.payment.models.payment import Payment
+from apps.payment.models.enums.payment_status import PaymentStatus
+
 
 PUBLIC_KEY = os.environ.get("STRIPE_PK")
 SECRET_KEY = os.environ.get("STRIPE_SK")
@@ -93,7 +100,8 @@ class StripeClient:
             "mode": mode,
             "customer_email": customer_email,
             "expires_at": int(time.time() + 30 * 60),
-            "metadata[order_id]": order_id if order_id else ""
+            "metadata[order_id]": order_id if order_id else "",
+            "payment_intent_data[metadata][order_id]": order_id if order_id else ""
         }
         line_items_keys = self._get_line_items_dict(line_items)
         payload.update(line_items_keys)
@@ -119,66 +127,66 @@ class StripeClient:
     @staticmethod
     def _construct_webhook_event(payload, sig_header, endpoint_secret):
         """ """
-        timestamp, signature = sig_header.split(',', 1)
-        timestamp = int(timestamp.split('=')[1])
-        signature = signature.split('=')[1]
+        signatures = sig_header.split(',')
+        timestamp = int(signatures[0].split('=')[1])
+        body = payload.decode('utf-8')
 
-        if abs(time.time() - timestamp) > 300:
-            # Request is more than 5 minutes old, reject it.
-            return None
-
-        body = json.loads(payload.decode('utf-8'))
-        body_string = f"{timestamp}.{payload.decode('utf-8')}"
-
-        hash_value = hmac.new(
-            endpoint_secret.encode('utf-8'),
-            body_string.encode('utf-8'),
+        expected_signature = hmac.new(
+            endpoint_secret.encode(),
+            f"{timestamp}.{body}".encode(),
             hashlib.sha256
         ).hexdigest()
-        print("COMPARE SIG", hmac.compare_digest(hash_value, signature))
-        if hash_value != signature:
-            # Signature does not match, reject the request.
-            print("WRONG SIG")
-            return None
 
-        return body
+        for signature in signatures[1:]:
+            if hmac.compare_digest(signature.split('=')[1], expected_signature):
+                return json.loads(body)
+        # If none of the signatures match, reject the request.
+        return None
 
-    # @staticmethod
-    # def _verify_webhook_signature(payload, secret, signature):
-    #     # Compute the expected signature using the secret and the payload
-    #     expected_signature = hmac.new(secret.encode('utf-8'),
-    #                                   msg=payload.encode('utf-8'),
-    #                                   digestmod=hashlib.sha256).hexdigest()
-    #
-    #     # Compare the expected signature to the actual signature
-    #     return hmac.compare_digest(expected_signature, signature)
-
-    # todo:  check needed
     def webhook(self, request):
         """  """
-        from django.http import HttpResponse
+        endpoint_secret = "whsec_fa3f8e842e1fac92660338c86439c0fe730a997055a13bc24902d1e245a8719e"
+
         if request.method == 'POST':
             payload = request.body
             sig_header = request.META['HTTP_STRIPE_SIGNATURE']
             event = None
             try:
-                # Get the api_key from the Stripe object metadata
-                stripe_obj = json.loads(payload)['data']['object']
-                api_key = stripe_obj.get('metadata', {}).get('api_key')
-
                 event = self._construct_webhook_event(
-                    payload, sig_header, api_key
+                    payload, sig_header, endpoint_secret
                 )
             except ValueError as e:
                 # Invalid payload
                 return HttpResponse(status=400)
 
-            # Handle the event
-            if event.type == 'charge.succeeded':
-                charge = event.data.object
-                order_id = event.data.object.metadata
-                print("CHARGE:", charge)
-                print("order ID", order_id)
-                # do something with the payment_intent
-            if event.type == 'charge.failed':
-                print("FAILED CHARGE")
+            # Handle the events
+
+            # if event["type"] == "checkout.session.completed":
+            #     from apps.order.models.cart import Cart
+            #     data = event["data"]["object"]
+            #     order_id = data["metadata"]["order_id"]
+            #     order = Cart.objects.get(id=order_id)
+            #     print("ORDER OBJ", order)
+
+            if event["type"] == 'charge.succeeded':
+                charge = event["data"]["object"]
+                order_id = charge["metadata"]["order_id"]
+                # order
+                order = Cart.objects.get(id=order_id)
+                order.paid = True
+                order.status = OrderStatus.ACCEPTED
+                order.save()
+                # payment
+                payment = Payment.objects.get(order_id=order.id)
+                payment.status = PaymentStatus.SUCCESS
+                # todo: add payment.code
+                payment.save()
+
+            if event["type"] == 'charge.failed':
+                charge = event["data"]["object"]
+                order_id = charge["metadata"]["order_id"]
+                # payment
+                payment = Payment.objects.get(order_id=order_id)
+                payment.status = PaymentStatus.FAILED
+                # todo: add payment.code
+                payment.save()

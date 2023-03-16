@@ -13,6 +13,9 @@ urlpatterns = [
     path('api/organization/', include('apps.organization.urls', namespace='organization')),
     # showcase site
     path('api/showcase/', include('apps.showcase.urls', namespace='showcase')),
+
+    # payment (for webhooks)
+    path('webhook/', include('apps.payment.urls', namespace='payment')),
 ]
 
 urlpatterns += doc_urls

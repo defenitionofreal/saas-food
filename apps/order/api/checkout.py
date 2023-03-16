@@ -16,6 +16,11 @@ from apps.payment.services.stripe.helper import StripeClient
 from django.conf import settings
 from django.db import transaction
 
+# TODO: Пока не ясно как сделать так чтобы при вебхуках от платежных систем,
+#  были использованы api ключи каждой отдельной организации.
+#  Решение сейчас такое:
+#  создать в ручную урлы для вебхука под каждого юзера, а от юзера брать ключ для запроса
+
 
 class CheckoutAPIView(APIView):
 
@@ -101,7 +106,7 @@ class CheckoutAPIView(APIView):
                         items_list.append(item_dict)
 
                     stripe = StripeClient(
-                        host="http://localhost:8000",  # todo: self host
+                        host="http://localhost:8000",  # todo: self host!
                         api_key=institution_stripe.api_key
                     )
                     msg = stripe.create_checkout_session(
@@ -114,11 +119,11 @@ class CheckoutAPIView(APIView):
                 if gateway == "yoomoney":
                     pass
 
-                # todo: change order and payment statuses
-                # order.status = OrderStatus.PLACED
-                # order.save()
-                # payment.status = PaymentStatus.PENDING
-                # payment.save()
+                order.status = OrderStatus.PLACED
+                order.save()
+                payment.status = PaymentStatus.PENDING
+                payment.save()
+                # todo: send notifications
                 return Response(msg)
 
             return Response({})
