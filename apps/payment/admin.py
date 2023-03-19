@@ -8,7 +8,7 @@ from apps.payment.models import (PaymentTypeInstitution,
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ["id", "institution", "status"]
+    list_display = ["id", "status", "order", "institution", "customer", "final_price"]
     search_fields = ("id",)
 
 

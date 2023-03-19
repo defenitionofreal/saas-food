@@ -1,7 +1,7 @@
 from django.contrib import admin
-
-from apps.order.models import Cart, CartItem, Order, OrderItem, PromoCode, \
-    Bonus, PromoCodeUser, UserBonus
+from apps.order.models import (
+    Cart, CartItem, PromoCode, Bonus, PromoCodeUser, UserBonus
+)
 
 
 @admin.register(Cart)
@@ -13,18 +13,6 @@ class CartAdmin(admin.ModelAdmin):
 class CartItemAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     readonly_fields = ("item_hash",)
-
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ["id", "institution", "customer", "cart", "payment_type",
-                    "status", "paid", "code"]
-    search_fields = ("id",)
-
-
-@admin.register(OrderItem)
-class OrderItemAdmin(admin.ModelAdmin):
-    search_fields = ("id",)
 
 
 @admin.register(PromoCode)

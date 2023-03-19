@@ -70,11 +70,7 @@ class CheckoutAPIView(APIView):
 
         with transaction.atomic():
             # payment create
-            payment, payment_created = Payment.objects.update_or_create(
-                institution=institution,
-                user=user,
-                order=order,
-                defaults={"total": order.final_price})
+            payment, _ = Payment.objects.update_or_create(order=order)
 
             if payment_type == PaymentType.CASH:
                 order.status = OrderStatus.PLACED

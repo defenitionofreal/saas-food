@@ -6,7 +6,8 @@ import hashlib
 import hmac
 import json
 
-from django.http import HttpResponse
+from rest_framework.response import Response
+from rest_framework import status
 
 from apps.order.models.cart import Cart
 from apps.order.models.enums.order_status import OrderStatus
@@ -145,10 +146,9 @@ class StripeClient:
 
     def webhook(self, request):
         """  """
-        endpoint_secret = "whsec_fa3f8e842e1fac92660338c86439c0fe730a997055a13bc24902d1e245a8719e"
-
         if request.method == 'POST':
             payload = request.body
+            endpoint_secret = os.environ.get("STRIPE_WEBHOOK_KEY")
             sig_header = request.META['HTTP_STRIPE_SIGNATURE']
             event = None
             try:
@@ -157,7 +157,8 @@ class StripeClient:
                 )
             except ValueError as e:
                 # Invalid payload
-                return HttpResponse(status=400)
+                return Response({"error": f"{e}"},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # Handle the events
 
@@ -170,6 +171,8 @@ class StripeClient:
 
             if event["type"] == 'charge.succeeded':
                 charge = event["data"]["object"]
+                obj_id = charge["id"]
+                print("*****\n", obj_id)
                 order_id = charge["metadata"]["order_id"]
                 # order
                 order = Cart.objects.get(id=order_id)
@@ -179,14 +182,17 @@ class StripeClient:
                 # payment
                 payment = Payment.objects.get(order_id=order.id)
                 payment.status = PaymentStatus.SUCCESS
-                # todo: add payment.code
+                payment.code = obj_id
                 payment.save()
 
             if event["type"] == 'charge.failed':
                 charge = event["data"]["object"]
+                obj_id = charge["id"]
                 order_id = charge["metadata"]["order_id"]
                 # payment
                 payment = Payment.objects.get(order_id=order_id)
                 payment.status = PaymentStatus.FAILED
-                # todo: add payment.code
+                payment.code = obj_id
                 payment.save()
+
+            return Response({"success": True}, status=status.HTTP_200_OK)

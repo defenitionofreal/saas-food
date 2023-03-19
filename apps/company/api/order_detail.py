@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
-from apps.order.models import Order
+from apps.order.models import Cart
 
 
 class OrderDetailAPIView(APIView):
@@ -14,7 +14,7 @@ class OrderDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, order_pk):
-        order = get_object_or_404(Order.objects,
+        order = get_object_or_404(Cart.objects,
                                   institution__user=self.request.user,
                                   pk=order_pk)
         serializer = None
@@ -24,7 +24,7 @@ class OrderDetailAPIView(APIView):
         """
         Change only status and paid fields!
         """
-        order = get_object_or_404(Order.objects,
+        order = get_object_or_404(Cart.objects,
                                   institution__user=self.request.user,
                                   pk=order_pk)
         serializer = None
@@ -34,7 +34,7 @@ class OrderDetailAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, order_pk):
-        order = get_object_or_404(Order.objects,
+        order = get_object_or_404(Cart.objects,
                                   institution__user=self.request.user,
                                   pk=order_pk)
         order.delete()
