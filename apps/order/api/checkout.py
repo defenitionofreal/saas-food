@@ -68,6 +68,11 @@ class CheckoutAPIView(APIView):
         order.payment_type = payment_type
         order.save()
 
+        msg = {"status": "error",
+               "status_code": 400,
+               "message": "Order not placed",
+               "url": None}
+
         with transaction.atomic():
             # payment create
             payment, _ = Payment.objects.update_or_create(order=order)
@@ -78,6 +83,10 @@ class CheckoutAPIView(APIView):
                 payment.status = PaymentStatus.PENDING
                 payment.save()
                 # send notifications
+                msg = {"status": "success",
+                       "status_code": 200,
+                       "message": "Order placed",
+                       "url": None}
 
             if payment_type == PaymentType.CARD:
                 order.status = OrderStatus.PLACED
@@ -85,6 +94,10 @@ class CheckoutAPIView(APIView):
                 payment.status = PaymentStatus.PENDING
                 payment.save()
                 # send notifications
+                msg = {"status": "success",
+                       "status_code": 200,
+                       "message": "Order placed",
+                       "url": None}
 
             if payment_type == PaymentType.ONLINE:
                 # todo: STRIPE and more
@@ -115,14 +128,13 @@ class CheckoutAPIView(APIView):
                 if gateway == "yoomoney":
                     pass
 
-                order.status = OrderStatus.PLACED
-                order.save()
+                # order.status = OrderStatus.PLACED
+                # order.save()
                 payment.status = PaymentStatus.PENDING
                 payment.save()
                 # todo: send notifications
-                return Response(msg)
 
-            return Response({})
+        return Response(msg)
 
             # # if customer choose pay by yoomoney
             # if gateway == "yoomoney":

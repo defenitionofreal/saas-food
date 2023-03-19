@@ -110,14 +110,15 @@ class StripeClient:
         try:
             r = requests.post(url, data=payload, headers=self.headers, timeout=30)
             if r.status_code != 200:
-                print("YOOO",  r.json())
                 message = {"status": "error",
                            "status_code": r.status_code,
-                           "message": r.json()["error"]["message"]}
+                           "message": r.json()["error"]["message"],
+                           "url": None}
             else:
                 message = {"status": "success",
                            "status_code": r.status_code,
-                           "message": r.json()["url"]}
+                           "message": "Get payment url",
+                           "url": r.json()["url"]}
             return message
         except Exception as e:
             message = {"status": "error",
@@ -172,7 +173,6 @@ class StripeClient:
             if event["type"] == 'charge.succeeded':
                 charge = event["data"]["object"]
                 obj_id = charge["id"]
-                print("*****\n", obj_id)
                 order_id = charge["metadata"]["order_id"]
                 # order
                 order = Cart.objects.get(id=order_id)
