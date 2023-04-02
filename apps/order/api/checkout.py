@@ -128,8 +128,8 @@ class CheckoutAPIView(APIView):
                 if gateway == "yoomoney":
                     pass
 
-                # order.status = OrderStatus.PLACED
-                # order.save()
+                # не нужно при онлайн оплате ставить статус placed так как
+                # если не оплатит и вернуться, то корзина не должна пропасть
                 payment.status = PaymentStatus.PENDING
                 payment.save()
                 # todo: send notifications
