@@ -286,9 +286,3 @@ class Cart(models.Model):
     def __str__(self):
         return f'{self.id}: {self.institution}, {self.customer}, ' \
                f'{self.get_total_cart}'
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            from apps.order.services.generate_order_number import generate_order_number
-            self.code = generate_order_number(1, 3)
-        super().save(*args, **kwargs)

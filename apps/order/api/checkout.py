@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from apps.company.models import Institution
 from apps.order.models import Cart
 from apps.order.models.enums import OrderStatus
+from apps.order.services.generate_order_number import generate_order_number
 from apps.order.services.cart_helper import CartHelper
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
@@ -66,6 +67,8 @@ class CheckoutAPIView(APIView):
         order.email = email if email else user.email
         order.comment = comment
         order.payment_type = payment_type
+        if (order.code is None) or (order.code in ("", " ")):
+            order.code = generate_order_number(order.institution_id)
         order.save()
 
         msg = {"status": "error",
