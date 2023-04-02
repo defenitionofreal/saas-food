@@ -1,10 +1,12 @@
-from typing import Union
+import datetime
 import requests
 import time
 import os
 import hashlib
 import hmac
 import json
+
+from typing import Union
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -176,6 +178,7 @@ class StripeClient:
                 order_id = charge["metadata"]["order_id"]
                 # order
                 order = Cart.objects.get(id=order_id)
+                order.confirmed_date = datetime.datetime.now()
                 order.paid = True
                 order.status = OrderStatus.ACCEPTED
                 order.save()

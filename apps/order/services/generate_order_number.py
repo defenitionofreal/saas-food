@@ -13,7 +13,9 @@ def generate_order_number(institution_id: int):
 
     latest_order = Cart.objects.filter(
         created_at__date=today,
-        institution_id=institution_id).order_by("-code").first()
+        institution_id=institution_id,
+        code__isnull=False
+    ).order_by("-code").first()
 
     if latest_order:
         last_number = int(latest_order.code.split('-')[-1])
