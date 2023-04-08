@@ -192,6 +192,10 @@ class StripeClient:
                 charge = event["data"]["object"]
                 obj_id = charge["id"]
                 order_id = charge["metadata"]["order_id"]
+                # order
+                order = Cart.objects.get(id=order_id)
+                order.status = OrderStatus.CANCELED
+                order.save()
                 # payment
                 payment = Payment.objects.get(order_id=order_id)
                 payment.status = PaymentStatus.FAILED
