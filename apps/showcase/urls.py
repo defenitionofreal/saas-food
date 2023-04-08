@@ -14,13 +14,16 @@ from apps.showcase.api import (products_client_list,
                                delivery_client_list,
                                address_list,
                                delivery_zone_list,
-                               payment_type_list)
+                               payment_type_list,
+                               queue_screen)
 
 from apps.showcase.api.customer_actions import (delivery_info_create)
 
 app_name = 'showcase'
 
 urlpatterns = [
+    # queue screen
+    path('<str:domain>/queue/', queue_screen.QueueScreenAPIView.as_view()),
     # main page
     path('<str:domain>/menu/', products_client_list.ProductsClientListAPIView.as_view()),
     path('<str:domain>/categories/', categories_client_list.CategoriesClientListAPIView.as_view()),

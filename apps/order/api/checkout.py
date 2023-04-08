@@ -1,20 +1,20 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.permissions import IsAuthenticated
 
 from apps.company.models import Institution
+from apps.que.models import Que
+
 from apps.order.models import Cart
 from apps.order.models.enums import OrderStatus
 from apps.order.services.generate_order_number import generate_order_number
-from apps.order.services.cart_helper import CartHelper
+
 from apps.payment.models.enums.payment_type import PaymentType
 from apps.payment.models.enums.payment_status import PaymentStatus
 from apps.payment.models import Payment
 from apps.payment.services.stripe.helper import StripeClient
 
-from django.conf import settings
 from django.db import transaction
 
 # TODO: Пока не ясно как сделать так чтобы при вебхуках от платежных систем,

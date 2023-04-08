@@ -22,3 +22,5 @@ class OrderStatus(models.TextChoices):
     DELIVERED = "delivered", "Delivered"  # доставлен
     # pick up / indoor
     GIVEN_AWAY = "given away", "Given away"  # отдан
+
+    CANCELED = "cancel", "Cancel"

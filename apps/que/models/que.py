@@ -6,8 +6,16 @@ class Que(models.Model):
     """
     Queue model for order status
     """
-    order = models.ForeignKey("order.Cart", on_delete=models.CASCADE, related_name="que")
-    status = models.CharField(max_length=20, choices=QueStatus.choices)
+    order = models.ForeignKey(
+        "order.Cart",
+        on_delete=models.CASCADE,
+        related_name="que"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=QueStatus.choices,
+        default=QueStatus.PROCESSING
+    )
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -18,3 +26,5 @@ class Que(models.Model):
     @property
     def code(self):
         return self.order.code if self.order.code else None
+
+    # todo: в методе save определять position при нужных статусах
