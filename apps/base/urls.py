@@ -7,8 +7,8 @@ from .api import (user_view,
                   logout_view,
                   login_by_code,
                   send_auth_code,
-
-                  yoomoney_notification)
+                  yoomoney_notification,
+                  )
 
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -16,10 +16,8 @@ from rest_framework_simplejwt.views import (
 
 app_name = 'base'
 
-
 urlpatterns = [
     path('', views.index, name='index'),
-
     # organization
     path('register/', register_view.RegisterAPIView.as_view()),
     path('login/', login_view.LoginOrganizationTokenView.as_view()),

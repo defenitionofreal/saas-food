@@ -64,6 +64,28 @@ class CartSerializer(serializers.ModelSerializer):
         }
         return delivery_info
 
+
+class CartDashboardSerializer(serializers.ModelSerializer):
+    """ Serializer of a Cart/Order for customers dashboard. """
+
+    items_count = serializers.SerializerMethodField()
+    institution_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = (
+            'id', 'institution_title', 'items_count', 'final_price',
+            'created_at', 'updated_at', 'confirmed_date', "code", "status",
+            "paid"
+        )
+
+    def get_items_count(self, instance):
+        return int(instance.products_cart.all().count())
+
+    def get_institution_title(self, instance):
+        return instance.institution.title
+
+
 # ======== for organizations only ===========
 
 
