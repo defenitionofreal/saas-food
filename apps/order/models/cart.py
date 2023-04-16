@@ -73,8 +73,6 @@ class Cart(models.Model):
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)
     # order main stuff
-    items = models.ManyToManyField("order.CartItem",
-                                   related_name="cart_items")
     code = models.CharField(max_length=5,
                             blank=True,
                             null=True)

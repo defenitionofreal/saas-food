@@ -4,6 +4,7 @@ from apps.que.models import Que
 
 class QueSerializer(serializers.ModelSerializer):
     """ Queue serializer """
+    institution = serializers.CharField(source="order.institution.title")
 
     class Meta:
         model = Que

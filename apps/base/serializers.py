@@ -10,15 +10,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'first_name', 'last_name', 'email', 'phone',
-            'is_customer', 'password')
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+            'id', 'username', 'first_name', 'middle_name', 'last_name',
+            'email', 'phone', 'image', 'is_customer')
+        # extra_kwargs = {
+        #     'password': {'write_only': True}
+        # }
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
-
 
 
 class LoginObtainPairSerializer(TokenObtainPairSerializer):

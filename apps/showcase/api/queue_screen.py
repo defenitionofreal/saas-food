@@ -13,7 +13,8 @@ class QueueScreenAPIView(APIView):
         institution = Institution.objects.get(domain=domain)
         query = Que.objects.filter(
             order__institution_id=institution.id,
-            status__in=[QueStatus.COOKING, QueStatus.READY]
+            status__in=[QueStatus.COOKING, QueStatus.READY],
+            is_active=True
         ).order_by("position")
         serializer = QueSerializer(query, many=True)
         return Response(serializer.data)

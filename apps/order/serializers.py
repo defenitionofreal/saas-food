@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.order.models import Cart, CartItem, PromoCode, Bonus
+from apps.order.models import Cart, CartItem, PromoCode, Bonus, UserBonus
 from apps.order.services.bonus_helper import BonusHelper
 from apps.delivery.serializers import DeliveryInfoCustomerSerializer
 
@@ -84,6 +84,16 @@ class CartDashboardSerializer(serializers.ModelSerializer):
 
     def get_institution_title(self, instance):
         return instance.institution.title
+
+
+class UserBonusSerializer(serializers.ModelSerializer):
+    """Serializer for the Customers dashboard about his bonuses"""
+
+    institution = serializers.CharField(source="institution.title")
+
+    class Meta:
+        model = UserBonus
+        exclude = ("user", )
 
 
 # ======== for organizations only ===========
