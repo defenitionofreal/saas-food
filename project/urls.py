@@ -8,6 +8,7 @@ from .yasg import urlpatterns as doc_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.base.urls', namespace='base')),
+    path('api/authentication/', include('apps.authentication.urls', namespace='authentication')),
     # devide users
     path('api/customer/', include('apps.customer.urls', namespace='customer')),
     path('api/organization/', include('apps.organization.urls', namespace='organization')),

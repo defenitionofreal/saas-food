@@ -11,10 +11,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'first_name', 'middle_name', 'last_name',
-            'email', 'phone', 'image', 'is_customer')
-        # extra_kwargs = {
-        #     'password': {'write_only': True}
-        # }
+            'email', 'phone', 'image', 'password', 'is_customer',
+            'is_organization'
+        )
+        extra_kwargs = {
+            'password': {'write_only': True},
+            # 'phone': {'required': False}
+        }
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
@@ -24,7 +27,7 @@ class LoginObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['phone'] = str(user.phone)
+        token['phone'] = str(user.phone) # ?
         token['email'] = user.email
         return token
 

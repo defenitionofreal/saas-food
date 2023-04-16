@@ -53,6 +53,8 @@ THIRD_PART_APPS = [
 
 INTERNAL_APPS = [
     'apps.base',
+    'apps.authentication',
+    'apps.notification',
     'apps.company',
     'apps.delivery',
     'apps.location',

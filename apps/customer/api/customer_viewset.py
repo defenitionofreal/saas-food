@@ -4,7 +4,7 @@ from rest_framework import viewsets, permissions, status
 
 from apps.base.serializers import UserSerializer
 from apps.que.serializers import QueSerializer
-from apps.location.serializers import (AddressLinkSerializer, AddressSerializer)
+from apps.location.serializers import AddressSerializer
 
 from apps.location.models import (Address, AddressLink)
 from apps.que.models.enums.que_status import QueStatus
@@ -24,7 +24,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     (read/update: profile, delivery addresses, phone numbers, past orders,
      bonuses, order status, repeat order, live queue status...)
     """
-    queryset = User.objects.filter(is_customer=True)
+    queryset = User.objects.filter(is_customer=True, is_organization=False)
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
 

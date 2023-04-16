@@ -26,15 +26,16 @@ class CustomUser(AbstractUser):
                               blank=True, null=True,
                               validators=[FileExtensionValidator(
                                   allowed_extensions=['jpg', 'jpeg', 'png'])])
+    password = models.CharField(max_length=255)
     # permission flags
     is_customer = models.BooleanField(default=False)
-    is_promo = models.BooleanField(default=False)  # for free promos
+    is_organization = models.BooleanField(default=False)
+    is_free_promo = models.BooleanField(default=False)
+    is_sms_verified = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=False)  # sms code check ?
 
-    password = models.CharField(max_length=255)
-
-    USERNAME_FIELD = 'phone'
+    USERNAME_FIELD = 'email'  # todo: phone or email?
     REQUIRED_FIELDS = []
 
     objects = user_manager.UserManager()
