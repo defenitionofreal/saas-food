@@ -87,9 +87,8 @@ class Cart(models.Model):
 
     @property
     def get_total_cart(self):
-        total = 0
-        if self.items.all():
-            total = sum([i.get_total_item_price for i in self.items.all()])
+        total = sum([i.get_total_item_price for i in self.products_cart.all()]) \
+            if self.products_cart.all() else 0
         return total
 
     @property

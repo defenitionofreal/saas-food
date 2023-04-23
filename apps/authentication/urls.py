@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from apps.authentication.api import auth_viewset
+from apps.authentication.api.varify_email import EmailVerificationCodeView
 
 app_name = 'authentication'
 
@@ -11,4 +12,5 @@ router.register('', auth_viewset.AuthViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('verification/email/', EmailVerificationCodeView.as_view())
 ]

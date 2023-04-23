@@ -47,29 +47,11 @@ class CustomUser(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
-        # убрать unique=True у email и username и сделать unique_together ??
-        # unique_together = ["phone", "email", "username"]
-
         constraints = [
             # проверить ограничение
             models.CheckConstraint(
                 check=models.Q(
                     phone__isnull=False) | models.Q(email__isnull=False),
-                name="User must have one of the fields: phone, email"),
-            # # условия
-            # models.UniqueConstraint(
-            #     fields=["phone"],
-            #     condition=models.Q(phone__isnull=False),
-            #     name="Unique phone numbers for users",
-            # ),
-            # models.UniqueConstraint(
-            #     fields=["email"],
-            #     condition=models.Q(email__isnull=False),
-            #     name="Unique emails for users",
-            # ),
-            # models.UniqueConstraint(
-            #     fields=["username"],
-            #     condition=models.Q(username__isnull=False),
-            #     name="Unique usernames for users",
-            # ),
+                name="User must have one of the fields: phone, email"
+            )
         ]

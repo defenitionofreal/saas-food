@@ -75,6 +75,14 @@ services:
     links:
       - "pgdb:pgsql-server"
 
+  flower:
+    image: mher/flower:0.9.7
+    command: [ 'flower', '--broker=redis://redis:6379', '--port=8888' ]
+    ports:
+      - 8888:8888
+    depends_on:
+      - redis
+
   redis:
     image: "redis:alpine"
     container_name: efood_redis
