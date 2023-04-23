@@ -9,3 +9,13 @@ class MessageLog(models.Model):
                               default=None)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def get_type(self):
+        choice = next((c[1] for c in LogTypes.choices if c[0] == int(self.type)), None)
+        return choice if choice else ""
+
+    @property
+    def get_status(self):
+        choice = next((c[1] for c in LogStatus.choices if c[0] == int(self.type)), None)
+        return choice if choice else ""

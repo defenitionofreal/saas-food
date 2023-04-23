@@ -23,11 +23,5 @@ class SmsAdmin(admin.ModelAdmin):
 @admin.register(MessageLog)
 class MessageLogAdmin(admin.ModelAdmin):
     search_fields = ("id",)
-    list_display = ("id", "get_type_display", "get_status_display")
+    list_display = ("id", "get_type", "get_status")
     readonly_fields = ("created_at",)
-
-    def get_status_display(self, obj):
-        return obj.get_status_display()
-
-    def get_type_display(self, obj):
-        return obj.get_type_display()
