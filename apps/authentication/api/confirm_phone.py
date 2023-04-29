@@ -11,26 +11,26 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class EmailConfirmationCodeView(APIView):
+class PhoneConfirmationCodeView(APIView):
     """
-    Confirm email by 4 digits from email message.
+    Confirm phone by 4 digits from sms message.
     """
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request):
-        email = request.data.get("email", None)
+        phone = request.data.get("phone", None)
         code = request.data.get("code", None)
 
-        if not email or not code:
-            raise ValidationError("Email or code required.")
+        if not phone or not code:
+            raise ValidationError("Phone and code required.")
 
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(phone=phone).first()
 
         if not user:
-            raise ValidationError("Email not found.")
+            raise ValidationError("User not found.")
 
         verification_code = VerificationCode.objects.filter(
-            code=code, email=user.email, is_active=True
+            code=code, phone=user.phone, is_active=True
         )
 
         if not verification_code.exists():
@@ -41,17 +41,17 @@ class EmailConfirmationCodeView(APIView):
         verification_code_instance.is_active = False
         verification_code_instance.save()
 
-        user.is_email_verified = True
+        user.is_sms_verified = True
         user.save()
 
-        VerificationCode.objects.filter(email=user.email).exclude(
+        VerificationCode.objects.filter(phone=user.phone).exclude(
             id=verification_code_instance.id).update(is_active=False)
 
         MessageLog.objects.create(
-            type=LogTypes.CONFIRM_EMAIL,
+            type=LogTypes.CONFIRM_PHONE,
             status=LogStatus.SUCCESS,
-            content=f"Email {user.email} confirmed."
+            content=f"Phone {str(user.phone)} confirmed."
         )
 
-        return Response({"detail": "Email confirmed"},
+        return Response({"detail": "Phone confirmed"},
                         status=status.HTTP_200_OK)

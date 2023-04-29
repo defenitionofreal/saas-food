@@ -17,5 +17,5 @@ class MessageLog(models.Model):
 
     @property
     def get_status(self):
-        choice = next((c[1] for c in LogStatus.choices if c[0] == int(self.type)), None)
+        choice = next((c[1] for c in LogStatus.choices if c[0] == int(self.status)), None)
         return choice if choice else ""
