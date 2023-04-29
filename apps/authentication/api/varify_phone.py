@@ -7,7 +7,7 @@ from apps.base.models import MessageLog
 from apps.base.models.enums import (LogTypes, LogStatus)
 from apps.authentication.models import VerificationCode
 from apps.authentication.services.create_verification_code import create_verification_code
-from apps.sms.services.sms_base_class import SmsBaseHelper
+from apps.sms.services.sms_base_class import (SmsBaseHelper, SmsProvider)
 
 
 from django.contrib.auth import get_user_model
@@ -44,7 +44,7 @@ class PhoneVerificationCodeView(APIView):
 
             msg = f"Verification code: {verification.code}"
 
-            helper = SmsBaseHelper("TWILIO")
+            helper = SmsBaseHelper(SmsProvider.TWILIO)
             result = helper.send_sms(str(user.phone), msg)
             if result:
                 MessageLog.objects.create(
