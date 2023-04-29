@@ -29,13 +29,14 @@ def send_email_verification_code_task(email: str):
         send_mail_by_django(category="email-verification",
                             context={"code": verification.code,
                                      "user_id": user.id})
-        log, _ = MessageLog.objects.get_or_create(
+        MessageLog.objects.create(
             type=LogTypes.VERIFY_EMAIL,
             status=LogStatus.SUCCESS,
             content=f"Email {user.email} verification code:\n{verification.code}"
         )
     except Exception as e:
-        log, _ = MessageLog.objects.get_or_create(
+
+        MessageLog.objects.create(
             type=LogTypes.VERIFY_EMAIL,
             status=LogStatus.ERROR,
             content=f"Error email {user.email} verification code:\n{e}"

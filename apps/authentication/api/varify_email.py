@@ -37,7 +37,7 @@ class EmailVerificationCodeView(APIView):
         try:
             send_email_verification_code_task.delay(email=str(user.email))
             return Response({"status": "success",
-                             "message": "Код отправлен на почту"},
+                             "message": "Code successfully send"},
                             status=status.HTTP_200_OK)
         except Exception as e:
             raise APIException(str(e))

@@ -65,6 +65,7 @@ INTERNAL_APPS = [
     'apps.product',
     'apps.que',
     'apps.mail',
+    'apps.sms',
 
     # separate users
     'apps.customer',

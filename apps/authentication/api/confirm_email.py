@@ -4,6 +4,8 @@ from rest_framework import (status, permissions)
 from rest_framework.exceptions import ValidationError
 
 from apps.authentication.models import VerificationCode
+from apps.base.models import MessageLog
+from apps.base.models.enums import LogTypes, LogStatus
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -37,6 +39,12 @@ class EmailConfirmationCodeView(APIView):
         verification_code.update(is_confirmed=True, is_active=False)
         user.is_email_verified = True
         user.save()
+
+        MessageLog.objects.create(
+            type=LogTypes.CONFIRM_EMAIL,
+            status=LogStatus.SUCCESS,
+            content=f"Email {user.email} confirmed."
+        )
 
         return Response({"detail": "Email confirmed"},
                         status=status.HTTP_200_OK)
