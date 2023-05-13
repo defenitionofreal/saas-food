@@ -5,7 +5,8 @@ from apps.base.models import CustomUser, AuthCode, Sms, MessageLog
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
     search_fields = ("id",)
-    list_display = ("phone", "email", "is_customer", "is_superuser")
+    list_display = ("phone", "email", "is_customer", "is_organization",
+                    "is_superuser")
 
 
 @admin.register(AuthCode)

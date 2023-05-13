@@ -17,9 +17,9 @@ class SmsOrganizationHelper:
 
     def __init__(self, institution_id: int):
         self.institution_id = institution_id
-        self.provider_type = self._get_sms_provider_type()
+        self.provider_type = self.get_sms_provider_type()
 
-    def _get_sms_provider_type(self) -> [SmsProvider, None]:
+    def get_sms_provider_type(self) -> [SmsProvider, None]:
         """ """
         provider_type = None
         institution = Institution.objects.get(id=self.institution_id)
@@ -31,7 +31,7 @@ class SmsOrganizationHelper:
             logger.info(f"SmsOrganizationHelper: No sms provider for user {user.id}")
             return provider_type
 
-        if str(institution.id) not in organization_sms_provider.institutions.values_list("id", flat=True):
+        if str(institution.id) not in map(str, organization_sms_provider.institutions.values_list("id", flat=True)):
             logger.info(f"SmsOrganizationHelper: Institution {str(institution.id)} not found at sms providers data.")
             return provider_type
 
