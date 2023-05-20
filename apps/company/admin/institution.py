@@ -12,6 +12,7 @@ class InstitutionAdmin(admin.ModelAdmin):
 class MinCartCostAdmin(admin.ModelAdmin):
     search_fields = ("id",)
 
+
 @admin.register(Design)
 class DesignAdmin(admin.ModelAdmin):
     list_display = ["id"]

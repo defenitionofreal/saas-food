@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-
+# todo: category on_delete=models.CASCADE
 class Product(models.Model):
     """
     Product of institution

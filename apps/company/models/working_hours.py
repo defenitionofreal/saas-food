@@ -2,7 +2,7 @@ from django.db import models
 
 from apps.company.models.enums import WeekDay
 
-
+#todo: remake weekday / timeinterval / deliveryInterval/ workTimeInterval
 class WorkingHours(models.Model):
     """
     Working time of institution

@@ -41,7 +41,12 @@ class CustomUser(AbstractUser):
     objects = user_manager.UserManager()
 
     def __str__(self):
-        return str(self.phone) if self.phone else self.email
+        value = str(self.id)
+        if self.phone:
+            value = str(self.phone)
+        if not self.phone and self.email:
+            value = str(self.email)
+        return value
 
     class Meta:
         verbose_name = 'User'

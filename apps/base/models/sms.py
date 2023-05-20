@@ -5,7 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 User = get_user_model()
 
-
+# todo: DEL?
 class Sms(models.Model):
     sms_aero_id = models.IntegerField(verbose_name="Sms Aero ID", null=True, blank=True)
 

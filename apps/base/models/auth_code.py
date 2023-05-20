@@ -4,7 +4,7 @@ from .managers import auth_code_manager
 
 User = get_user_model()
 
-
+#todo: DEL ?
 class AuthCode(models.Model):
     """
     Authentication code for register and login customer by sms

@@ -179,6 +179,9 @@ class AuthViewSet(viewsets.ModelViewSet):
                                             secure="false")
 
         if validated_contact == "phone":
+            # todo: Может разрешить авторизацию по телефону без подтверждения
+            #  или если у организации нету смс провайдера, просто если есть,
+            #  то тогда просить подтвердить?! Пример пиццерия "робертиньё".
             sms_helper = SmsOrganizationHelper(institution.id)
             sms_provider = sms_helper.get_sms_provider_type()
             if not sms_provider:
