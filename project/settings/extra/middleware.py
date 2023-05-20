@@ -2,7 +2,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'project.middleware.session.CreateSessionKeyMiddleware',
+    'middlewares.session.CreateSessionKeyMiddleware',
 
     'corsheaders.middleware.CorsMiddleware',  # corsheaders
 
@@ -14,6 +14,6 @@ MIDDLEWARE = [
 
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # toolbar
     'debug_toolbar_force.middleware.ForceDebugToolbarMiddleware', # ?debug-toolbar
-    # custom
-    'apps.base.middleware.MoveJWTRefreshCookieIntoTheBody'
+    # custom fixme
+    'middlewares.jwt_refresh_to_body.MoveJWTRefreshCookieIntoTheBody'
 ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.base.models import CustomUser, AuthCode, Sms, MessageLog
+from apps.base.models import CustomUser, MessageLog
 from rest_framework_simplejwt.tokens import OutstandingToken
 
 
@@ -15,18 +15,6 @@ class UserAdmin(admin.ModelAdmin):
         queryset.delete()
 
     actions = ["BE_AWARE_NO_WARNING_clear_tokens_and_delete"]
-
-
-@admin.register(AuthCode)
-class AuthCodeAdmin(admin.ModelAdmin):
-    search_fields = ("id",)
-    list_display = ("user", "code", "created_at", "updated_at", "is_active")
-
-
-@admin.register(Sms)
-class SmsAdmin(admin.ModelAdmin):
-    search_fields = ("id",)
-    list_display = ("id", "phone", "status",)
 
 
 @admin.register(MessageLog)

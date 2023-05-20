@@ -191,8 +191,7 @@ CACHES = {
 }
 
 # Authentication
-AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend",
-                           "apps.base.backends.AuthBackend"]
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 AUTHENTICATION_CODE_EXPIRED = 5 * 60
 AUTHENTICATION_SEND_CODE_WINDOW = 30

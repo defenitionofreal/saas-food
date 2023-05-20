@@ -23,6 +23,6 @@ class LogoutAPIView(APIView):
             session.flush()
 
         response.data = {
-            "message": "success"
+            "detail": "success"
         }
         return response

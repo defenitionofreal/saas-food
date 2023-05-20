@@ -1,8 +1,5 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-
-from apps.base.models.sms import Sms
-
 from re import sub
 from enum import Enum
 from urllib.parse import quote
@@ -46,12 +43,12 @@ class SendSms(object):
         self.channel = channel
 
         user = get_user_model().objects.filter(phone=phone).first()
-        self.sms = Sms.objects.create(
-            recipient=user,
-            phone=phone,
-            sender=sender,
-            text=text,
-        )
+        # self.sms = Sms.objects.create(
+        #     recipient=user,
+        #     phone=phone,
+        #     sender=sender,
+        #     text=text,
+        # )
 
     def call(self):
         response = requests.get(self._validation_request_url()).json()

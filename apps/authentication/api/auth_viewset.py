@@ -5,9 +5,11 @@ from rest_framework import (exceptions, status, permissions)
 
 from django.contrib.auth import get_user_model
 
-from apps.base.serializers import UserSerializer, LoginObtainPairSerializer
+from apps.base.serializers import UserSerializer
 from apps.base.models import MessageLog
 from apps.base.models.enums import (LogTypes, LogStatus)
+
+from apps.authentication.serializers import LoginObtainPairSerializer
 from apps.authentication.models import VerificationCode
 from apps.authentication.services.create_verification_code import create_verification_code
 from apps.sms.services.sms_by_organization import SmsOrganizationHelper
