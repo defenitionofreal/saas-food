@@ -6,13 +6,14 @@ from django.http import Http404
 
 from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
+from apps.authentication.permissions import ConfirmedAccountPermission
 
 
 class InstitutionDetailAPIView(APIView):
     """
     Retrieve, update or delete a Institution instance.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
 
     def get_object(self, pk):
         try:
@@ -32,18 +33,20 @@ class InstitutionDetailAPIView(APIView):
         # костыль для того, чтобы на фронте оставить картинку по умолчанию
         # при редактирование информации так как передается строка в поле logo
         #TODO: работает с VUE, но через postman ошикба 'dict' object has no attribute '_mutable'
-        if type(request.data['logo']) is str:
-            request.data._mutable = True
+        if isinstance(request.data['logo'], str):
+            data_copy = request.data.copy()
             if request.data['logo'] == "null":
-                request.data['logo'] = None
+                data_copy['logo'] = None
                 institution.logo.delete()
             else:
-                request.data['logo'] = institution.logo
-            request.data._mutable = False
-
-        serializer = InstitutionSerializer(institution,
-                                           data=request.data,
-                                           context={"request": request})
+                data_copy['logo'] = institution.logo
+            serializer = InstitutionSerializer(
+                institution, data=data_copy, context={"request": request}
+            )
+        else:
+            serializer = InstitutionSerializer(
+                institution, data=request.data, context={"request": request}
+            )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

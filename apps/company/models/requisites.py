@@ -2,26 +2,36 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-# TODO: реквизиты присваиваются компании(user), а не филиалу
 class Requisites(models.Model):
     """
     Institution paying requisites
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="requisites")
+    user = models.ForeignKey(
+        "base.CustomUser",
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        blank=True,
+        related_name="requisites"
+    )
     name = models.CharField(max_length=255)
     inn = models.IntegerField()
     kpp = models.IntegerField()
     ogrn = models.IntegerField()
-    address = models.ForeignKey("location.Address", on_delete=models.SET_NULL,
-                                null=True, related_name="+")
+    address = models.ForeignKey(
+        "location.Address",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+"
+    )
     bank = models.CharField(max_length=255)
     bik = models.IntegerField()
     correspondent_account = models.IntegerField()
     checking_account = models.CharField(max_length=255)
-    phone = PhoneNumberField()  # списком
+    phone = PhoneNumberField()
     email = models.EmailField()
 
     def __str__(self):
-        return str(self.institution)
+        return str(self.user.email) if self.user.email else str(self.id)

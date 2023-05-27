@@ -5,4 +5,4 @@ from apps.company.models import Banner
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
     search_fields = ("title",)
-    autocomplete_fields = ("institution",)
+    autocomplete_fields = ("institutions",)

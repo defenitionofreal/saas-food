@@ -7,9 +7,16 @@ class Banner(models.Model):
     """
     Promo banners on the main page
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="banner")
+    user = models.ForeignKey(
+        "base.CustomUser",
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        blank=True,
+        related_name="banner"
+    )
     image = models.ImageField(upload_to=get_path_banner,
                               validators=[FileExtensionValidator(
                                   allowed_extensions=['jpg', 'jpeg', 'png'])])

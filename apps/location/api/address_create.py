@@ -6,8 +6,6 @@ from rest_framework import status
 from apps.location.serializers import AddressSerializer
 from apps.location.models import Address, AddressLink
 from apps.company.models import Institution
-from apps.company.services.compare_institution import (_find_wrong_inst_id,
-                                                       _check_duplicated_uuid)
 
 
 class AddressCreateAPIView(APIView):
@@ -23,20 +21,20 @@ class AddressCreateAPIView(APIView):
         address_link = AddressLink.objects.filter(user=user)
         data = request.data["institution"]
 
-        if data:
-            if _find_wrong_inst_id(data, institution.values_list('id',
-                                                                 flat=True)):
-                return Response({"detail": f"wrong institution id"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            if _check_duplicated_uuid(data,
-                                      address_link.values_list('institution',
-                                                               flat=True)):
-                return Response(
-                    {"detail": f"institution already has an address"},
-                    status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"detail": "institution is required"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        # if data:
+        #     if _find_wrong_inst_id(data, institution.values_list('id',
+        #                                                          flat=True)):
+        #         return Response({"detail": f"wrong institution id"},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        #     if _check_duplicated_uuid(data,
+        #                               address_link.values_list('institution',
+        #                                                        flat=True)):
+        #         return Response(
+        #             {"detail": f"institution already has an address"},
+        #             status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({"detail": "institution is required"},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
             serializer.save()

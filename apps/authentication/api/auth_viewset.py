@@ -1,7 +1,14 @@
+import datetime
+import uuid
+import logging
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import (exceptions, status, permissions)
+from rest_framework_simplejwt.tokens import (
+    BlacklistedToken, OutstandingToken, RefreshToken
+)
 
 from django.contrib.auth import get_user_model
 
@@ -18,6 +25,7 @@ from apps.company.models import Institution
 import re
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def validate_contact_input(input_str):
@@ -75,6 +83,8 @@ class AuthViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(is_organization=True)
 
+        logger.info("Organization successfully registered.")
+
         return Response(serializer.data, status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="login-organization")
@@ -102,6 +112,7 @@ class AuthViewSet(viewsets.ModelViewSet):
                                     httponly=True,
                                     samesite="None",
                                     secure="false")
+                logger.info("Organization successfully logged in.")
                 return response
 
         return Response({"detail": "Check data"},
@@ -155,6 +166,7 @@ class AuthViewSet(viewsets.ModelViewSet):
                 serializer = UserSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save(is_customer=True)
+                logger.info("Customer successfully registered by email.")
                 response = Response(serializer.data, status.HTTP_201_CREATED)
             else:
                 # customer login via email
@@ -179,6 +191,7 @@ class AuthViewSet(viewsets.ModelViewSet):
                                             httponly=True,
                                             samesite="None",
                                             secure="false")
+                        logger.info("Customer successfully logged in by email.")
 
         if validated_contact == "phone":
             # todo: Может разрешить авторизацию по телефону без подтверждения
@@ -199,6 +212,7 @@ class AuthViewSet(viewsets.ModelViewSet):
                 serializer = UserSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save(is_customer=True)
+                logger.info("Customer successfully registered by phone.")
                 response = Response(serializer.data, status.HTTP_201_CREATED)
             else:
                 # авторизовываю
@@ -217,8 +231,10 @@ class AuthViewSet(viewsets.ModelViewSet):
                         msg = f"Verification code: {verification.code}"
                         is_sent = sms_helper.send_sms(to_phone=str(user.phone), message=msg)
                         if is_sent:
+                            logger.info("Customer successfully sent verification code.")
                             response = Response({"detail": "Verification code is sent."}, status=status.HTTP_200_OK)
                     except Exception as e:
+                        logger.error(f"Customer phone auth error {e}")
                         response = Response({"detail": e}, status=400)
 
                 else:
@@ -234,9 +250,59 @@ class AuthViewSet(viewsets.ModelViewSet):
                                        httponly=True,
                                        samesite="None",
                                        secure="false")
+                        logger.info("Customer successfully logged in by phone.")
                         response = res
 
         return response
 
+    @action(detail=False, methods=["post"],
+            permission_classes=[permissions.IsAuthenticated])
+    def logout(self, request):
+        """
+        Base logout for organizations and customer.
+        """
+        access_token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
 
+        outstanding_token = OutstandingToken.objects.filter(token=access_token).first()
+        if not outstanding_token:
+            while True:
+                jti = str(uuid.uuid4())
+                if not OutstandingToken.objects.filter(jti=jti).exists():
+                    break
+            outstanding_token, _ = OutstandingToken.objects.get_or_create(
+                user=self.request.user,
+                jti=jti,
+                token=access_token,
+                created_at=datetime.datetime.now(),
+                expires_at=datetime.datetime.now()
+            )
 
+        black_token, created = BlacklistedToken.objects.get_or_create(token=outstanding_token)
+        if not created:
+            logger.warning(f"Logout invalid token by user {self.request.user.id}")
+            return Response({"detail": "Invalid token. Already at black list."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Invalidate Refresh Token
+        refresh_token = request.data.get('refresh', None)
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+                logger.info(f"Black list refresh token by user {self.request.user.id}")
+            except Exception as e:
+                logger.error(f"Black list refresh token error by user {self.request.user.id}: {e}")
+                return Response({'detail': str(e)},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        # # delete cart session
+        # session = self.request.session
+        # if session:
+        #     if settings.CART_SESSION_ID in session:
+        #         del session[settings.CART_SESSION_ID]
+        #     session.flush()
+
+        logger.info(f"Logout successfully by user {self.request.user.id}")
+
+        return Response({"detail": "Successfully logged out."},
+                        status=status.HTTP_200_OK)

@@ -8,7 +8,6 @@ from apps.product.serializers import CategorySerializer
 from apps.product.models import Category
 
 from apps.company.models import Institution
-from apps.company.services.compare_institution import _find_wrong_inst_id
 
 
 class CategoryDetailAPIView(APIView):
@@ -25,15 +24,15 @@ class CategoryDetailAPIView(APIView):
         return Response(serializer.data)
 
     def put(self, request, category_pk):
-        institution = Institution.objects.filter(user=self.request.user)
-        if request.data["institution"]:
-            if _find_wrong_inst_id(request.data["institution"],
-                                   institution.values_list('id', flat=True)):
-                return Response({"detail": f"wrong institution id"},
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"detail": "institution is required"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        # institution = Institution.objects.filter(user=self.request.user)
+        # if request.data["institution"]:
+        #     if _find_wrong_inst_id(request.data["institution"],
+        #                            institution.values_list('id', flat=True)):
+        #         return Response({"detail": f"wrong institution id"},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({"detail": "institution is required"},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
         query = get_object_or_404(Category.objects,
                                   user=self.request.user,

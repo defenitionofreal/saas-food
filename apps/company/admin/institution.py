@@ -21,5 +21,5 @@ class DesignAdmin(admin.ModelAdmin):
 
 @admin.register(ExtraPhone)
 class ExtraPhoneAdmin(admin.ModelAdmin):
-    list_display = ["id", "institution", "phone", "position"]
+    list_display = ["id", "phone", "position"]
     search_fields = ("id",)

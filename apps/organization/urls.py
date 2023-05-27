@@ -13,7 +13,7 @@ from apps.order.api.bonus_delete import BonusDetailAPIView
 app_name = 'organization'
 
 urlpatterns = [
-    path('institution/', include('apps.company.urls', namespace='company')),
+    path('', include('apps.company.urls', namespace='company')),
     path('', include('apps.delivery.urls', namespace='delivery')),
     path('', include('apps.product.urls', namespace='product')),
     path('', include('apps.location.urls', namespace='location')),

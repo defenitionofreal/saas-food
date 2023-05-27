@@ -5,7 +5,6 @@ from rest_framework import status
 
 from apps.delivery.models import DeliveryZone, DeliveryZoneСoordinates
 from apps.company.models import Institution
-from apps.company.services.compare_institution import _find_wrong_inst_id
 
 
 class DeliveryZoneCreateAPIView(APIView):
@@ -25,14 +24,14 @@ class DeliveryZoneCreateAPIView(APIView):
         delivery_time = request.data["delivery_time"]
         coordinates = request.data["coordinates"]
 
-        if request_institution:
-            if _find_wrong_inst_id(request_institution,
-                                   institution.values_list('id', flat=True)):
-                return Response({"detail": f"wrong institution id"},
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"detail": "institution is required"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        # if request_institution:
+        #     if _find_wrong_inst_id(request_institution,
+        #                            institution.values_list('id', flat=True)):
+        #         return Response({"detail": f"wrong institution id"},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({"detail": "institution is required"},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
         if not title:
             return Response({"detail": "title is required"},

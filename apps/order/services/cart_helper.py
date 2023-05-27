@@ -48,7 +48,7 @@ class CartHelper:
 
     def _cart_min_amount(self) -> int:
         """ cart minimum amount rule """
-        value = self.institution.min_cart_value.values_list("cost", flat=True)
+        value = self.institution.min_cart_cost.values_list("cost", flat=True)
         if value:
             return value[0]
         return 0

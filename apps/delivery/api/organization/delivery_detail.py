@@ -8,9 +8,6 @@ from apps.company.models import Institution
 from apps.delivery.serializers import DeliverySerializer
 from apps.delivery.models import Delivery
 
-from apps.company.services.compare_institution import (_find_wrong_inst_id,
-                                                       _check_duplicated_uuid)
-
 
 class DeliveryDetailAPIView(APIView):
     """
@@ -32,15 +29,15 @@ class DeliveryDetailAPIView(APIView):
                                   user=self.request.user,
                                   pk=delivery_pk)
 
-        if data:
-            if _find_wrong_inst_id(data, institution.values_list('id',
-                                                                 flat=True)):
-                return Response({"detail": f"wrong institution id"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            # TODO: разрешить менять тип но проверять если тип у других филиалов
-        else:
-            return Response({"detail": "institution is required"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        # if data:
+        #     if _find_wrong_inst_id(data, institution.values_list('id',
+        #                                                          flat=True)):
+        #         return Response({"detail": f"wrong institution id"},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        #     # TODO: разрешить менять тип но проверять если тип у других филиалов
+        # else:
+        #     return Response({"detail": "institution is required"},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
         serializer = DeliverySerializer(query, data=request.data)
         if serializer.is_valid():
