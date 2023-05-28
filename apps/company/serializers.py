@@ -1,7 +1,7 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from apps.company.models import (
     Institution, Design, Analytics, SocialLinks,
-    Requisites, WorkingHours, ExtraPhone, Banner, MinCartCost
+    Requisites, WorkHours, ExtraPhone, Banner, MinCartCost
 )
 from apps.company.services.validate_institution import validate_institution_list
 
@@ -112,12 +112,50 @@ class RequisitesSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class WorkingHoursSerializer(serializers.ModelSerializer):
-    """ Working Hours serializer """
+class WorkHoursSerializer(serializers.ModelSerializer):
+    """ Work Hours serializer """
 
     class Meta:
-        model = WorkingHours
-        exclude = ['institution']
+        model = WorkHours
+        fields = "__all__"
+        extra_kwargs = {'user': {'required': False}}
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        weekdays_data = validated_data.get("weekdays")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = WorkHours.objects.filter(user=user)
+
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+        # week day validation
+        existing_work_hours = WorkHours.objects.filter(
+            institutions__in=institutions_data,
+            weekdays__in=weekdays_data,
+            user=user
+        )
+        if existing_work_hours.exists():
+            raise exceptions.ValidationError(
+                {"detail": "Week days already relates with affiliate."}
+            )
+
+    def create(self, validated_data):
+        self.validate_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        instance.weekdays.clear()
+        self.validate_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class ExtraPhoneSerializer(serializers.ModelSerializer):

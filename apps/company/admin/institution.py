@@ -1,5 +1,7 @@
 from django.contrib import admin
-from apps.company.models import Institution, MinCartCost, Design, ExtraPhone
+from apps.company.models import (
+    Institution, MinCartCost, Design, ExtraPhone, WorkHours
+)
 
 
 @admin.register(Institution)
@@ -22,4 +24,10 @@ class DesignAdmin(admin.ModelAdmin):
 @admin.register(ExtraPhone)
 class ExtraPhoneAdmin(admin.ModelAdmin):
     list_display = ["id", "phone", "position"]
+    search_fields = ("id",)
+
+
+@admin.register(WorkHours)
+class WorkHoursAdmin(admin.ModelAdmin):
+    list_display = ["id", "title"]
     search_fields = ("id",)

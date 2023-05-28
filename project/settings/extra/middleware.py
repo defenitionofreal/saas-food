@@ -15,5 +15,6 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # toolbar
     'debug_toolbar_force.middleware.ForceDebugToolbarMiddleware', # ?debug-toolbar
     # custom fixme
-    'middlewares.jwt_refresh_to_body.MoveJWTRefreshCookieIntoTheBody'
+    'middlewares.jwt_refresh_to_body.MoveJWTRefreshCookieIntoTheBody',
+    'middlewares.default_models.CreateDefaultModelsMiddleware'
 ]

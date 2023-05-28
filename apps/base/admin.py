@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.base.models import CustomUser, MessageLog
+from apps.base.models import CustomUser, MessageLog, WeekDay
 from rest_framework_simplejwt.tokens import OutstandingToken
 
 
@@ -22,3 +22,9 @@ class MessageLogAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     list_display = ("id", "get_type", "get_status")
     readonly_fields = ("created_at",)
+
+
+@admin.register(WeekDay)
+class WeekDayAdmin(admin.ModelAdmin):
+    search_fields = ("id",)
+    list_display = ("id", "title", "position")

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from apps.base.models import WeekDay
 
 User = get_user_model()
 
@@ -40,3 +41,11 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance = super().update(instance, validated_data)
         return instance
+
+
+class WeekDaySerializer(serializers.ModelSerializer):
+    """ Week Day serializer """
+
+    class Meta:
+        model = WeekDay
+        fields = "__all__"
