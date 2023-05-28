@@ -3,16 +3,11 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# TODO: нужен ли institution если есть присваивание к modifier?
+
 class ModifierPrice(models.Model):
     """
     Modifier price of the product
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             null=True, blank=True)
-    institution = models.ManyToManyField("company.Institution",
-                                         related_name="modifiers_price",
-                                         blank=True)
     product = models.ForeignKey("product.Product", on_delete=models.CASCADE,
                                 related_name="modifiers_price")
     modifier = models.ForeignKey("product.Modifier", on_delete=models.CASCADE,

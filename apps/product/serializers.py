@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from apps.product.models import Category, Additive, Sticker, Modifier, \
-    ModifierPrice, Product, CategoryAdditive
+from apps.company.models import Institution
+from apps.company.serializers import InstitutionSerializer
+from apps.product.models import (
+    Category, Additive, Sticker, Modifier, ModifierPrice, Product,
+    CategoryAdditive
+)
+from apps.company.services.validate_institution import validate_institution_list
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -8,7 +13,31 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "institution", "title", "slug", "row", "is_active"]
+        fields = ["id", "institutions", "title", "slug", "row", "is_active"]
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Category.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class CategoryAdditiveSerializer(serializers.ModelSerializer):
@@ -16,7 +45,31 @@ class CategoryAdditiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CategoryAdditive
-        exclude = ['user']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = CategoryAdditive.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class AdditiveSerializer(serializers.ModelSerializer):
@@ -24,7 +77,31 @@ class AdditiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Additive
-        exclude = ['user']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Additive.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class StickerSerializer(serializers.ModelSerializer):
@@ -32,7 +109,31 @@ class StickerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sticker
-        exclude = ['user']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Sticker.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class ModifierSerializer(serializers.ModelSerializer):
@@ -56,16 +157,41 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        exclude = ['user']
+        fields = "__all__"
 
-    def validate_sticker(self, value):
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_stickers(self, value):
         """
-        Check that product could have
-        only not more than 3 stickers
+        Check that product could have only not more than 3 stickers
         """
         if len(value) > 3:
-            raise serializers.ValidationError("Maximum number should be 3")
+            raise serializers.ValidationError(
+                {"detail": "Maximum 3 stickers allowed."}
+            )
         return value
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Sticker.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         """

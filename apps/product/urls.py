@@ -1,52 +1,32 @@
-from django.urls import path
-from .api import (category_create,
-                  category_list,
-                  category_detail,
-                  additive_create,
-                  additive_list,
-                  additive_detail,
-                  sticker_create,
-                  sticker_list,
-                  sticker_detail,
-                  product_create,
-                  product_list,
-                  product_detail,
+from django.urls import path, include
+from .api import (
+    category_viewset, additive_category_viewset, additive_viewset,
+    sticker_viewset, product_viewset,
+
                   modifier_create,
                   modifier_list,
                   modifier_detail,
                   modifier_price_create,
                   modifier_price_list,
-                  modifier_price_detail,
-                  additive_cat_create,
-                  additive_cat_list,
-                  additive_cat_detail)
+                  modifier_price_detail)
+
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('categories', category_viewset.CategoryViewSet, basename='categories')
+router.register('additive-categories', additive_category_viewset.CategoryAdditiveViewSet, basename='additive_categories')
+router.register('additives', additive_viewset.AdditiveViewSet, basename='additives')
+router.register('stickers', sticker_viewset.StickerViewSet, basename='stickers')
+router.register('products', product_viewset.ProductViewSet, basename='products')
+
 
 
 app_name = 'product'
 
 urlpatterns = [
-   # for dashboard
+    path('', include(router.urls)),
 
-   # category
-   path('category/new/', category_create.CategoryCreateAPIView.as_view()),
-   path('category/list/', category_list.CategoryListAPIView.as_view()),
-   path('category/detail/<int:category_pk>/', category_detail.CategoryDetailAPIView.as_view()),
-   # additive
-   path('additive/new/', additive_create.AdditiveCreateAPIView.as_view()),
-   path('additive/list/', additive_list.AdditiveListAPIView.as_view()),
-   path('additive/detail/<int:additive_pk>/', additive_detail.AdditiveDetailAPIView.as_view()),
-   # additive category
-   path('additive/category/new/', additive_cat_create.CategoryAdditiveCreateAPIView.as_view()),
-   path('additive/category/list/', additive_cat_list.CategoryAdditiveListAPIView.as_view()),
-   path('additive/category/detail/<int:additive_cat_pk>/', additive_cat_detail.CategoryAdditiveDetailAPIView.as_view()),
-   # sticker
-   path('sticker/new/', sticker_create.StickerCreateAPIView.as_view()),
-   path('sticker/list/', sticker_list.StickerListAPIView.as_view()),
-   path('sticker/detail/<int:sticker_pk>/', sticker_detail.StickerDetailAPIView.as_view()),
-   # product
-   path('product/new/', product_create.ProductCreateAPIView.as_view()),
-   path('product/list/', product_list.ProductListAPIView.as_view()),
-   path('product/detail/<int:product_pk>/', product_detail.ProductDetailAPIView.as_view()),
+    # TODO: NutritionalValues and Weight models!!! NEW
    # modifier
    path('modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
    path('modifier/list/', modifier_list.ModifierListAPIView.as_view()),

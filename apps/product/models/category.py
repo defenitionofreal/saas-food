@@ -8,11 +8,15 @@ class Category(models.Model):
     """
     Category of institution
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             null=True, blank=True)
-    institution = models.ManyToManyField("company.Institution",
-                                         related_name="categories",
-                                         blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        related_name="categories",
+        blank=True
+    )
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     row = models.PositiveIntegerField(default=1)

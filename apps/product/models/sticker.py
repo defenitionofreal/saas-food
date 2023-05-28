@@ -10,9 +10,11 @@ class Sticker(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              null=True, blank=True)
-    institution = models.ManyToManyField("company.Institution",
-                                         related_name="stickers",
-                                         blank=True)
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        related_name="stickers",
+        blank=True
+    )
     title = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     color = models.CharField(max_length=20)
