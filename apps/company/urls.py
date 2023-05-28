@@ -25,8 +25,6 @@ router.register('week-days', week_day_viewset.WeekDayViewSet, basename='week_day
 router.register('work-hours', work_hours_viewset.WorkHoursViewSet, basename='work_hours')
 
 
-
-
 app_name = 'company'
 
 urlpatterns = [

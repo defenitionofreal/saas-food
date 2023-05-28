@@ -11,4 +11,5 @@ class SocialLinksViewSet(viewsets.ModelViewSet):
     serializer_class = SocialLinksSerializer
     permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
 
-    # todo: queryset для юзера, чтобы не видеть всех объектов, но есть связь только с филиалом
+    def get_queryset(self):
+        return self.queryset.filter(institution__user_id=self.request.user.id)
