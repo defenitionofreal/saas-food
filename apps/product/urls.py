@@ -1,11 +1,8 @@
 from django.urls import path, include
 from .api import (
     category_viewset, additive_category_viewset, additive_viewset,
-    sticker_viewset, product_viewset,
+    sticker_viewset, product_viewset, modifier_viewset,
 
-                  modifier_create,
-                  modifier_list,
-                  modifier_detail,
                   modifier_price_create,
                   modifier_price_list,
                   modifier_price_detail)
@@ -18,6 +15,8 @@ router.register('additive-categories', additive_category_viewset.CategoryAdditiv
 router.register('additives', additive_viewset.AdditiveViewSet, basename='additives')
 router.register('stickers', sticker_viewset.StickerViewSet, basename='stickers')
 router.register('products', product_viewset.ProductViewSet, basename='products')
+router.register('modifiers', modifier_viewset.ModifierViewSet, basename='modifiers')
+
 
 
 
@@ -26,11 +25,7 @@ app_name = 'product'
 urlpatterns = [
     path('', include(router.urls)),
 
-    # TODO: NutritionalValues and Weight models!!! NEW
-   # modifier
-   path('modifier/new/', modifier_create.ModifierCreateAPIView.as_view()),
-   path('modifier/list/', modifier_list.ModifierListAPIView.as_view()),
-   path('modifier/detail/<int:modifier_pk>/', modifier_detail.ModifierDetailAPIView.as_view()),
+    # TODO: Also NutritionalValues and Weight models!!! NEW
    # modifier price
    path('modifier/<int:modifier_pk>/price/new/', modifier_price_create.ModifierPriceCreateAPIView.as_view()),
    path('modifier/price/list/', modifier_price_list.ModifierPriceListAPIView.as_view()),

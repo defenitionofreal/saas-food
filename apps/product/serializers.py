@@ -3,9 +3,35 @@ from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
 from apps.product.models import (
     Category, Additive, Sticker, Modifier, ModifierPrice, Product,
-    CategoryAdditive
+    CategoryAdditive, Weight, NutritionalValue
 )
 from apps.company.services.validate_institution import validate_institution_list
+
+
+class WeightSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Weight
+        fields = "__all__"
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Additive.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -121,7 +147,7 @@ class StickerSerializer(serializers.ModelSerializer):
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
         institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Sticker.objects.filter(user=user)
+        instance_qs = Modifier.objects.filter(user=user)
         validate_institution_list(
             institutions_data, institution_qs, instance_qs
         )
@@ -141,7 +167,31 @@ class ModifierSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Modifier
-        exclude = ['user']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Additive.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class ModifierPriceSerializer(serializers.ModelSerializer):
