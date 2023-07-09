@@ -144,13 +144,19 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class CategoryAdditiveSerializer(serializers.ModelSerializer):
     """ Category Additive serializer """
+    additives_data = serializers.SerializerMethodField()
 
     class Meta:
         model = CategoryAdditive
         fields = "__all__"
 
+    def get_additives_data(self, instance):
+        qs = Additive.objects.filter(category=instance)
+        ser = AdditiveSerializer(qs, many=True)
+        return ser.data
+
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -182,7 +188,8 @@ class AdditiveSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        user = self.context["request"].user
+        qs = Institution.objects.filter(user=user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -241,9 +248,27 @@ class StickerSerializer(serializers.ModelSerializer):
 class ModifierSerializer(serializers.ModelSerializer):
     """ Modifier serializer """
 
+    price_data = serializers.SerializerMethodField()
+    weight_data = serializers.SerializerMethodField()
+    nutritional_data = serializers.SerializerMethodField()
+
     class Meta:
         model = Modifier
         fields = "__all__"
+
+    def get_price_data(self, instance):
+        qs = instance.modifiers_price.first()
+        data = ModifierPriceSerializer(qs).data
+        return data
+    def get_weight_data(self, instance):
+        qs = instance.weights.first()
+        data = WeightSerializer(qs).data
+        return data
+
+    def get_nutritional_data(self, instance):
+        qs = instance.nutritional_values.first()
+        data = NutritionalValueSerializer(qs).data
+        return data
 
     def get_institutions(self):
         qs = Institution.objects.filter(user=self.request.user)
@@ -321,10 +346,29 @@ class ModifierPriceSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     """ Product serializer """
+    additives = CategoryAdditiveSerializer(many=True, read_only=True)
+    modifiers = ModifierSerializer(many=True, read_only=True)
+    stickers = StickerSerializer(many=True, read_only=True)
+    nutritional_value = serializers.SerializerMethodField()
+    weight_value = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = "__all__"
+
+    def get_nutritional_value(self, instance):
+        qs = NutritionalValue.objects.filter(
+            product_id=instance.id, modifier__isnull=True
+        ).first()
+        data = NutritionalValueSerializer(qs).data if qs else None
+        return data
+
+    def get_weight_value(self, instance):
+        qs = Weight.objects.filter(
+            product_id=instance.id, modifier__isnull=True
+        ).first()
+        data = WeightSerializer(qs).data if qs else None
+        return data
 
     def get_institutions(self):
         qs = Institution.objects.filter(user=self.request.user)
@@ -360,25 +404,6 @@ class ProductSerializer(serializers.ModelSerializer):
         self.validate_institutions_data(validated_data)
         return super().update(instance, validated_data)
 
-    def to_representation(self, instance):
-        """
-        Return additives with nested dict of a
-        additive category and additives in it.
-        Also modifiers with the same logic.
-        """
-        rep = super(ProductSerializer, self).to_representation(instance)
-        rep['additives'] = [{cat.title: {i.title: i.price
-                                         for i in cat.category_additive.all()
-                                         if i.category.id == cat.id}}
-                            for cat in instance.additives.all()]
-        rep['modifiers'] = [
-            {"title": mod.title, "price": p.price}
-            for mod in instance.modifiers.all()
-            for p in mod.modifiers_price.all()
-            if p.product.id == instance.id and p.modifier.id == mod.id
-        ]
-        return rep
-
 
 class ProductListSerializer(serializers.ModelSerializer):
     """ Product list serializer """
@@ -388,7 +413,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         fields = ['id', 'institution', 'category', 'title', 'slug', 'price',
                   'old_price', 'sticker', 'row', 'images']
 
-    def validate_sticker(self, value):
+    def validate_stickers(self, value):
         """
         Check that product could have
         only not more than 3 stickers

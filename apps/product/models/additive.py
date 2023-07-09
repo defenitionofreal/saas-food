@@ -43,7 +43,7 @@ class Additive(models.Model):
         CategoryAdditive,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="category_additive")
+        related_name="additive_category")
     title = models.CharField(max_length=255)
     description = models.TextField()
     image = models.ImageField(upload_to=get_path_additive,
