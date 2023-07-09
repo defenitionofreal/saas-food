@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
 from apps.product.models import (
@@ -8,30 +10,104 @@ from apps.product.models import (
 from apps.company.services.validate_institution import validate_institution_list
 
 
+class NutritionalValueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = NutritionalValue
+        fields = "__all__"
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", None)
+        modifier = validated_data.get("modifier", None)
+
+        if modifier and modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance = NutritionalValue.objects.create(**validated_data)
+
+        return instance
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", instance.product)
+        modifier = validated_data.get("modifier", instance.modifier)
+
+        if modifier and modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance.modifier = modifier
+        instance.product = product
+        instance.protein = validated_data.get('protein', instance.protein)
+        instance.fats = validated_data.get('fats', instance.fats)
+        instance.carbohydrates = validated_data.get('carbohydrates', instance.carbohydrates)
+        instance.calories = validated_data.get('calories', instance.calories)
+        instance.save()
+
+        return instance
+
+
 class WeightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Weight
         fields = "__all__"
 
-    def validate_institutions_data(self, validated_data):
-        user = self.context["request"].user
-        validated_data["user"] = user
-        institutions_data = validated_data.get("institutions")
-        institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Additive.objects.filter(user=user)
-        validate_institution_list(
-            institutions_data, institution_qs, instance_qs
-        )
-
     def create(self, validated_data):
-        self.validate_institutions_data(validated_data)
-        return super().create(validated_data)
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", None)
+        modifier = validated_data.get("modifier", None)
+
+        if modifier and modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance = Weight.objects.create(**validated_data)
+
+        return instance
 
     def update(self, instance, validated_data):
-        instance.institutions.clear()
-        self.validate_institutions_data(validated_data)
-        return super().update(instance, validated_data)
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", instance.product)
+        modifier = validated_data.get("modifier", instance.modifier)
+
+        if modifier and modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance.modifier = modifier
+        instance.product = product
+        instance.weight_unit = validated_data.get('weight_unit', instance.weight_unit)
+        instance.weight = validated_data.get('weight', instance.weight)
+        instance.save()
+
+        return instance
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -199,7 +275,48 @@ class ModifierPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ModifierPrice
-        exclude = ['user']
+        fields = "__all__"
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", None)
+        modifier = validated_data.get("modifier", None)
+
+        if modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance = ModifierPrice.objects.create(**validated_data)
+
+        return instance
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        product_qs = Product.objects.filter(user=user)
+        product = validated_data.get("product", instance.product)
+        modifier = validated_data.get("modifier", instance.modifier)
+
+        if modifier.user != user:
+            raise ValidationError("Wrong modifier id.")
+
+        if not product:
+            raise ValidationError("Product is required.")
+
+        if product.id not in product_qs.values_list("id", flat=True):
+            raise ValidationError("Wrong product id.")
+
+        instance.modifier = modifier
+        instance.product = product
+        instance.price = validated_data.get('price', instance.price)
+        instance.save()
+
+        return instance
 
 
 class ProductSerializer(serializers.ModelSerializer):

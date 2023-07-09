@@ -6,10 +6,10 @@ from apps.product.models import Weight
 from apps.authentication.permissions import ConfirmedAccountPermission
 
 
-class AdditiveViewSet(viewsets.ModelViewSet):
+class WeightViewSet(viewsets.ModelViewSet):
     queryset = Weight.objects.all()
     serializer_class = WeightSerializer
     permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return self.queryset.filter(product__user=self.request.user)

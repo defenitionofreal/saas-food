@@ -2,7 +2,7 @@ from django.db import models
 
 
 class NutritionalValue(models.Model):
-    """ Nutritional value per 100 g """
+    """ Nutritional value per 100 g for a product or modified product """
     product = models.ForeignKey(
         "product.Product",
         on_delete=models.CASCADE,
