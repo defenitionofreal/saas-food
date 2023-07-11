@@ -4,14 +4,21 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# TODO: institution ManyToMany
+
 class PromoCode(models.Model):
     """
-    Promo code model for orders
+    Promo code model for orders. User is an owner not a customer.
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="promocode")
+    user = models.ForeignKey(
+        "base.CustomUser",
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        blank=True,
+        related_name="promocode"
+    )
     title = models.CharField(max_length=100)
     code_type = models.CharField(max_length=20, choices=SaleType.choices)
     code = models.CharField(max_length=10)

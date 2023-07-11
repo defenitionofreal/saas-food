@@ -5,6 +5,9 @@ def validate_institution_list(request_data, institution_qs, instance_qs, check_d
     """
     Validate institution data.
     Request list is requested data for institution field.
+
+    Check if affiliate id is valid and also has possibility to check
+    if affiliate is already related to some object.
     """
     if not request_data:
         raise ValidationError({"detail": "Request data is required."})

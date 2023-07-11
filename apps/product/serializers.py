@@ -230,7 +230,7 @@ class StickerSerializer(serializers.ModelSerializer):
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
         institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Modifier.objects.filter(user=user)
+        instance_qs = Sticker.objects.filter(user=user)
         validate_institution_list(
             institutions_data, institution_qs, instance_qs
         )
@@ -280,7 +280,7 @@ class ModifierSerializer(serializers.ModelSerializer):
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
         institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Additive.objects.filter(user=user)
+        instance_qs = Modifier.objects.filter(user=user)
         validate_institution_list(
             institutions_data, institution_qs, instance_qs
         )
@@ -390,7 +390,7 @@ class ProductSerializer(serializers.ModelSerializer):
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
         institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Sticker.objects.filter(user=user)
+        instance_qs = Product.objects.filter(user=user)
         validate_institution_list(
             institutions_data, institution_qs, instance_qs
         )

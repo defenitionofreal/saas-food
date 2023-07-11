@@ -1,5 +1,8 @@
 from rest_framework import serializers
 
+from apps.company.models import Institution
+from apps.company.serializers import InstitutionSerializer
+from apps.company.services.validate_institution import validate_institution_list
 from apps.order.models import Cart, CartItem, PromoCode, Bonus, UserBonus
 from apps.order.services.bonus_helper import BonusHelper
 from apps.delivery.serializers import DeliveryInfoCustomerSerializer
@@ -100,11 +103,35 @@ class UserBonusSerializer(serializers.ModelSerializer):
 
 
 class PromoCodeSerializer(serializers.ModelSerializer):
-    """Serializer for the promo code (Coupon) model."""
+    """ Serializer for the promo code (Coupon) model. """
 
     class Meta:
         model = PromoCode
-        exclude = ['institution']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.context["request"].user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = PromoCode.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
 
 
 class BonusSerializer(serializers.ModelSerializer):
