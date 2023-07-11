@@ -135,8 +135,32 @@ class PromoCodeSerializer(serializers.ModelSerializer):
 
 
 class BonusSerializer(serializers.ModelSerializer):
-    """Serializer for the Bonus"""
+    """ Serializer for the Bonus """
 
     class Meta:
         model = Bonus
-        exclude = ['institution']
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.context["request"].user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Bonus.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)

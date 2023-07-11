@@ -3,15 +3,22 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# TODO: institution ManyToMany
+
 class Bonus(models.Model):
     """
-    Model for a organization
+    Model for an organization
     Where organization set there rules for a client
     """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="bonuses")
+    user = models.ForeignKey(
+        "base.CustomUser",
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        blank=True,
+        related_name="bonuses"
+    )
     is_active = models.BooleanField(default=False)
     write_off = models.PositiveIntegerField()  # %
     accrual = models.PositiveIntegerField()  # %
