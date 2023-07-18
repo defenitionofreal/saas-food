@@ -27,14 +27,14 @@ class PhoneVerificationCodeView(APIView):
         phone = str(request.data.get('phone'))
         user = User.objects.filter(phone=phone).first()
         if not user:
-            raise ValidationError("Phone not found.")
+            raise ValidationError({"detail": "Phone not found."})
 
         time = timezone.now() - timedelta(minutes=30)
         verification_qs = VerificationCode.objects.filter(
             phone=str(user.phone), created_at__gte=time
         )
         if verification_qs.count() >= 3:
-            raise ValidationError("Try again after 30 minutes.")
+            raise ValidationError({"detail": "Try again after 30 minutes."})
 
         try:
             verification, _ = VerificationCode.objects.get_or_create(
@@ -52,8 +52,7 @@ class PhoneVerificationCodeView(APIView):
                     status=LogStatus.SUCCESS,
                     content=f"Phone {str(user.phone)} verification code:\n {verification.code}"
                 )
-                return Response({"status": "success",
-                                 "message": "Code successfully send"},
+                return Response({"detail": "Code successfully send"},
                                 status=status.HTTP_200_OK)
 
             MessageLog.objects.create(

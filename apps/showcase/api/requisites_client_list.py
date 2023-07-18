@@ -10,6 +10,6 @@ class RequisitesClientListAPIView(APIView):
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
-        query = Requisites.objects.filter(institution=institution)
+        query = Requisites.objects.filter(institutions=institution)
         serializer = RequisitesSerializer(query, many=True)
         return Response(serializer.data)

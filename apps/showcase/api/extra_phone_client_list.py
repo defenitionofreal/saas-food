@@ -10,6 +10,6 @@ class ExtraPhoneClientListAPIView(APIView):
 
     def get(self, request, domain):
         institution = Institution.objects.get(domain=domain)
-        query = ExtraPhone.objects.filter(institution=institution)
+        query = ExtraPhone.objects.filter(institutions=institution)
         serializer = ExtraPhoneSerializer(query, many=True)
         return Response(serializer.data)

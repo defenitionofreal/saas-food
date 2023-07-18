@@ -370,11 +370,6 @@ class ProductSerializer(serializers.ModelSerializer):
         data = WeightSerializer(qs).data if qs else None
         return data
 
-    def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
-        serializer = InstitutionSerializer(instance=qs, many=True)
-        return serializer.data
-
     def validate_stickers(self, value):
         """
         Check that product could have only not more than 3 stickers
@@ -403,21 +398,3 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.institutions.clear()
         self.validate_institutions_data(validated_data)
         return super().update(instance, validated_data)
-
-
-class ProductListSerializer(serializers.ModelSerializer):
-    """ Product list serializer """
-
-    class Meta:
-        model = Product
-        fields = ['id', 'institution', 'category', 'title', 'slug', 'price',
-                  'old_price', 'sticker', 'row', 'images']
-
-    def validate_stickers(self, value):
-        """
-        Check that product could have
-        only not more than 3 stickers
-        """
-        if len(value) > 3:
-            raise serializers.ValidationError("Maximum number should be 3")
-        return value

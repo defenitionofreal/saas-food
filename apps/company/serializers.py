@@ -14,7 +14,7 @@ class DesignSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -121,7 +121,7 @@ class WorkHoursSerializer(serializers.ModelSerializer):
         extra_kwargs = {'user': {'required': False}}
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 

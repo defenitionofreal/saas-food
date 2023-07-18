@@ -19,5 +19,3 @@ urlpatterns = [
     path('', include('apps.product.urls', namespace='product')),
     path('', include('apps.location.urls', namespace='location')),
 ]
-
-# TODO: можно двигаться к действиям покупателя или модулю доставки!

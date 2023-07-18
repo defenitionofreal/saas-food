@@ -14,6 +14,11 @@ class ExtraPhone(models.Model):
         blank=True,
         related_name="extra_phone"
     )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
     phone = PhoneNumberField()
     position = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True)
