@@ -1,16 +1,16 @@
 from django.urls import path, include
 from apps.showcase.api import (
-                               analytics_client_list,
-                               design_client_detail,
-                               social_links_client_list,
-                               extra_phone_client_list,
-                               working_hours_client_list,
-                               requisites_client_list,
-                               delivery_client_list,
-                               address_list,
-                               delivery_zone_list,
-                               payment_type_list,
-                               queue_screen)
+    analytics,
+    design,
+    social_links,
+    extra_phone_client_list,
+    work_hours_viewset,
+    requisites,
+    delivery_client_list,
+    address_list,
+    delivery_zone_list,
+    payment_type_list,
+    queue_screen)
 
 from apps.showcase.api import (menu_viewset, category_viewset, banners_viewset)
 
@@ -22,25 +22,22 @@ router = DefaultRouter()
 router.register('menu', menu_viewset.MenuViewSet, basename='menu')
 router.register('categories', category_viewset.CategoryViewSet, basename='categories')
 router.register('banners', banners_viewset.BannerViewSet, basename='banners')
+router.register('work-hours', work_hours_viewset.WorkHoursViewSet, basename='work-hours')
 
 
 app_name = 'showcase'
 
 urlpatterns = [
     path('<str:domain>/', include(router.urls)),
-
-
     # queue screen
-    path('<str:domain>/queue/', queue_screen.QueueScreenAPIView.as_view()),
+    path('<str:domain>/queue/', queue_screen.QueueScreenAPIView.as_view()),  # todo: клиент должен выдеть очередь заказов среди активных заказов которые в процессе и которые готовы и при этотм видеть свой заказ и его статус
     # main page
-    path('<str:domain>/analytics/', analytics_client_list.AnalyticsClientListAPIView.as_view()), # todo detail
-    path('<str:domain>/design/', design_client_detail.DesignClientDetailAPIView.as_view()),
+    path('<str:domain>/analytics/', analytics.AnalyticsAPIView.as_view()),
+    path('<str:domain>/design/', design.DesignAPIView.as_view()),
     # company info
-    path('<str:domain>/social-links/', social_links_client_list.SocialLinksClientListAPIView.as_view()),  # todo detail
+    path('<str:domain>/social-links/', social_links.SocialLinksAPIView.as_view()),
     path('<str:domain>/extra-phones/', extra_phone_client_list.ExtraPhoneClientListAPIView.as_view()),
-    path('<str:domain>/work-hours/', working_hours_client_list.WorkHoursClientListAPIView.as_view()),  # todo определять текущий день с днем рабочим
-    path('<str:domain>/requisites/', requisites_client_list.RequisitesClientListAPIView.as_view()),  # todo detail
-
+    path('<str:domain>/requisites/', requisites.RequisitesAPIView.as_view()),
     # order (cart) detail/add/delete
     path('<str:domain>/order/', include('apps.order.urls', namespace='order')),
     # payment

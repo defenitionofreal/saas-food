@@ -370,6 +370,24 @@ class ProductSerializer(serializers.ModelSerializer):
         data = WeightSerializer(qs).data if qs else None
         return data
 
+    def validate(self, data):
+        """
+        Check that the slug is unique for each institution.
+        """
+        slug = data.get("slug")
+        institutions_data = data.get("institutions", [])
+        msg = {"detail": "A product with this slug already exists."}
+        if not self.instance:
+            for institution in institutions_data:
+                if Product.objects.filter(slug=slug, institutions__id=institution.id).exists():
+                    raise ValidationError(msg)
+        else:
+            existing_institutions = set(self.instance.institutions.values_list("id", flat=True))
+            for institution in institutions_data:
+                if institution not in existing_institutions and Product.objects.filter(slug=slug, institutions__id=institution.id).exists():
+                    raise ValidationError(msg)
+        return data
+
     def validate_stickers(self, value):
         """
         Check that product could have only not more than 3 stickers

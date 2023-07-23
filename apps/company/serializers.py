@@ -1,9 +1,46 @@
 from rest_framework import serializers, exceptions
 from apps.company.models import (
-    Institution, Design, Analytics, SocialLinks,
-    Requisites, WorkHours, ExtraPhone, Banner, MinCartCost
+    Institution, Design, Analytics, SocialLinks, Requisites, WorkHours,
+    ExtraPhone, Banner, MinCartCost, OrganizationTimeZone
 )
 from apps.company.services.validate_institution import validate_institution_list
+
+
+class TimeZoneListSerializer(serializers.Serializer):
+    timezone = serializers.ListSerializer(child=serializers.CharField())
+
+
+class OrganizationTimeZoneSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = OrganizationTimeZone
+        fields = "__all__"
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = OrganizationTimeZone.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs, check_duplicate=True
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        kwargs["user"] = user
+        return super().save(**kwargs)
+
 
 
 class DesignSerializer(serializers.ModelSerializer):

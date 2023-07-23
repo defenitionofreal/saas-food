@@ -6,6 +6,10 @@ from apps.product.models import Product, Sticker
 from apps.product.serializers import ProductSerializer, CategorySerializer
 
 
+class OpenHoursSerializer(serializers.Serializer):
+    is_open = serializers.BooleanField()
+
+
 class SimpleInstitutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Institution

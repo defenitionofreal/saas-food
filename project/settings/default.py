@@ -1,4 +1,5 @@
 from project.settings.extra.main import *
+from project.settings.extra.cache import *
 from project.settings.extra.debug_toolbar import *
 from project.settings.extra.middleware import *
 from project.settings.extra.email import *

@@ -2,7 +2,7 @@ from .api import (
     institution_viewset, design_viewset, analytics_viewset,
     social_links_viewset, requisites_viewset, banner_viewset,
     extra_phone_viewset, min_cart_cost_viewset, week_day_viewset,
-    work_hours_viewset,
+    work_hours_viewset, timezone_viewset,
                   dashboard,
                   geocoding,
                   orders_list,
@@ -23,6 +23,7 @@ router.register('extra-phones', extra_phone_viewset.ExtraPhoneViewSet, basename=
 router.register('cart-cost', min_cart_cost_viewset.MinCartCostViewSet, basename='cart_cost')
 router.register('week-days', week_day_viewset.WeekDayViewSet, basename='week_days')
 router.register('work-hours', work_hours_viewset.WorkHoursViewSet, basename='work_hours')
+router.register('time-zones', timezone_viewset.OrganizationTimeZoneViewSet, basename='time-zones')
 
 
 app_name = 'company'
