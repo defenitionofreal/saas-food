@@ -231,7 +231,7 @@ class Cart(models.Model):
 
     @property
     def get_bonus_accrual(self):
-        bonus = Bonus.objects.get(institution=self.institution)
+        bonus = Bonus.objects.get(institutions=self.institution)
         if bonus.is_active:
             if bonus.is_promo_code is True:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)

@@ -2,7 +2,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'middlewares.session.CreateSessionKeyMiddleware',
+    # 'middlewares.session.CreateSessionKeyMiddleware',
 
     'corsheaders.middleware.CorsMiddleware',  # corsheaders
 

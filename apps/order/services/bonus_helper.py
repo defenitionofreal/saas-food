@@ -13,11 +13,11 @@ class BonusHelper:
         self.amount = amount
         self.cart = cart
         self.user = user
-        self.bonus_rule = Bonus.objects.get(institution=self.cart.institution)
+        self.bonus_rule = Bonus.objects.get(institutions=self.cart.institution)
 
     def _is_cart_has_bonuses(self):
         """
-        if user didnt write off any bonuses yet check
+        if user didn't write off any bonuses yet check
         """
         if self.cart.customer_bonus is None:
             return True

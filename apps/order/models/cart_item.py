@@ -24,7 +24,6 @@ class CartItem(models.Model):
                                        blank=True)
     quantity = models.PositiveIntegerField(default=1)
     item_hash = models.CharField(max_length=255,
-                                 unique=True,
                                  blank=True,
                                  null=True)
 
@@ -32,16 +31,16 @@ class CartItem(models.Model):
         return f'{self.item}, {self.quantity}'
 
     @property
-    def get_product_price(self):
+    def get_item_price(self):
         price = self.item.price
         if self.modifier:
             price = self.modifier.price
-        price += sum(additive.price for additive in self.additives.all())
+        price += sum(additive.price for additive in self.additives.only("price"))
         return price
 
     @property
     def get_total_item_price(self):
-        product_price = self.get_product_price
+        product_price = self.get_item_price
         quantity = self.quantity
         total_price = (product_price * quantity)
         return Decimal(total_price)

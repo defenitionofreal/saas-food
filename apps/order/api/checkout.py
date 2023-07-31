@@ -110,7 +110,7 @@ class CheckoutAPIView(APIView):
                     for cart_item in order.items.all():
                         item_dict = {
                             "title": cart_item.item.title,
-                            "price": cart_item.get_product_price,
+                            "price": cart_item.get_item_price,
                             "quantity": cart_item.quantity,
                             "description": f"{cart_item.modifier.modifier.title if cart_item.modifier else ''}"
                                            f"{cart_item.additives.values_list('title', flat=True)}"

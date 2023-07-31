@@ -28,7 +28,7 @@ class Bonus(models.Model):
     registration_bonus = models.PositiveIntegerField(blank=True, null=True)  # $
 
     def __str__(self):
-        return f'{self.institution.domain} - write off: {self.write_off} / accrual: {self.accrual}'
+        return f'{self.user.email} - write off: {self.write_off} / accrual: {self.accrual}'
 
 
 class UserBonus(models.Model):

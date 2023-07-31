@@ -7,6 +7,7 @@ from apps.order.models import (
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
     search_fields = ("id",)
+    list_display = ("id",)
 
 
 @admin.register(CartItem)

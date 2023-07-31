@@ -20,4 +20,5 @@ urlpatterns = [
     path('verification/phone/', PhoneVerificationCodeView.as_view()),
     path('confirmation/phone/', PhoneConfirmationCodeView.as_view()),
     path('token/refresh/', TokenRefreshView.as_view())  # refresh from cookie
+    # todo: pass reset
 ]

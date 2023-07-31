@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.showcase.serializers import SimpleInstitutionSerializer
 from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
 from apps.company.services.validate_institution import validate_institution_list
@@ -13,18 +14,21 @@ class ItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ("id", "cart", "item", "modifier", "additives", "quantity",
-                  "get_product_price", "get_total_item_price", "item_hash")
+                  "get_item_price", "get_total_item_price", "item_hash")
 
 
 class CartSerializer(serializers.ModelSerializer):
     """Serializer for the Cart model."""
 
-    items = ItemsSerializer(read_only=True, many=True)
+
+    institution = SimpleInstitutionSerializer(read_only=True, many=False)
+    items = serializers.SerializerMethodField(read_only=True)
+
     #delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
     max_bonus_write_off = serializers.SerializerMethodField()
-    institution = serializers.SerializerMethodField()
     customer_info = serializers.SerializerMethodField()
     delivery_info = serializers.SerializerMethodField()
+    # todo: nested inst ser and others, not serializer method!
 
     class Meta:
         model = Cart
@@ -41,12 +45,17 @@ class CartSerializer(serializers.ModelSerializer):
             "paid"
         )
 
+    def get_items(self, instance) -> ItemsSerializer:
+        items = instance.products_cart.all()
+        serializer = ItemsSerializer(items, read_only=True, many=True)
+        return serializer.data
+
     def get_max_bonus_write_off(self, instance):
         bonus = BonusHelper(0, instance, instance.customer)
         return bonus.max_write_off_amount()
 
-    def get_institution(self, instance):
-        return instance.institution.title
+    # def get_institution(self, instance):
+    #     return instance.institution.title
 
     def get_customer_info(self, instance):
         customer_info = {

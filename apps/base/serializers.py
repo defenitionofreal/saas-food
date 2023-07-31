@@ -49,3 +49,8 @@ class WeekDaySerializer(serializers.ModelSerializer):
     class Meta:
         model = WeekDay
         fields = "__all__"
+
+
+class SessionSerializer(serializers.Serializer):
+    session_id = serializers.CharField(read_only=True)
+    max_age = serializers.CharField(read_only=True)
