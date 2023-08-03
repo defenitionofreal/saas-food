@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 
 from apps.company.models import Institution
 from apps.order.serializers import CartSerializer
-from apps.order.models import Cart, PromoCode
+from apps.order.models import Cart, PromoCode, PromoCodeUser
 
 from apps.order.models.enums.order_status import OrderStatus
 from apps.order.services.cart_helper import CartHelper
@@ -76,7 +76,35 @@ class CartViewSet(viewsets.ModelViewSet):
     def add_coupon(self, request, *args, **kwargs):
         domain = self.kwargs.get('domain')
         institution = Institution.objects.get(domain=domain)
-        # code = self.request.data.get("code", None)
-        # code = get_object_or_404(PromoCode, code=code, institutions=institution)
-        # helper = CartHelper(request, institution)
-        # return helper.add_coupon(code)
+        code = self.request.data.get("code", None)
+        code = get_object_or_404(PromoCode, code=code, institutions=institution)
+        helper = CartHelper(request, institution)
+        helper.add_coupon(code)
+        cart = helper.get_cart()
+        serializer = self.get_serializer(
+            cart, many=False, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="remove-coupon")
+    def remove_coupon(self, request, *args, **kwargs):
+        domain = self.kwargs.get('domain')
+        institution = Institution.objects.get(domain=domain)
+        helper = CartHelper(request, institution)
+        cart = helper.get_cart()
+        coupon = cart.promo_code
+        if coupon:
+            user_coupon = PromoCodeUser.objects.get(
+                code_id=coupon.id, user_id=cart.customer.id
+            )
+            user_coupon.num_uses -= 1
+            user_coupon.save()
+            coupon.num_uses -= 1
+            coupon.save()
+            cart.promo_code = None
+            cart.save()
+
+        serializer = self.get_serializer(
+            cart, many=False, context={"request": request}
+        )
+        return Response(serializer.data)

@@ -370,7 +370,7 @@ class ProductSerializer(serializers.ModelSerializer):
         data = WeightSerializer(qs).data if qs else None
         return data
 
-    def validate(self, data):
+    def slug_validation(self, data):
         """
         Check that the slug is unique for each institution.
         """
@@ -386,7 +386,7 @@ class ProductSerializer(serializers.ModelSerializer):
             for institution in institutions_data:
                 if institution not in existing_institutions and Product.objects.filter(slug=slug, institutions__id=institution.id).exists():
                     raise ValidationError(msg)
-        return data
+        # return data
 
     def validate_stickers(self, value):
         """
@@ -399,6 +399,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return value
 
     def validate_institutions_data(self, validated_data):
+        self.slug_validation(validated_data)
         user = self.context["request"].user
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
@@ -416,3 +417,40 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.institutions.clear()
         self.validate_institutions_data(validated_data)
         return super().update(instance, validated_data)
+
+
+# Simple Serializers
+
+class SimpleModifierSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Modifier
+        fields = ["title"]
+
+
+class SimpleModifierPriceSerializer(serializers.ModelSerializer):
+    modifier_title = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = ModifierPrice
+        fields = ["modifier_title", "price"]
+
+    def get_modifier_title(self, instance) -> SimpleModifierSerializer:
+        modifier = instance.modifier
+        serializer = SimpleModifierSerializer(modifier, read_only=True)
+        return serializer.data
+
+
+class SimpleCategoryAdditiveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CategoryAdditive
+        fields = ["title"]
+
+
+class SimpleAdditiveSerializer(serializers.ModelSerializer):
+    category = SimpleCategoryAdditiveSerializer(read_only=True)
+
+    class Meta:
+        model = Additive
+        fields = ["category", "title", "price"]

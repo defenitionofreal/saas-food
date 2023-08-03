@@ -26,7 +26,6 @@ class PromoCodeAdmin(admin.ModelAdmin):
 class PromoCodeUserAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     list_display = ("id", "user", "code", "num_uses")
-    fields = ("code", "user")
     readonly_fields = ("num_uses",)
 
 

@@ -51,11 +51,9 @@ class Cart(models.Model):
                                    related_name="cart_promo_code",
                                    null=True,
                                    blank=True)
-    customer_bonus = models.PositiveIntegerField(blank=True,
-                                                 null=True)
+    customer_bonus = models.PositiveIntegerField(default=0)
     # order min amount rule
-    min_amount = models.PositiveIntegerField(blank=True,
-                                             null=True)
+    min_amount = models.PositiveIntegerField(default=0)
 
     # user info part
     name = models.CharField(max_length=255, default="имя")
@@ -86,26 +84,29 @@ class Cart(models.Model):
     paid = models.BooleanField(default=False)
 
     @property
-    def get_total_cart(self):
-        total = sum([i.get_total_item_price for i in self.products_cart.all()]) \
-            if self.products_cart.all() else 0
+    def get_total_cart(self) -> int:
+        total = sum(
+            [i.get_total_item_price for i in self.products_cart.all()]
+        ) if self.products_cart.all() else 0
         return total
 
     @property
-    def get_delivery_price(self):
-        if self.delivery is not None:
-            if self.delivery.type.delivery_price:
-                return self.delivery.type.delivery_price
+    def get_delivery_price(self) -> int:
+        price = 0
+        if self.delivery and self.delivery.type.delivery_price:
+            price = self.delivery.type.delivery_price
+        return price
 
     @property
-    def get_free_delivery_amount(self):
-        if self.delivery is not None:
-            if self.delivery.type.free_delivery_amount:
-                return self.delivery.type.free_delivery_amount
+    def get_free_delivery_amount(self) -> int:
+        amount = 0
+        if self.delivery and self.delivery.type.free_delivery_amount:
+            amount = self.delivery.type.free_delivery_amount
+        return amount
 
     @property
-    def get_delivery_sale(self):
-        if self.delivery is not None:
+    def get_delivery_sale(self) -> int:
+        if self.delivery:
             delivery_sale = self.delivery.type.sale_amount
             total = self.get_total_cart
             with_sale = self.get_total_cart_after_sale
@@ -116,15 +117,17 @@ class Cart(models.Model):
                     return delivery_sale
                 if self.delivery.type.sale_type == "percent":
                     return round((delivery_sale / Decimal('100')) * total)
-        return None
+        return 0
 
     @property
-    def get_min_delivery_order_amount(self):
-        if self.delivery is not None:
-            return self.delivery.type.min_order_amount
+    def get_min_delivery_order_amount(self) -> int:
+        amount = 0
+        if self.delivery:
+            amount = self.delivery.type.min_order_amount
+        return amount
 
     @property
-    def get_delivery_zone(self):
+    def get_delivery_zone(self) -> dict:
         zones = self.institution.dz.filter(is_active=True)
         if zones.exists() and self.delivery.type.delivery_type == DeliveryType.COURIER:
             for zone in zones:
@@ -140,14 +143,13 @@ class Cart(models.Model):
                             "free_delivery_amount": zone.free_delivery_amount,
                             "min_order_amount": zone.min_order_amount,
                             "delivery_time": zone.delivery_time}
-        return None
+        return {}
 
     @property
-    def delivery_cost(self):
+    def delivery_cost(self) -> int:
         cost = self.get_delivery_price
-        if self.delivery.type.free_delivery_amount:
-            if self.get_total_cart_after_sale > self.delivery.type.free_delivery_amount:
-                cost = 0
+        if self.delivery.type.free_delivery_amount and self.get_total_cart_after_sale > self.delivery.type.free_delivery_amount:
+            cost = 0
 
         if self.get_delivery_zone:
             cost = self.get_delivery_zone["price"]
@@ -161,13 +163,14 @@ class Cart(models.Model):
         return cost
 
     @property
-    def get_sale(self):
+    def get_sale(self) -> int:
+        final_sale = 0
         if self.promo_code:
-            count_sale = 0
+            amount_for_sale = 0
             sale = self.promo_code.sale
             coupon_categories = self.promo_code.categories.all()
             coupon_products = self.promo_code.products.all()
-            cart_items = self.items.only("item", "quantity", "modifier", "additives")
+            cart_items = self.products_cart.only("item", "quantity", "modifier", "additives")
 
             # print("CART ITEMS QS", cart_items) # fixme: repeats 5 times!
 
@@ -177,13 +180,13 @@ class Cart(models.Model):
                     products = cat.products.filter(is_active=True).only("id")
                     for product, cart_item in itertools.product(products, cart_items):
                         if product.id == cart_item.item.id:
-                            count_sale += cart_item.get_total_item_price
+                            amount_for_sale += cart_item.get_total_item_price
 
             # only still products
             if coupon_products and not coupon_categories:
                 for product, cart_item in itertools.product(coupon_products, cart_items):
                     if product.id == cart_item.item.id:
-                        count_sale += cart_item.get_total_item_price
+                        amount_for_sale += cart_item.get_total_item_price
 
             # categories and products together
             if coupon_products and coupon_categories:
@@ -194,11 +197,11 @@ class Cart(models.Model):
                 coupon_items = list(set(coupon_items))
                 matching_items = cart_items.filter(item_id__in=coupon_items)
                 for cart_item in matching_items:
-                    count_sale += cart_item.get_total_item_price
+                    amount_for_sale += cart_item.get_total_item_price
 
             # no cats and no products, so look to the cart total
             if not coupon_products and not coupon_categories:
-                count_sale = self.get_total_cart
+                amount_for_sale = self.get_total_cart
 
             if self.promo_code.code_type == 'absolute':
                 # simple rule withdraw sale amount from total cart
@@ -212,51 +215,49 @@ class Cart(models.Model):
             if self.promo_code.code_type == 'percent':
                 # sale percentage of the amount from all products
                 # included in the coupon rule
-                final_sale = round((sale / Decimal('100')) * count_sale)
+                final_sale = round((sale / Decimal('100')) * amount_for_sale)
                 return final_sale
 
-        return None
+        return final_sale
 
     @property
-    def get_total_cart_after_sale(self):
+    def get_total_cart_after_sale(self) -> float:
         total = self.get_total_cart
         sale = 0
-        if self.get_sale is not None:
+        if self.get_sale:
             sale = self.get_sale
-        if self.customer_bonus is not None:
-            bonus = Bonus.objects.get(institution=self.institution)
-            if bonus.is_active and bonus.is_promo_code is True:
+        if self.customer_bonus > 0:
+            bonus = Bonus.objects.get(institutions=self.institution)
+            if bonus.is_active and bonus.is_promo_code:
                 return total - (sale + self.customer_bonus)
         return total - sale
 
     @property
     def get_bonus_accrual(self):
         bonus = Bonus.objects.get(institutions=self.institution)
+        total_accrual = 0
         if bonus.is_active:
             if bonus.is_promo_code is True:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
             else:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
-            return total_accrual
+        return total_accrual
 
     @property
-    def final_price(self):
-        total = self.get_total_cart
-        with_sale = self.get_total_cart_after_sale
-        if with_sale:
-            total = with_sale
+    def final_price(self) -> float:
+        total = self.get_total_cart_after_sale
 
         # minus bonus points from total
-        if self.customer_bonus is not None:
-            bonus = Bonus.objects.get(institution=self.institution)
-            if bonus.is_active and bonus.is_promo_code is False:
+        if self.customer_bonus > 0:
+            bonus = Bonus.objects.get(institutions=self.institution)
+            if bonus.is_active and not bonus.is_promo_code:
                 return total - self.customer_bonus
 
-        if self.delivery is not None:
+        if self.delivery:
             delivery_price = self.delivery.type.delivery_price
             free_delivery_amount = self.delivery.type.free_delivery_amount
 
-            if self.promo_code and self.promo_code.delivery_free is True:
+            if self.promo_code and self.promo_code.delivery_free:
                 total = total
             else:
                 # check for courier type and delivery zone
@@ -278,7 +279,7 @@ class Cart(models.Model):
                 if delivery_sale:
                     total -= delivery_sale
 
-        return total
+        return Decimal("1") if total == 0 else total
 
     def __str__(self):
         return f'{self.id}: {self.institution}, {self.customer}, ' \

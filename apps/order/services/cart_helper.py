@@ -1,14 +1,11 @@
 # core
-from django.conf import settings
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 # apps
 from apps.delivery.models import DeliveryInfo
-from apps.order.services.generate_cart_key import _generate_cart_key
 from apps.order.models import Cart, CartItem
 from apps.order.models.enums import OrderStatus
-from apps.order.serializers import CartSerializer
 from apps.order.services.coupon_helper import CouponHelper
 from apps.order.services.bonus_helper import BonusHelper
 from apps.product.models.modifiers_price import ModifierPrice
