@@ -5,6 +5,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.order.models import Bonus
 from apps.order.models.enums.order_status import OrderStatus
+from apps.order.services.coupon_helper import CouponHelper
+
 
 from apps.delivery.models.enums import DeliveryType
 from apps.payment.models.enums import PaymentType
@@ -13,7 +15,7 @@ from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon
 from decimal import Decimal
 
-import itertools
+
 import json
 
 User = get_user_model()
@@ -164,61 +166,10 @@ class Cart(models.Model):
 
     @property
     def get_sale(self) -> int:
-        final_sale = 0
-        if self.promo_code:
-            amount_for_sale = 0
-            sale = self.promo_code.sale
-            coupon_categories = self.promo_code.categories.all()
-            coupon_products = self.promo_code.products.all()
-            cart_items = self.products_cart.only("item", "quantity", "modifier", "additives")
-
-            # print("CART ITEMS QS", cart_items) # fixme: repeats 5 times!
-
-            # only categories products
-            if coupon_categories and not coupon_products:
-                for cat in coupon_categories:
-                    products = cat.products.filter(is_active=True).only("id")
-                    for product, cart_item in itertools.product(products, cart_items):
-                        if product.id == cart_item.item.id:
-                            amount_for_sale += cart_item.get_total_item_price
-
-            # only still products
-            if coupon_products and not coupon_categories:
-                for product, cart_item in itertools.product(coupon_products, cart_items):
-                    if product.id == cart_item.item.id:
-                        amount_for_sale += cart_item.get_total_item_price
-
-            # categories and products together
-            if coupon_products and coupon_categories:
-                coupon_items = [product.id
-                                for cat in coupon_categories
-                                for product in cat.products.filter(is_active=True).only("id")]
-                coupon_items += [product.id for product in coupon_products]
-                coupon_items = list(set(coupon_items))
-                matching_items = cart_items.filter(item_id__in=coupon_items)
-                for cart_item in matching_items:
-                    amount_for_sale += cart_item.get_total_item_price
-
-            # no cats and no products, so look to the cart total
-            if not coupon_products and not coupon_categories:
-                amount_for_sale = self.get_total_cart
-
-            if self.promo_code.code_type == 'absolute':
-                # simple rule withdraw sale amount from total cart
-                # TODO:  МОЖЕТ НУЖНО ПЕРЕПИСАТЬ ЛОГИКУ ПРОМОКОДОВ absolute?
-                #  в абсолютной скидке , отнимать значение от каждой позиции,
-                #  если не выбран товар или категория, отнимат от суммы корзины
-                #  а если значение больше суммы товара???
-                final_sale = sale if sale >= 0.0 else 0.0
-                return final_sale
-
-            if self.promo_code.code_type == 'percent':
-                # sale percentage of the amount from all products
-                # included in the coupon rule
-                final_sale = round((sale / Decimal('100')) * amount_for_sale)
-                return final_sale
-
-        return final_sale
+        if self.promo_code and self.customer:
+            helper = CouponHelper(self.promo_code, self, self.customer)
+            return helper.final_sale()[0]
+        return 0
 
     @property
     def get_total_cart_after_sale(self) -> float:

@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import ValidationError, MethodNotAllowed
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -72,7 +72,8 @@ class CartViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"], url_path="add-coupon")
+    @action(detail=False, methods=["post"], url_path="add-coupon",
+            permission_classes=[IsAuthenticated])
     def add_coupon(self, request, *args, **kwargs):
         domain = self.kwargs.get('domain')
         institution = Institution.objects.get(domain=domain)
@@ -86,7 +87,8 @@ class CartViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"], url_path="remove-coupon")
+    @action(detail=False, methods=["post"], url_path="remove-coupon",
+            permission_classes=[IsAuthenticated])
     def remove_coupon(self, request, *args, **kwargs):
         domain = self.kwargs.get('domain')
         institution = Institution.objects.get(domain=domain)

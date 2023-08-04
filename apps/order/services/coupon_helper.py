@@ -2,8 +2,10 @@ from rest_framework.exceptions import ValidationError
 
 from apps.order.models import PromoCodeUser
 from apps.delivery.models.enums import SaleType
+from decimal import Decimal
 
 import datetime
+import itertools
 
 
 class CouponHelper:
@@ -16,6 +18,55 @@ class CouponHelper:
         self.cart = cart
         self.user = user
 
+    def final_sale(self) -> tuple:
+        final_sale = 0
+        amount_for_sale = 0
+        coupon_sale = self.coupon.sale
+        coupon_categories = self.coupon.categories.all()
+        coupon_products = self.coupon.products.all()
+        cart_items = self.cart.products_cart.only("item", "quantity", "modifier", "additives")
+
+        print("CART ITEMS QS", cart_items) # fixme: repeats 5 times!
+
+        # only categories products
+        if coupon_categories and not coupon_products:
+            for cat in coupon_categories:
+                products = cat.products.filter(is_active=True).only("id")
+                for product, cart_item in itertools.product(products, cart_items):
+                    if product.id == cart_item.item.id:
+                        amount_for_sale += cart_item.get_total_item_price
+
+        # only still products
+        if coupon_products and not coupon_categories:
+            for product, cart_item in itertools.product(coupon_products, cart_items):
+                if product.id == cart_item.item.id:
+                    amount_for_sale += cart_item.get_total_item_price
+
+        # categories and products together
+        if coupon_products and coupon_categories:
+            coupon_items = [product.id
+                            for cat in coupon_categories
+                            for product in cat.products.filter(is_active=True).only("id")]
+            coupon_items += [product.id for product in coupon_products]
+            coupon_items = list(set(coupon_items))
+            matching_items = cart_items.filter(item_id__in=coupon_items)
+            for cart_item in matching_items:
+                amount_for_sale += cart_item.get_total_item_price
+
+        # no cats and no products, so look to the cart total
+        if not coupon_products and not coupon_categories:
+            amount_for_sale = self.cart.get_total_cart
+
+        if self.coupon.code_type == 'absolute':
+            final_sale = coupon_sale if coupon_sale >= 0.0 else 0.0
+            return final_sale, amount_for_sale
+
+        if self.coupon.code_type == 'percent':
+            final_sale = round((coupon_sale / Decimal('100')) * amount_for_sale)
+            return final_sale, amount_for_sale
+
+        return final_sale, amount_for_sale
+
     # RULES
     def validate_coupon_with_bonus(self):
         bonus = self.cart.institution.bonuses.filter(is_active=True).first()
@@ -26,9 +77,8 @@ class CouponHelper:
     def validate_sale(self):
         """ Not allowing to write off more than a final price """
         code_type = self.coupon.code_type
-        if code_type == SaleType.ABSOLUTE and (self.cart.get_total_cart - self.coupon.sale) <= 0:
-            raise ValidationError(
-                {"detail": f"Sale is bigger: {self.cart.get_total_cart}"})
+        if code_type == SaleType.ABSOLUTE and (self.final_sale()[1] - self.coupon.sale) <= 0:
+            raise ValidationError({"detail": f"Sale {self.final_sale()[0]} is bigger than {self.final_sale()[1]}"})
         if code_type == SaleType.PERCENT and self.coupon.sale > 100:
             raise ValidationError({"detail": "Sale is bigger 100%"})
 
@@ -86,12 +136,12 @@ class CouponHelper:
             raise ValidationError({"detail": "Max level exceeded for coupon."})
 
     def validate_user_num_uses(self) -> PromoCodeUser:
-        if self.user.is_authenticated:
-            coupon_per_user, _ = PromoCodeUser.objects.get_or_create(
-                code=self.coupon, user=self.user)
-            if self.coupon.code_use_by_user > 0 and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
-                raise ValidationError({"detail": "User's max level exceeded for coupon."})
-            return coupon_per_user
+        coupon_per_user, _ = PromoCodeUser.objects.get_or_create(
+            code=self.coupon, user=self.user
+        )
+        if self.coupon.code_use_by_user > 0 and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
+            raise ValidationError({"detail": "User's max level exceeded for coupon."})
+        return coupon_per_user
 
     def main(self):
 
