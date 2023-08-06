@@ -165,34 +165,56 @@ class Cart(models.Model):
         return cost
 
     @property
-    def get_sale(self) -> int:
+    def get_promo_code_sale(self) -> int:
         if self.promo_code and self.customer:
             helper = CouponHelper(self.promo_code, self, self.customer)
             return helper.final_sale()[0]
         return 0
 
     @property
+    def get_final_sale(self) -> int:
+        return self.get_promo_code_sale + self.customer_bonus
+
+    @property
     def get_total_cart_after_sale(self) -> float:
+        # общая скидка с промокодом и бонусами если есть!
+        # todo: по сути бессмыслица, удалить это поле и там где оно использется написать total - final_price
         total = self.get_total_cart
         sale = 0
-        if self.get_sale:
-            sale = self.get_sale
+        if self.get_promo_code_sale:
+            sale = self.get_promo_code_sale
         if self.customer_bonus > 0:
-            bonus = Bonus.objects.get(institutions=self.institution)
-            if bonus.is_active and bonus.is_promo_code:
-                return total - (sale + self.customer_bonus)
+            bonus = Bonus.objects.filter(
+                institutions=self.institution,
+                is_active=True,
+                is_promo_code=True
+            ).first()
+            return total - (sale + self.customer_bonus) if bonus else total - sale
         return total - sale
 
     @property
     def get_bonus_accrual(self):
+        """ max accrual amount """
         bonus = Bonus.objects.get(institutions=self.institution)
         total_accrual = 0
         if bonus.is_active:
-            if bonus.is_promo_code is True:
-                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart_after_sale)
+            if self.promo_code:
+                total_accrual = round((bonus.accrual / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
             else:
                 total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
         return total_accrual
+
+    @property
+    def get_bonus_write_off(self):
+        """ max write off amount """
+        bonus = Bonus.objects.get(institutions=self.institution)
+        total_write_off = 0
+        if bonus.is_active:
+            if self.promo_code:
+                total_write_off = round((bonus.write_off / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
+            else:
+                total_write_off = round((bonus.write_off / Decimal('100')) * self.get_total_cart)
+        return total_write_off
 
     @property
     def final_price(self) -> float:

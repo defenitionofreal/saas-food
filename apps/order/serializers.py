@@ -137,11 +137,9 @@ class CartSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField(read_only=True)
 
     # delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
-    max_bonus_write_off = serializers.SerializerMethodField()
     customer_info = serializers.SerializerMethodField()
     delivery_info = serializers.SerializerMethodField()
 
-    # final_price = serializers.SerializerMethodField()
     # todo: nested inst ser and others, not serializer method!
 
     class Meta:
@@ -150,25 +148,18 @@ class CartSerializer(serializers.ModelSerializer):
             'id', 'institution', 'customer_info', 'delivery_info',
             'payment_type', 'items', 'promo_code', 'customer_bonus',
             'min_amount', 'get_total_cart', 'get_total_cart_after_sale',
-            'get_sale', 'get_bonus_accrual', 'max_bonus_write_off',
+            'get_promo_code_sale', 'get_bonus_accrual', 'get_bonus_write_off',
             'get_delivery_price', 'get_free_delivery_amount',
             'get_delivery_sale', 'get_min_delivery_order_amount',
-            'get_delivery_zone', 'final_price', 'comment',
+            'get_delivery_zone', 'get_final_sale', 'final_price', 'comment',
             'created_at', 'updated_at', 'confirmed_date',
             "code", "status", "paid"
         )
-
-    # def get_final_price(self, instance) -> int:
-    #     return instance.final_price
 
     def get_items(self, instance) -> ItemsSerializer:
         items = instance.products_cart.all()
         serializer = ItemsSerializer(items, read_only=True, many=True)
         return serializer.data
-
-    def get_max_bonus_write_off(self, instance):
-        bonus = BonusHelper(0, instance, instance.customer)
-        return bonus.max_write_off_amount()
 
     def get_customer_info(self, instance):
         customer_info = {

@@ -148,11 +148,10 @@ class CouponHelper:
         if self.cart.promo_code:
             raise ValidationError({"detail": "Promo code already applied."})
 
-        self.validate_coupon_with_bonus()
-
         if not self.coupon.is_active:
             raise ValidationError({"detail": "Code is not active."})
 
+        self.validate_coupon_with_bonus()
         self.validate_sale()
         self.validate_total_cart()
         self.validate_dates()

@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 
 from apps.company.models import Institution
 from apps.order.serializers import CartSerializer
-from apps.order.models import Cart, PromoCode, PromoCodeUser
+from apps.order.models import Cart, PromoCode, PromoCodeUser, UserBonus
 
 from apps.order.models.enums.order_status import OrderStatus
 from apps.order.services.cart_helper import CartHelper
@@ -77,8 +77,8 @@ class CartViewSet(viewsets.ModelViewSet):
     def add_coupon(self, request, *args, **kwargs):
         domain = self.kwargs.get('domain')
         institution = Institution.objects.get(domain=domain)
-        code = self.request.data.get("code", None)
-        code = get_object_or_404(PromoCode, code=code, institutions=institution)
+        code_req = self.request.data.get("code")
+        code = get_object_or_404(PromoCode, code=code_req, institutions=institution)
         helper = CartHelper(request, institution)
         helper.add_coupon(code)
         cart = helper.get_cart()
@@ -94,6 +94,7 @@ class CartViewSet(viewsets.ModelViewSet):
         institution = Institution.objects.get(domain=domain)
         helper = CartHelper(request, institution)
         cart = helper.get_cart()
+
         coupon = cart.promo_code
         if coupon:
             user_coupon = PromoCodeUser.objects.get(
@@ -104,6 +105,42 @@ class CartViewSet(viewsets.ModelViewSet):
             coupon.num_uses -= 1
             coupon.save()
             cart.promo_code = None
+            cart.save()
+
+        serializer = self.get_serializer(
+            cart, many=False, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="add-bonus",
+            permission_classes=[IsAuthenticated])
+    def add_bonus(self, request, *args, **kwargs):
+        domain = self.kwargs.get('domain')
+        institution = Institution.objects.get(domain=domain)
+        helper = CartHelper(request, institution)
+        bonus_amount = round(int(self.request.data.get("amount")))
+        helper.add_bonuses(bonus_amount)
+        cart = helper.get_cart()
+        serializer = self.get_serializer(
+            cart, many=False, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="remove-bonus",
+            permission_classes=[IsAuthenticated])
+    def remove_bonus(self, request, *args, **kwargs):
+        domain = self.kwargs.get('domain')
+        institution = Institution.objects.get(domain=domain)
+        helper = CartHelper(request, institution)
+        cart = helper.get_cart()
+
+        if cart.customer_bonus:
+            user_bonus = UserBonus.objects.get(
+                institution_id=cart.institution.id, user_id=cart.customer.id
+            )
+            user_bonus.bonus += cart.customer_bonus
+            user_bonus.save()
+            cart.customer_bonus = 0
             cart.save()
 
         serializer = self.get_serializer(
