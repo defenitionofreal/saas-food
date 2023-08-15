@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.base.serializers import SimpleUserSerializer
 from apps.showcase.serializers import SimpleInstitutionSerializer
 from apps.company.models import Institution
 from apps.company.serializers import InstitutionSerializer
@@ -133,7 +134,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     institution = SimpleInstitutionSerializer(read_only=True, many=False)
     promo_code = SimplePromoCodeSerializer(read_only=True, many=False)
-
+    customer = SimpleUserSerializer(read_only=True, many=False)
     items = serializers.SerializerMethodField(read_only=True)
 
     # delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
@@ -145,7 +146,7 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = (
-            'id', 'institution', 'customer_info', 'delivery_info',
+            'id', 'institution', 'customer', 'delivery_info',
             'payment_type', 'items', 'promo_code', 'customer_bonus',
             'min_amount', 'get_total_cart', 'get_total_cart_after_sale',
             'get_promo_code_sale', 'get_bonus_accrual', 'get_bonus_write_off',
@@ -160,15 +161,6 @@ class CartSerializer(serializers.ModelSerializer):
         items = instance.products_cart.all()
         serializer = ItemsSerializer(items, read_only=True, many=True)
         return serializer.data
-
-    def get_customer_info(self, instance):
-        customer_info = {
-            "customer_uuid": instance.customer.id if instance.customer else "guest",
-            "order_customer_name": instance.name,
-            "order_customer_phone": str(instance.phone),
-            "order_customer_email": instance.email
-        }
-        return customer_info
 
     def get_delivery_info(self, instance):
         delivery_info = {

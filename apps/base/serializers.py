@@ -5,6 +5,13 @@ from apps.base.models import WeekDay
 User = get_user_model()
 
 
+class SimpleUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'middle_name', 'last_name',
+                  'phone', 'email')
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
