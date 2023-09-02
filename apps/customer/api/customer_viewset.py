@@ -4,9 +4,7 @@ from rest_framework import viewsets, permissions, status
 
 from apps.base.serializers import UserSerializer
 from apps.que.serializers import QueSerializer
-from apps.location.serializers import AddressSerializer
 
-from apps.location.models import (Address, AddressLink)
 from apps.que.models.enums.que_status import QueStatus
 from apps.que.models import Que
 from apps.order.serializers import (
@@ -54,55 +52,55 @@ class CustomerViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(user, many=False, read_only=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=["get", "post"], url_path="address")
-    def address(self, request):
-        """ Address List and Create view"""
-        if request.method == "POST":
-            serializer = AddressSerializer(data=request.data)
-            if serializer.is_valid():
-                address = serializer.save()
-                AddressLink.objects.create(
-                    user_id=self.request.user.id,
-                    address_id=address.id
-                )
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=False, methods=["get", "post"], url_path="address")
+    # def address(self, request):
+    #     """ Address List and Create view"""
+    #     if request.method == "POST":
+    #         serializer = AddressSerializer(data=request.data)
+    #         if serializer.is_valid():
+    #             address = serializer.save()
+    #             AddressLink.objects.create(
+    #                 user_id=self.request.user.id,
+    #                 address_id=address.id
+    #             )
+    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         else:
+    #             return Response(serializer.errors,
+    #                             status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     user = self.get_queryset()
+    #     user_address_links = user.addresslink_set.all() if user else None
+    #     if not user_address_links:
+    #         return Response({"detail": "Addresses not found"},
+    #                         status=status.HTTP_404_NOT_FOUND)
+    #
+    #     user_addreses = Address.objects.filter(id__in=[link.address.id for link in user_address_links])
+    #     serializer = AddressSerializer(user_addreses, many=True)
+    #
+    #     return Response(serializer.data)
 
-        user = self.get_queryset()
-        user_address_links = user.addresslink_set.all() if user else None
-        if not user_address_links:
-            return Response({"detail": "Addresses not found"},
-                            status=status.HTTP_404_NOT_FOUND)
-
-        user_addreses = Address.objects.filter(id__in=[link.address.id for link in user_address_links])
-        serializer = AddressSerializer(user_addreses, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["get", "put", "delete"],
-            url_path="address/(?P<address_id>[^/.]+)")
-    def address_detail(self, request, address_id=None):
-        """ Address detail R.U.D. view """
-        user_address = Address.objects.get(id=address_id)
-        serializer = AddressSerializer(
-            user_address, many=False, read_only=True
-        )
-        if request.method == "PUT":
-            serializer = AddressSerializer(user_address, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
-
-        if request.method == "DELETE":
-            user_address.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(serializer.data)
+    # @action(detail=False, methods=["get", "put", "delete"],
+    #         url_path="address/(?P<address_id>[^/.]+)")
+    # def address_detail(self, request, address_id=None):
+    #     """ Address detail R.U.D. view """
+    #     user_address = Address.objects.get(id=address_id)
+    #     serializer = AddressSerializer(
+    #         user_address, many=False, read_only=True
+    #     )
+    #     if request.method == "PUT":
+    #         serializer = AddressSerializer(user_address, data=request.data)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors,
+    #                             status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     if request.method == "DELETE":
+    #         user_address.delete()
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
+    #
+    #     return Response(serializer.data)
 
     @action(detail=False, methods=["get", "put"], url_path="phone")
     def phone(self, request):

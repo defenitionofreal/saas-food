@@ -17,18 +17,13 @@ class Requisites(models.Model):
         related_name="requisites"
     )
     name = models.CharField(max_length=255)
-    inn = models.IntegerField()
-    kpp = models.IntegerField()
-    ogrn = models.IntegerField()
-    address = models.ForeignKey(
-        "location.Address",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="+"
-    )
+    inn = models.CharField(max_length=255)
+    kpp = models.CharField(max_length=255)
+    ogrn = models.CharField(max_length=255)
+    address = models.TextField()
     bank = models.CharField(max_length=255)
-    bik = models.IntegerField()
-    correspondent_account = models.IntegerField()
+    bik = models.CharField(max_length=255)
+    correspondent_account = models.CharField(max_length=255)
     checking_account = models.CharField(max_length=255)
     phone = PhoneNumberField()
     email = models.EmailField()

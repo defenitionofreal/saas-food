@@ -57,7 +57,6 @@ INTERNAL_APPS = [
     'apps.notification',
     'apps.company',
     'apps.delivery',
-    'apps.location',
     'apps.media',
     'apps.order',
     'apps.payment',

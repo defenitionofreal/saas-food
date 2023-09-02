@@ -36,13 +36,6 @@ class Cart(models.Model):
                                  on_delete=models.CASCADE,
                                  related_name='cart_customer',
                                  null=True, blank=True)
-    # dates part
-    delivery_date = models.DateField(blank=True,
-                                     null=True)
-    time_from = models.DateTimeField(blank=True,
-                                     null=True)
-    time_till = models.DateTimeField(blank=True,
-                                     null=True)
     confirmed_date = models.DateTimeField(blank=True,
                                           null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,11 +57,13 @@ class Cart(models.Model):
     email = models.EmailField(blank=True,
                               null=True)
     comment = models.TextField(max_length=1000, blank=True)
-    delivery = models.ForeignKey("delivery.DeliveryInfo",
-                                 on_delete=models.SET_NULL,
-                                 null=True,
-                                 blank=True,
-                                 related_name="cart_delivery")
+    delivery = models.ForeignKey(
+        "delivery.CartDeliveryInfo",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="cart_delivery"
+    )
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)

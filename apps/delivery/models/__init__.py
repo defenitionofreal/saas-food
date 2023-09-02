@@ -1,5 +1,5 @@
-from .delivery_type import Delivery
-from .delivery_zone import (DeliveryZone,
-                            DeliveryZoneСoordinates,
-                            DeliveryZoneFile)
-from .delivery_info import DeliveryInfo
+from .delivery_zone import DeliveryZone
+from .cart_delivery_info import CartDeliveryInfo
+from .delivery_type_rule import DeliveryTypeRule
+from .institution_address import InstitutionAddress
+from .customer_address import CustomerAddress

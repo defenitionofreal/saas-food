@@ -9,7 +9,6 @@ from apps.product.serializers import SimpleModifierPriceSerializer, \
     SimpleAdditiveSerializer
 from apps.order.models import Cart, CartItem, PromoCode, Bonus, UserBonus
 from apps.order.services.bonus_helper import BonusHelper
-from apps.delivery.serializers import DeliveryInfoCustomerSerializer
 
 
 class ItemsSerializer(serializers.ModelSerializer):

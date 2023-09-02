@@ -3,7 +3,6 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 # apps
-from apps.delivery.models import DeliveryInfo
 from apps.order.models import Cart, CartItem
 from apps.order.models.enums import OrderStatus
 from apps.order.services.coupon_helper import CouponHelper
@@ -39,19 +38,19 @@ class CartHelper:
             return value[0]
         return 0
 
-    def _get_user_delivery_info(self):
-        if self.request.user.is_authenticated:
-            delivery_info = DeliveryInfo.objects.filter(user=self.request.user)
-        else:
-            delivery_info = DeliveryInfo.objects.filter(
-                session_id=self.request.session.session_key
-            )
-        if delivery_info.exists():
-            delivery_info = delivery_info.first()
-        else:
-            delivery_info = None
-
-        return delivery_info
+    # def _get_user_delivery_info(self):
+    #     if self.request.user.is_authenticated:
+    #         delivery_info = DeliveryInfo.objects.filter(user=self.request.user)
+    #     else:
+    #         delivery_info = DeliveryInfo.objects.filter(
+    #             session_id=self.request.session.session_key
+    #         )
+    #     if delivery_info.exists():
+    #         delivery_info = delivery_info.first()
+    #     else:
+    #         delivery_info = None
+    #
+    #     return delivery_info
 
     def _cart_get_or_create(self) -> tuple:
         if self.request.user.is_authenticated:

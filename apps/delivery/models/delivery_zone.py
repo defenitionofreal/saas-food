@@ -1,55 +1,61 @@
+from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.validators import FileExtensionValidator
-from apps.delivery.services.upload_file import get_path_upload_map_file
+
+User = get_user_model()
 
 
 class DeliveryZone(models.Model):
-    """
-    Delivery zone model
-    """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="dz")
-    title = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10,
-                                decimal_places=2,
-                                default=0)
-    min_order_amount = models.DecimalField(max_digits=10,
-                                           decimal_places=2,
-                                           default=0)
-    free_delivery_amount = models.DecimalField(max_digits=10,
-                                               decimal_places=2,
-                                               default=0)
-    delivery_time = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution"
+    )
+    title = models.CharField(
+        max_length=255
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="If bigger than 0, this price is higher in priority "
+                  "than the price for the delivery rule"
+    )
+    min_order_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="If bigger than 0, this amount is higher in priority "
+                  "than the amount for the delivery rule"
+    )
+    free_delivery_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="If bigger than 0, this amount is higher in priority "
+                  "than the amount for the delivery rule"
+    )
+    delivery_time = models.PositiveIntegerField(
+        default=0,
+        help_text="Estimated delivery time in minutes"
+    )
+    coordinates = models.TextField(
+        help_text="Coordinates full array"
+    )
+    fill_color = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    outline_color = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    is_active = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
-        return f'{self.institution} -> {self.title}'
-
-
-class DeliveryZoneСoordinates(models.Model):
-    """
-    Delivery zone coordinates model
-    """
-    zone = models.ForeignKey(DeliveryZone,
-                             on_delete=models.CASCADE,
-                             related_name="dz_coordinates")
-    coordinates = models.CharField(max_length=1000)
-
-    def __str__(self):
-        return f'{self.zone}'
-
-
-class DeliveryZoneFile(models.Model):
-    """
-    Delivery zone kml file model
-    """
-    institution = models.ForeignKey("company.Institution",
-                                    on_delete=models.CASCADE,
-                                    related_name="dz_file_institution")
-    file = models.FileField(upload_to=get_path_upload_map_file,
-                            validators=[FileExtensionValidator(
-                                allowed_extensions=['kml'])])
-
-    def __str__(self):
-        return f'{self.institution} -> {self.file}'
+        return f'{self.user} -> {self.title}'

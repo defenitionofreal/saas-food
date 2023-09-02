@@ -4,16 +4,23 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-
+# TODO: может автоматом создавать все способы со старта так же как дни недели?
 class PaymentTypeInstitution(models.Model):
     """
     Organization could create there payment types
     """
-    institution = models.ManyToManyField("company.Institution",
-                                         related_name="payment_type")
-    type = models.CharField(max_length=20,
-                            choices=PaymentType.choices,
-                            default=PaymentType.ONLINE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    institutions = models.ManyToManyField(
+        "company.Institution",
+        related_name="payment_type"
+    )
+    type = models.CharField(
+        max_length=20,
+        choices=PaymentType.choices
+    )
 
     def __str__(self):
-        return f"{self.institution.values_list('title',flat=True)}|{self.type}"
+        return f"{self.institutions.values_list('title',flat=True)}|{self.type}"

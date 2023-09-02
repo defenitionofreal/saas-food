@@ -1,36 +1,32 @@
 from django.contrib import admin
-from apps.delivery.models import (DeliveryZoneFile,
-                                  DeliveryZone,
-                                  DeliveryZoneСoordinates,
-                                  Delivery,
-                                  DeliveryInfo)
+from apps.delivery.models import (
+    DeliveryZone, CartDeliveryInfo, CustomerAddress, InstitutionAddress
+)
 
-
-@admin.register(DeliveryZoneFile)
-class DeliveryZoneFileAdmin(admin.ModelAdmin):
-    search_fields = ("institution",)
-    autocomplete_fields = ("institution",)
 
 
 @admin.register(DeliveryZone)
 class DeliveryZoneAdmin(admin.ModelAdmin):
-    search_fields = ("institution",)
-    autocomplete_fields = ("institution",)
+    list_display = ("id", "title", "is_active")
+    autocomplete_fields = ("institutions",)
 
 
-@admin.register(DeliveryZoneСoordinates)
-class DeliveryZoneСoordinatesAdmin(admin.ModelAdmin):
-    search_fields = ("zone",)
-    autocomplete_fields = ("zone",)
+
+@admin.register(CartDeliveryInfo)
+class CartDeliveryInfoAdmin(admin.ModelAdmin):
+    list_display = ("id", "cart", "type")
+    autocomplete_fields = ("cart",)
 
 
-@admin.register(Delivery)
-class DeliveryAdmin(admin.ModelAdmin):
-    search_fields = ("delivery_type",)
-    autocomplete_fields = ("institution",)
+
+@admin.register(CustomerAddress)
+class CustomerAddressAdmin(admin.ModelAdmin):
+    list_display = ("id", "user")
+    autocomplete_fields = ("user",)
 
 
-@admin.register(DeliveryInfo)
-class DeliveryInfoAdmin(admin.ModelAdmin):
-    search_fields = ("type",)
-    autocomplete_fields = ("type",)
+
+@admin.register(InstitutionAddress)
+class InstitutionAddressAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "institution")
+    autocomplete_fields = ("user", "institution",)

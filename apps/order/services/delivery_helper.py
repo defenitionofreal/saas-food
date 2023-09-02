@@ -1,7 +1,5 @@
 # apps
-from apps.location.models import Address, AddressLink
 from apps.delivery.models.enums import DeliveryType
-from apps.delivery.models import DeliveryInfo
 # rest framework
 from rest_framework.response import Response
 from rest_framework import status
@@ -45,56 +43,58 @@ class DeliveryHelper:
         return None
 
     def _get_address_link(self):
-        """ возвращаю ссылку на адресс юзера/гостя """
-        address_obj, _ = Address.objects.get_or_create(
-            city=self.address["city"],
-            region=self.address["region"],
-            street=self.address["street"],
-            building=self.address["building"],
-            office=self.address["office"],
-            floor=self.address["floor"],
-            latitude=self.address["latitude"],
-            longitude=self.address["longitude"]
-        )
-        if self.user.is_authenticated:
-            address_link, _ = AddressLink.objects.get_or_create(
-                user=self.user,
-                address=address_obj
-            )
-        else:
-            address_link, _ = AddressLink.objects.get_or_create(
-                    session_id=self.session,
-                    address=address_obj
-            )
-        return address_link
+        pass
 
-    def _get_delivery_info(self, delivery_type, address_link):
-        """ возвращаю инфо доставки юзера (обновляю или создаю) """
-
-        defaults = {"type": delivery_type,
-                    "address": address_link,
-                    "order_date": self._get_order_date()}
-
-        if self.user.is_authenticated:
-            session_delivery = DeliveryInfo.objects.filter(session_id=self.session)
-            if session_delivery.exists():
-                delivery_info = session_delivery.first()
-                delivery_info.user = self.user
-                delivery_info.type = delivery_type
-                delivery_info.address = address_link
-                delivery_info.order_date = self._get_order_date()
-                delivery_info.save()
-            else:
-                delivery_info, _ = DeliveryInfo.objects.update_or_create(
-                    user=self.user,
-                    defaults=defaults
-                )
-        else:
-            delivery_info, _ = DeliveryInfo.objects.update_or_create(
-                session_id=self.session,
-                defaults=defaults
-            )
-        return delivery_info
+    #     """ возвращаю ссылку на адресс юзера/гостя """
+    #     address_obj, _ = Address.objects.get_or_create(
+    #         city=self.address["city"],
+    #         region=self.address["region"],
+    #         street=self.address["street"],
+    #         building=self.address["building"],
+    #         office=self.address["office"],
+    #         floor=self.address["floor"],
+    #         latitude=self.address["latitude"],
+    #         longitude=self.address["longitude"]
+    #     )
+    #     if self.user.is_authenticated:
+    #         address_link, _ = AddressLink.objects.get_or_create(
+    #             user=self.user,
+    #             address=address_obj
+    #         )
+    #     else:
+    #         address_link, _ = AddressLink.objects.get_or_create(
+    #                 session_id=self.session,
+    #                 address=address_obj
+    #         )
+    #     return address_link
+    #
+    # def _get_delivery_info(self, delivery_type, address_link):
+    #     """ возвращаю инфо доставки юзера (обновляю или создаю) """
+    #
+    #     defaults = {"type": delivery_type,
+    #                 "address": address_link,
+    #                 "order_date": self._get_order_date()}
+    #
+    #     if self.user.is_authenticated:
+    #         session_delivery = DeliveryInfo.objects.filter(session_id=self.session)
+    #         if session_delivery.exists():
+    #             delivery_info = session_delivery.first()
+    #             delivery_info.user = self.user
+    #             delivery_info.type = delivery_type
+    #             delivery_info.address = address_link
+    #             delivery_info.order_date = self._get_order_date()
+    #             delivery_info.save()
+    #         else:
+    #             delivery_info, _ = DeliveryInfo.objects.update_or_create(
+    #                 user=self.user,
+    #                 defaults=defaults
+    #             )
+    #     else:
+    #         delivery_info, _ = DeliveryInfo.objects.update_or_create(
+    #             session_id=self.session,
+    #             defaults=defaults
+    #         )
+    #     return delivery_info
 
     def check_delivery_zones(self) -> bool:
         """ проверка на зоны доставки филилалы, если есть """
