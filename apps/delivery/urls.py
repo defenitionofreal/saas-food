@@ -1,9 +1,11 @@
 from django.urls import path
+from apps.delivery.api import (suggestions,)
 
 
 app_name = 'delivery'
 
 urlpatterns = [
+    path('delivery/suggestions/', suggestions.SuggestionsAPIView.as_view()),
     # # organization views
     # path('delivery/new/', delivery_create.DeliveryCreateAPIView.as_view()),
     # path('delivery/list/', delivery_list.DeliveryListAPIView.as_view()),

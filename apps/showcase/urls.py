@@ -42,6 +42,7 @@ urlpatterns = [
     path('<str:domain>/order/', include('apps.order.urls', namespace='order')),
     # payment
     path('payment/', include('apps.payment.urls', namespace='payment')),
+
     # delivery todo refactor all delivery
     # path('<str:domain>/delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
     path('<str:domain>/delivery-info/add/', delivery_info_create.DeliveryInfoAPIView.as_view()),
