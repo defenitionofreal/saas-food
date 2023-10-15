@@ -1,8 +1,14 @@
 from django.contrib import admin
 from apps.delivery.models import (
-    DeliveryZone, CartDeliveryInfo, CustomerAddress, InstitutionAddress
+    DeliveryZone, CartDeliveryInfo, CustomerAddress, InstitutionAddress,
+    YandexGeocoderToken
 )
 
+
+@admin.register(YandexGeocoderToken)
+class YandexGeocoderTokenAdmin(admin.ModelAdmin):
+    list_display = ("user",)
+    autocomplete_fields = ("user",)
 
 
 @admin.register(DeliveryZone)

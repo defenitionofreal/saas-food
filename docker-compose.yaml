@@ -60,21 +60,6 @@ services:
 #    networks:
 #      - djangonetwork
 
-  pgadmin:
-    container_name: efood_pgadmin
-    image: dpage/pgadmin4
-    depends_on:
-      - pgdb
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "8080:80"
-    volumes:
-      - efood-pgadmin-data:/var/lib/pgadmin
-    links:
-      - "pgdb:pgsql-server"
-
   flower:
     image: mher/flower:0.9.7
     command: [ 'flower', '--broker=redis://redis:6379', '--port=8888' ]
@@ -101,7 +86,6 @@ services:
 
 volumes:
   efood-pgdata:
-  efood-pgadmin-data:
 #networks:
 #      djangonetwork:
 #        driver: bridge

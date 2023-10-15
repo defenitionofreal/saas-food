@@ -38,3 +38,17 @@ class ConfirmedAccountChecker:
     def is_organization(self):
         self._is_organization()
         return True
+
+    def has_geocoder_token(self):
+        self.is_organization()
+        user = self.user
+        if not user.yandexgeocodertoken_set.all():
+            raise ValidationError({"detail": "Geocoder token not found."})
+        return True
+
+    def has_institution(self):
+        self.is_organization()
+        user = self.user
+        if not user.inst_user.all():
+            raise ValidationError({"detail": "Affiliates not found."})
+        return True

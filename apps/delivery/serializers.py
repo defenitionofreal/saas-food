@@ -36,6 +36,7 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
         model = CustomerAddress
         fields = "__all__"
 
+
 class InstitutionAddressSerializer(serializers.ModelSerializer):
     institution = BasicInstitutionSerializer(many=False)
 

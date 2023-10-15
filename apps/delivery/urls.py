@@ -1,11 +1,12 @@
 from django.urls import path
-from apps.delivery.api import (suggestions,)
+from apps.delivery.api import (suggestions, geocode_address)
 
 
 app_name = 'delivery'
 
 urlpatterns = [
-    path('delivery/suggestions/', suggestions.SuggestionsAPIView.as_view()),
+    path('delivery/suggestions/', suggestions.KladrSuggestionsAPIView.as_view()),
+    path('delivery/organization-geocoder/', geocode_address.OrganizationYandexAddressGeocodeAPIView.as_view()),
     # # organization views
     # path('delivery/new/', delivery_create.DeliveryCreateAPIView.as_view()),
     # path('delivery/list/', delivery_list.DeliveryListAPIView.as_view()),

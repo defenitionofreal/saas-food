@@ -2,12 +2,12 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from apps.delivery.services.geocoder import YandexSuggestions, KladrSuggestions
+from apps.delivery.services.geocoder import KladrSuggestions
 
 import os
 
 
-class SuggestionsAPIView(APIView):
+class KladrSuggestionsAPIView(APIView):
 
     # permission_classes = [IsAuthenticated]
     http_method_names = ["get"]
