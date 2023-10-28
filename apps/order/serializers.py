@@ -137,7 +137,7 @@ class CartSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField(read_only=True)
 
     # delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
-    customer_info = serializers.SerializerMethodField()
+    # customer_info = serializers.SerializerMethodField()
     delivery_info = serializers.SerializerMethodField()
 
     # todo: nested inst ser and others, not serializer method!

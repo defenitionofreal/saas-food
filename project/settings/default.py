@@ -7,3 +7,4 @@ from project.settings.extra.jwt import *
 from project.settings.extra.cors import *
 from project.settings.extra.celery import *
 from project.settings.extra.logger import *
+from project.settings.extra.swagger import *
