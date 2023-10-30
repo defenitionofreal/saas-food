@@ -125,7 +125,7 @@ class RequisitesSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -203,7 +203,7 @@ class ExtraPhoneSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -235,7 +235,7 @@ class BannerSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
@@ -267,7 +267,7 @@ class MinCartCostSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
+        qs = Institution.objects.filter(user=self.context["request"].user)
         serializer = InstitutionSerializer(instance=qs, many=True)
         return serializer.data
 
