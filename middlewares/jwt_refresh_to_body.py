@@ -17,7 +17,6 @@ class MoveJWTRefreshCookieIntoTheBody(MiddlewareMixin):
         return response
 
     def process_view(self, request, view_func, *view_args, **view_kwargs):
-        # print(request.path)
         if request.path == '/api/organization/token/refresh/' and 'refresh' in request.COOKIES:
             if request.body != b'':
                 data = json.loads(request.body)

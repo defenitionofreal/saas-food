@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from apps.delivery.services.geocoder import KladrSuggestions
 
 import os
@@ -9,10 +9,10 @@ import os
 
 class KladrSuggestionsAPIView(APIView):
 
-    # permission_classes = [IsAuthenticated]
-    http_method_names = ["get"]
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["post"]
 
-    def get(self, request):
+    def post(self, request):
         query = request.data.get("query", None)
         kladr = KladrSuggestions(os.environ.get("KLADR_API_KEY"))
         res = kladr.suggestions(query)

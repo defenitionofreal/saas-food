@@ -83,7 +83,7 @@ class AuthViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(is_organization=True)
 
-        logger.info("Organization successfully registered.")
+        logger.info(f"Organization {email} successfully registered.")
 
         return Response(serializer.data, status.HTTP_201_CREATED)
 
@@ -112,7 +112,7 @@ class AuthViewSet(viewsets.ModelViewSet):
                                     httponly=True,
                                     samesite="None",
                                     secure="false")
-                logger.info("Organization successfully logged in.")
+                logger.info(f"Organization {email} successfully logged in.")
                 return response
 
         return Response({"detail": "Check data"},

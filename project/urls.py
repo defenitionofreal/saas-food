@@ -24,7 +24,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
-
     path('api/base/', include('apps.base.urls', namespace='base')),
     path('api/authentication/', include('apps.authentication.urls', namespace='authentication')),
     # split users
@@ -32,7 +31,6 @@ urlpatterns = [
     path('api/organization/', include('apps.organization.urls', namespace='organization')),
     # showcase site
     path('api/showcase/', include('apps.showcase.urls', namespace='showcase')),
-
     # payment (for webhooks)
     path('webhook/', include('apps.payment.urls', namespace='payment')),
 ]

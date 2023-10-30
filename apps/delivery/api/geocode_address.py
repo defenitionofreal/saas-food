@@ -27,6 +27,8 @@ class OrganizationYandexAddressGeocodeAPIView(APIView):
     http_method_names = ["post"]
 
     def post(self, request):
+        print("Заголовки запроса:", request.headers)
+
         institution_id = request.data.get("institution_id", None)
         query = request.data.get("query", None)
         user = self.request.user
