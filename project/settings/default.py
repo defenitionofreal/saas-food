@@ -3,8 +3,8 @@ from project.settings.extra.cache import *
 from project.settings.extra.debug_toolbar import *
 from project.settings.extra.middleware import *
 from project.settings.extra.email import *
-from project.settings.extra.jwt import *
-from project.settings.extra.cors import *
 from project.settings.extra.celery import *
 from project.settings.extra.logger import *
-from project.settings.extra.swagger import *
+# from project.settings.extra.swagger import *  # fixme: affect permission class
+from project.settings.extra.jwt import *
+from project.settings.extra.cors import *

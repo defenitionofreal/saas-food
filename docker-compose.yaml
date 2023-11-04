@@ -6,7 +6,7 @@ services:
     container_name: efood_backend
     #hostname: efood_backend
     #restart: always
-    command: bash -c "gunicorn --reload -c gunicorn_config.py project.wsgi"
+    command: bash entrypoint.sh
     # volumes соответствие директорий на локальной машине и в контейнрер
     volumes:
       - .:/efood
