@@ -10,11 +10,8 @@ urlpatterns = [
     # organization views
     # path('delivery/organization-geocoder/', geocode_address.OrganizationYandexAddressGeocodeAPIView.as_view()),  # step 2
 
-    # # organization views
-    # path('delivery/new/', delivery_create.DeliveryCreateAPIView.as_view()),
-    # path('delivery/list/', delivery_list.DeliveryListAPIView.as_view()),
-    # path('delivery/detail/<int:delivery_pk>/', delivery_detail.DeliveryDetailAPIView.as_view()),
     # # delivery zones
+    # todo продумать как и где в дашборде будет раздел настрйоки доставки и в итоге как реаоизовать api
     # path('delivery-zone/new/', delivery_zone_create.DeliveryZoneCreateAPIView.as_view()),
     # # delivery zones file (stopped for a while!)
     # path('institution/<uuid:pk>/delivery-zone/file/new/', delivery_zone_file_create.DeliveryZoneFileCreateAPIView.as_view()),
