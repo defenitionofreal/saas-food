@@ -5,8 +5,11 @@ from apps.delivery.api import (suggestions, geocode_address)
 app_name = 'delivery'
 
 urlpatterns = [
+    # suggestions to get right address string for a geocoder
     path('delivery/suggestions/', suggestions.KladrSuggestionsAPIView.as_view()),
-    path('delivery/organization-geocoder/', geocode_address.OrganizationYandexAddressGeocodeAPIView.as_view()),
+    # organization views
+    # path('delivery/organization-geocoder/', geocode_address.OrganizationYandexAddressGeocodeAPIView.as_view()),  # step 2
+
     # # organization views
     # path('delivery/new/', delivery_create.DeliveryCreateAPIView.as_view()),
     # path('delivery/list/', delivery_list.DeliveryListAPIView.as_view()),

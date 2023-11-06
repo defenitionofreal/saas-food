@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from apps.order.models import Cart
 
-
+# TODO: Order endpoints
 class OrderDetailAPIView(APIView):
     """
     Retrieve, update or delete a order instance.
