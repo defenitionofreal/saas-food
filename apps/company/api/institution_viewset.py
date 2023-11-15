@@ -40,6 +40,9 @@ class InstitutionViewSet(viewsets.ModelViewSet):
                                 OrganizationGeocoderTokenPermission]
             )
     def create_address(self, request, pk):
+        """
+        Create or update actual affiliate address
+        """
         institution = get_object_or_404(
             Institution, user_id=self.request.user.id, pk=pk
         )
@@ -63,6 +66,9 @@ class InstitutionViewSet(viewsets.ModelViewSet):
             serializer_class=InstitutionAddressSerializer
             )
     def address(self, request, pk):
+        """
+        Get or delete actual affiliate address
+        """
         institution = get_object_or_404(
             Institution, user_id=self.request.user.id, pk=pk
         )

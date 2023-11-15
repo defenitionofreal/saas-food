@@ -1,10 +1,16 @@
-from django.urls import path
-from apps.delivery.api import (suggestions, geocode_address)
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from apps.delivery.api import (suggestions, delivery_zone_viewset)
 
 
 app_name = 'delivery'
 
+router = DefaultRouter()
+router.register('delivery/zones', delivery_zone_viewset.OrganizationDeliveryZoneViewSet, basename='delivery-zone')
+
 urlpatterns = [
+    path('', include(router.urls)),
     # suggestions to get right address string for a geocoder
     path('delivery/suggestions/', suggestions.KladrSuggestionsAPIView.as_view()),
     # organization views
