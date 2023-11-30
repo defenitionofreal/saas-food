@@ -2,9 +2,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from django.conf import settings
 from apps.delivery.services.geocoder import KladrSuggestions
-
-import os
 
 
 class KladrSuggestionsAPIView(APIView):
@@ -14,6 +13,6 @@ class KladrSuggestionsAPIView(APIView):
 
     def post(self, request):
         query = request.data.get("query", None)
-        kladr = KladrSuggestions(os.environ.get("KLADR_API_KEY"))
+        kladr = KladrSuggestions(settings.KLADR_API_KEY)
         res = kladr.suggestions(query)
         return Response(res, status=status.HTTP_200_OK)

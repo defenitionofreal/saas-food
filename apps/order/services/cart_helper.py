@@ -38,21 +38,7 @@ class CartHelper:
             return value[0]
         return 0
 
-    # def _get_user_delivery_info(self):
-    #     if self.request.user.is_authenticated:
-    #         delivery_info = DeliveryInfo.objects.filter(user=self.request.user)
-    #     else:
-    #         delivery_info = DeliveryInfo.objects.filter(
-    #             session_id=self.request.session.session_key
-    #         )
-    #     if delivery_info.exists():
-    #         delivery_info = delivery_info.first()
-    #     else:
-    #         delivery_info = None
-    #
-    #     return delivery_info
-
-    def _cart_get_or_create(self) -> tuple:
+    def cart_get_or_create(self) -> tuple:
         if self.request.user.is_authenticated:
             cart, created = Cart.objects.get_or_create(
                 institution=self.institution,
@@ -76,10 +62,6 @@ class CartHelper:
                 status=OrderStatus.DRAFT,
                 session_id=self.request.session.session_key
             )
-        # todo: remake delivery info
-        # if self._get_user_delivery_info():
-        #     cart.delivery = self._get_user_delivery_info()
-        #     cart.save()
 
         return cart, created
 
@@ -137,6 +119,7 @@ class CartHelper:
             if key == "additive_ids" and value else value
             for key, value in kwargs.items()
         }
+        print("!!! HASH FIELD VALUES CHECK:", fields)  # todo: recheck for cart id
         product_fields_json = json.dumps(fields, sort_keys=True)
         hash_obj = hashlib.sha256()
         hash_obj.update(product_fields_json.encode('utf-8'))
@@ -144,8 +127,8 @@ class CartHelper:
 
         return item_hash
 
-    @staticmethod
-    def merge_cart_items(order_user: Cart = None, order_session: Cart = None):
+    @classmethod
+    def merge_cart_items(cls, order_user: Cart = None, order_session: Cart = None):
         """ Merge guest session cart with auth user cart """
         guest_items = order_session.products_cart.all()
         user_items = order_user.products_cart.all()
@@ -169,7 +152,7 @@ class CartHelper:
     # ======= ACTIONS =======
     def add_item(self):
         """ add new item to cart or update quantity of an item """
-        cart, cart_created = self._cart_get_or_create()
+        cart, cart_created = self.cart_get_or_create()
 
         product_slug = self.request.data.get("product_slug", None)
         modifier_req = self.request.data.get("modifier", None)
@@ -236,8 +219,7 @@ class CartHelper:
 
             if session_cart:
                 if not user_cart:
-                    user_cart, _ = self._cart_get_or_create()
-
+                    user_cart, _ = self.cart_get_or_create()
                 self.merge_cart_items(user_cart, session_cart)
 
             cart = user_cart

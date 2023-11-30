@@ -1,8 +1,14 @@
 from django.contrib import admin
 from apps.delivery.models import (
     DeliveryZone, CartDeliveryInfo, CustomerAddress, InstitutionAddress,
-    YandexGeocoderToken
+    YandexGeocoderToken, DeliveryTypeRule
 )
+
+
+@admin.register(DeliveryTypeRule)
+class DeliveryTypeRuleAdmin(admin.ModelAdmin):
+    list_display = ("user",)
+    raw_id_field = ("user",)
 
 
 @admin.register(YandexGeocoderToken)

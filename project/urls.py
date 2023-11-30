@@ -4,7 +4,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from project.yasg import urlpatterns as swagger_urls
 
-
+# TODO: УБРАТЬ ПУТИ ОТ ORGANIZATION, CUSTOMER И SHOWCASE.
+#  СДЕЛАТЬ из в путях от приложений как:
+#  delivery/organization... ,  delivery/customer... и так далее  !!!
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/base/', include('apps.base.urls', namespace='base')),

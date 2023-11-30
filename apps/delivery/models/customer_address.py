@@ -2,7 +2,6 @@ from django.db import models
 from apps.base.models import AddressBase
 
 
-
 class CustomerAddress(AddressBase):
     office = models.CharField(
         max_length=255,
@@ -35,6 +34,9 @@ class CustomerAddress(AddressBase):
 
     )
     is_main = models.BooleanField(
+        default=False
+    )
+    is_house = models.BooleanField(
         default=False
     )
 

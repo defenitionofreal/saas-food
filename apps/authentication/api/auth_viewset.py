@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 def validate_contact_input(input_str):
     """
-    Validate input_str if its an email or a phone.
+    Validate input_str if it's an email or a phone.
     """
     # Define regular expressions for email and phone number
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -127,7 +127,7 @@ class AuthViewSet(viewsets.ModelViewSet):
         Auth system for a customer.
 
         Detects contact field if its email or phone.
-        Email auth is set by default if organization dont have a sms provider.
+        Email auth is set by default if organization don't have a sms provider.
         So if its email auth and no user found with this email, we register him.
         If user found we check at first that email is confirmed and if it is,
         we login him.

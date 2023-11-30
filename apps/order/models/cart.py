@@ -1,8 +1,11 @@
+from typing import Optional
+
 from django.db import models
 from django.contrib.auth import get_user_model
 
 from phonenumber_field.modelfields import PhoneNumberField
 
+from apps.delivery.models import DeliveryZone, CartDeliveryInfo
 from apps.order.models import Bonus
 from apps.order.models.enums.order_status import OrderStatus
 from apps.order.services.coupon_helper import CouponHelper
@@ -57,13 +60,6 @@ class Cart(models.Model):
     email = models.EmailField(blank=True,
                               null=True)
     comment = models.TextField(max_length=1000, blank=True)
-    delivery = models.ForeignKey(
-        "delivery.CartDeliveryInfo",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="cart_delivery"
-    )
     payment_type = models.CharField(max_length=20,
                                     choices=PaymentType.choices,
                                     default=PaymentType.ONLINE)
@@ -81,6 +77,10 @@ class Cart(models.Model):
     paid = models.BooleanField(default=False)
 
     @property
+    def delivery(self) -> Optional[CartDeliveryInfo]:
+        return self.cartdeliveryinfo_set.first()
+
+    @property
     def get_total_cart(self) -> int:
         total = sum(
             [i.get_total_item_price for i in self.products_cart.all()]
@@ -88,70 +88,33 @@ class Cart(models.Model):
         return total
 
     @property
-    def get_delivery_price(self) -> int:
-        price = 0
-        if self.delivery and self.delivery.type.delivery_price:
-            price = self.delivery.type.delivery_price
-        return price
+    def get_delivery_price(self) -> Decimal:
+        return self.delivery.delivery_price if self.delivery else Decimal("0")
 
     @property
-    def get_free_delivery_amount(self) -> int:
-        amount = 0
-        if self.delivery and self.delivery.type.free_delivery_amount:
-            amount = self.delivery.type.free_delivery_amount
-        return amount
+    def get_free_delivery_amount(self) -> Decimal:
+        return self.delivery.free_delivery_amount if self.delivery else Decimal("0")
 
-    @property
-    def get_delivery_sale(self) -> int:
-        if self.delivery:
-            delivery_sale = self.delivery.type.sale_amount
-            total = self.get_total_cart
-            with_sale = self.get_total_cart_after_sale
-            if with_sale:
-                total = with_sale
-            if delivery_sale:
-                if self.delivery.type.sale_type == "absolute":
-                    return delivery_sale
-                if self.delivery.type.sale_type == "percent":
-                    return round((delivery_sale / Decimal('100')) * total)
-        return 0
 
     @property
     def get_min_delivery_order_amount(self) -> int:
-        amount = 0
-        if self.delivery:
-            amount = self.delivery.type.min_order_amount
-        return amount
+        return self.delivery.min_delivery_order_amount if self.delivery else 0
 
     @property
-    def get_delivery_zone(self) -> dict:
-        zones = self.institution.dz.filter(is_active=True)
-        if zones.exists() and self.delivery.type.delivery_type == DeliveryType.COURIER:
-            for zone in zones:
-                address = self.delivery.address.address
-                point = Point([json.loads(address.latitude),
-                               json.loads(address.longitude)])
-                polygon = Polygon(json.loads(
-                    zone.dz_coordinates.values_list("coordinates",
-                                                    flat=True)[0]))
-                if boolean_point_in_polygon(point, polygon):
-                    return {"title": zone.title,
-                            "price": zone.price,
-                            "free_delivery_amount": zone.free_delivery_amount,
-                            "min_order_amount": zone.min_order_amount,
-                            "delivery_time": zone.delivery_time}
-        return {}
+    def get_delivery_sale(self) -> int:
+        return self.delivery.delivery_sale if self.delivery else Decimal("0")
+
 
     @property
-    def delivery_cost(self) -> int:
+    def delivery_cost(self) -> int:  # todo: нигде не используется почему?
         cost = self.get_delivery_price
         if self.delivery.type.free_delivery_amount and self.get_total_cart_after_sale > self.delivery.type.free_delivery_amount:
             cost = 0
 
         if self.get_delivery_zone:
-            cost = self.get_delivery_zone["price"]
-            if self.get_delivery_zone["free_delivery_amount"]:
-                if self.get_total_cart_after_sale > self.get_delivery_zone["free_delivery_amount"]:
+            cost = self.get_delivery_zone.price
+            if self.get_delivery_zone.free_delivery_amount:
+                if self.get_total_cart_after_sale > self.get_delivery_zone.free_delivery_amount:
                     cost = 0
 
         if self.promo_code and self.promo_code.delivery_free is True:
@@ -167,25 +130,25 @@ class Cart(models.Model):
         return 0
 
     @property
-    def get_final_sale(self) -> int:
-        return self.get_promo_code_sale + self.customer_bonus
+    def get_final_sale(self) -> float:
+        """
+        Sale includes coupon and bonus amount if bonus rule exists
+        """
+        sale, promo_code_sale = self.get_promo_code_sale
+        bonus_rule = Bonus.objects.filter(
+            institutions=self.institution,
+            is_active=True,
+            is_promo_code=True
+        )
+        if self.customer_bonus > 0 and bonus_rule.exists():
+            sale = promo_code_sale + self.customer_bonus if bonus_rule else promo_code_sale
+        return sale
 
     @property
     def get_total_cart_after_sale(self) -> float:
-        # общая скидка с промокодом и бонусами если есть!
+        """ общая скидка с промокодом и бонусами если есть """
         # todo: по сути бессмыслица, удалить это поле и там где оно использется написать total - final_price
-        total = self.get_total_cart
-        sale = 0
-        if self.get_promo_code_sale:
-            sale = self.get_promo_code_sale
-        if self.customer_bonus > 0:
-            bonus = Bonus.objects.filter(
-                institutions=self.institution,
-                is_active=True,
-                is_promo_code=True
-            ).first()
-            return total - (sale + self.customer_bonus) if bonus else total - sale
-        return total - sale
+        return self.get_total_cart - self.get_final_sale
 
     @property
     def get_bonus_accrual(self):
@@ -228,13 +191,14 @@ class Cart(models.Model):
             if self.promo_code and self.promo_code.delivery_free:
                 total = total
             else:
+                # TODO
                 # check for courier type and delivery zone
                 if self.get_delivery_zone:
-                    if self.get_delivery_zone["free_delivery_amount"]:
-                        if total < self.get_delivery_zone["free_delivery_amount"]:
-                            total += self.get_delivery_zone["price"]
+                    if self.get_delivery_zone.free_delivery_amount:
+                        if total < self.get_delivery_zone.free_delivery_amount:
+                            total += self.get_delivery_zone.price
                     else:
-                        total += self.get_delivery_zone["price"]
+                        total += self.get_delivery_zone.price
                 else:
                     if free_delivery_amount:
                         if total < free_delivery_amount:

@@ -6,15 +6,10 @@ from apps.showcase.api import (
     extra_phone_client_list,
     work_hours_viewset,
     requisites,
-    delivery_client_list,
-    address_list,
-    delivery_zone_list,
     payment_type_list,
     queue_screen)
 
 from apps.showcase.api import (menu_viewset, category_viewset, banners_viewset)
-
-from apps.showcase.api.customer_actions import (delivery_info_create)
 
 from rest_framework.routers import DefaultRouter
 
@@ -42,12 +37,6 @@ urlpatterns = [
     path('<str:domain>/order/', include('apps.order.urls', namespace='order')),
     # payment
     path('payment/', include('apps.payment.urls', namespace='payment')),
-
-    # delivery todo refactor all delivery
-    # path('<str:domain>/delivery/', delivery_client_list.DeliveryClientListAPIView.as_view()),
-    path('<str:domain>/delivery-info/add/', delivery_info_create.DeliveryInfoAPIView.as_view()),
-    # path('<str:domain>/address/', address_list.AddressListAPIView.as_view()),
-    path('<str:domain>/delivery-zone/', delivery_zone_list.DeliveryZoneListAPIView.as_view()),
     # payment
     path('<str:domain>/payment/type/', payment_type_list.PaymentTypeClientListAPIView.as_view()),
 ]

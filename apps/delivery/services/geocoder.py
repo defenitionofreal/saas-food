@@ -37,7 +37,7 @@ class Geocoder(ABC):
     def address_data_after_yandex_geocoder(address_detail: dict) -> dict:
         address_data = address_detail["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]
         address_data_components = address_data["Components"]
-        postcode = address_data["postal_code"]
+        postcode = address_data["postal_code"] if "postal_code" in address_data else ""
         display_name = address_data["formatted"]
         coordinates = str(address_detail["GeoObject"]["Point"]["pos"]).split(" ")
         lon, lat = coordinates[0], coordinates[1]
@@ -110,8 +110,9 @@ class KladrSuggestions(Geocoder):
 
         result = response.json()["result"]
         suggestions = []
-        for suggestion in result:
-            info = {"query": suggestion["fullName"]}
-            suggestions.append(info)
+        if result:
+            for suggestion in result:
+                info = {"query": suggestion["fullName"]}
+                suggestions.append(info)
 
         return suggestions

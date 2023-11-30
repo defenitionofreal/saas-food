@@ -10,25 +10,9 @@ from apps.company.serializers import BasicInstitutionSerializer
 
 
 class DeliveryTypeRuleSerializer(serializers.ModelSerializer):
-    institutions = BasicInstitutionSerializer(many=True)
 
     class Meta:
         model = DeliveryTypeRule
-        field = "__all__"
-
-
-class CartDeliveryInfoSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = CartDeliveryInfo
-        field = "__all__"
-
-
-class DeliveryZoneSerializer(serializers.ModelSerializer):
-    """ delivery zone serializer """
-
-    class Meta:
-        model = DeliveryZone
         fields = "__all__"
         read_only_fields = ["user"]
 
@@ -37,7 +21,7 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
         validated_data["user"] = user
         institutions_data = validated_data.get("institutions")
         institution_qs = Institution.objects.filter(user=user)
-        instance_qs = DeliveryZone.objects.filter(user=user)
+        instance_qs = DeliveryTypeRule.objects.filter(user=user)
         validate_institution_list(
             institutions_data, institution_qs, instance_qs, check_duplicate=False
         )
@@ -66,3 +50,39 @@ class InstitutionAddressSerializer(serializers.ModelSerializer):
         model = InstitutionAddress
         fields = "__all__"
 
+
+class DeliveryZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryZone
+        fields = "__all__"
+        read_only_fields = ["user"]
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = DeliveryZone.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs, check_duplicate=False
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
+
+
+class CartDeliveryInfoSerializer(serializers.ModelSerializer):
+    type = DeliveryTypeRuleSerializer(read_only=True)
+    zone = DeliveryZoneSerializer(read_only=True)
+    customer_address = CustomerAddressSerializer(read_only=True)
+    institution_address = InstitutionAddressSerializer(read_only=True)
+
+    class Meta:
+        model = CartDeliveryInfo
+        fields = "__all__"

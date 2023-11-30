@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# TODO: может автоматом создавать все способы со старта так же как дни недели?
+# TODO: может автоматом создавать все способы со старта так же как дни недели? или permission?
 class PaymentTypeInstitution(models.Model):
     """
     Organization could create there payment types

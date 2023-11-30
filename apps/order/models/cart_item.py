@@ -36,7 +36,7 @@ class CartItem(models.Model):
         if self.modifier:
             price = self.modifier.price
         price += sum(additive.price for additive in self.additives.only("price"))
-        return price
+        return Decimal(price)
 
     @property
     def get_total_item_price(self):

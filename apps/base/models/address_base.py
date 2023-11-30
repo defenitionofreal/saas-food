@@ -38,7 +38,9 @@ class AddressBase(models.Model):
         max_length=255
     )
     postcode = models.CharField(
-        max_length=255
+        max_length=255,
+        blank=True,
+        null=True
     )
     # full string from nominatim api
     display_name = models.CharField(
