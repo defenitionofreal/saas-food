@@ -128,7 +128,6 @@ class Cart(models.Model):
     @property
     def get_total_with_sale(self) -> Decimal:
         """ общая скидка с промокодом и бонусами если есть """
-        # todo: по сути бессмыслица, удалить это поле и там где оно использется написать total - final_price
         total = self.get_total_cart - self.get_final_sale
         return total
 

@@ -67,6 +67,7 @@ class CartDeliveryInfo(models.Model):
         """ sale sum """
         delivery_sale = self.type.sale_amount
         if delivery_sale:
+            # fixme: problem recursion with percent type
             if self.type.sale_type == "percent":
                 total_with_sale = self.cart.get_total_with_sale
                 delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
