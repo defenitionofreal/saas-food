@@ -63,24 +63,24 @@ class CartDeliveryInfo(models.Model):
         return self.zone.min_order_amount if self.zone else self.type.min_order_amount
 
     @property
-    def delivery_sale(self) -> float:
-        """ """
-        total = self.cart.get_total_cart_after_sale
+    def delivery_sale(self) -> int:  # fixme: typing
+        """ sale sum """
         delivery_sale = self.type.sale_amount
         if delivery_sale:
             if self.type.sale_type == "percent":
-                delivery_sale = round((delivery_sale / Decimal("100")) * total)
+                total_with_sale = self.cart.get_total_with_sale
+                delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
             if self.type.sale_type == "absolute":
                 delivery_sale = delivery_sale
 
         return delivery_sale
 
     @property
-    def final_delivery_price(self) -> int:
-        """ """
-        cost = self.delivery_price
-        if self.cart.get_total_cart_after_sale > self.free_delivery_amount:
-            cost = 0
+    def final_delivery_price(self) -> Decimal:
+        """ price sum """
+        price = self.delivery_price
+        if self.cart.get_total_with_sale >= self.free_delivery_amount:
+            price = Decimal("0")
         if self.cart.promo_code and self.cart.promo_code.delivery_free:
-            cost = 0
-        return cost
+            price = Decimal("0")
+        return price

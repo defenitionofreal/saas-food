@@ -81,13 +81,6 @@ class Cart(models.Model):
         return self.cartdeliveryinfo_set.first()
 
     @property
-    def get_total_cart(self) -> int:
-        total = sum(
-            [i.get_total_item_price for i in self.products_cart.all()]
-        ) if self.products_cart.all() else 0
-        return total
-
-    @property
     def get_delivery_price(self) -> Decimal:
         return self.delivery.delivery_price if self.delivery else Decimal("0")
 
@@ -95,32 +88,20 @@ class Cart(models.Model):
     def get_free_delivery_amount(self) -> Decimal:
         return self.delivery.free_delivery_amount if self.delivery else Decimal("0")
 
-
     @property
     def get_min_delivery_order_amount(self) -> int:
         return self.delivery.min_delivery_order_amount if self.delivery else 0
 
     @property
-    def get_delivery_sale(self) -> int:
+    def get_delivery_sale(self) -> Decimal:
         return self.delivery.delivery_sale if self.delivery else Decimal("0")
 
-
     @property
-    def delivery_cost(self) -> int:  # todo: нигде не используется почему?
-        cost = self.get_delivery_price
-        if self.delivery.type.free_delivery_amount and self.get_total_cart_after_sale > self.delivery.type.free_delivery_amount:
-            cost = 0
-
-        if self.get_delivery_zone:
-            cost = self.get_delivery_zone.price
-            if self.get_delivery_zone.free_delivery_amount:
-                if self.get_total_cart_after_sale > self.get_delivery_zone.free_delivery_amount:
-                    cost = 0
-
-        if self.promo_code and self.promo_code.delivery_free is True:
-            cost = 0
-
-        return cost
+    def get_total_cart(self) -> int:
+        total = sum(
+            [i.get_total_item_price for i in self.products_cart.all()]
+        ) if self.products_cart.all() else 0
+        return total
 
     @property
     def get_promo_code_sale(self) -> int:
@@ -134,18 +115,22 @@ class Cart(models.Model):
         """
         Sale includes coupon and bonus amount if bonus rule exists
         """
-        sale, promo_code_sale = self.get_promo_code_sale
-        bonus_rule = Bonus.objects.filter(
+        promo_code_sale = self.get_promo_code_sale
+        customer_bonus = self.customer_bonus
+        has_coupon_bonus_rule = Bonus.objects.filter(
             institutions=self.institution,
             is_active=True,
             is_promo_code=True
-        )
-        if self.customer_bonus > 0 and bonus_rule.exists():
-            sale = promo_code_sale + self.customer_bonus if bonus_rule else promo_code_sale
+        ).exists()
+
+        sale = promo_code_sale + customer_bonus if customer_bonus and has_coupon_bonus_rule else promo_code_sale
+        if customer_bonus and not self.promo_code:
+            sale = customer_bonus
+
         return sale
 
     @property
-    def get_total_cart_after_sale(self) -> float:
+    def get_total_with_sale(self) -> float:
         """ общая скидка с промокодом и бонусами если есть """
         # todo: по сути бессмыслица, удалить это поле и там где оно использется написать total - final_price
         return self.get_total_cart - self.get_final_sale
@@ -176,41 +161,11 @@ class Cart(models.Model):
 
     @property
     def final_price(self) -> float:
-        total = self.get_total_cart_after_sale
-
-        # minus bonus points from total
-        if self.customer_bonus > 0:
-            bonus = Bonus.objects.get(institutions=self.institution)
-            if bonus.is_active and not bonus.is_promo_code:
-                return total - self.customer_bonus
-
-        if self.delivery:
-            delivery_price = self.delivery.type.delivery_price
-            free_delivery_amount = self.delivery.type.free_delivery_amount
-
-            if self.promo_code and self.promo_code.delivery_free:
-                total = total
-            else:
-                # TODO
-                # check for courier type and delivery zone
-                if self.get_delivery_zone:
-                    if self.get_delivery_zone.free_delivery_amount:
-                        if total < self.get_delivery_zone.free_delivery_amount:
-                            total += self.get_delivery_zone.price
-                    else:
-                        total += self.get_delivery_zone.price
-                else:
-                    if free_delivery_amount:
-                        if total < free_delivery_amount:
-                            total += total
-                    else:
-                        total += delivery_price
-
-                # if delivery type has a sale
-                delivery_sale = self.get_delivery_sale
-                if delivery_sale:
-                    total -= delivery_sale
-
+        """ """
+        # TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
+        delivery_sale = self.delivery.delivery_sale if self.delivery else 0
+        delivery_price = self.delivery.final_delivery_price if self.delivery else 0
+        total = (self.get_total_with_sale + delivery_price) - delivery_sale
         return Decimal("1") if total == 0 else total
 
     def __str__(self):
