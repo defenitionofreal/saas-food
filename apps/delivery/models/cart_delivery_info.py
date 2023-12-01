@@ -63,7 +63,7 @@ class CartDeliveryInfo(models.Model):
         return self.zone.min_order_amount if self.zone else self.type.min_order_amount
 
     @property
-    def delivery_sale(self) -> int:  # fixme: typing
+    def delivery_sale(self) -> int:
         """ sale sum """
         delivery_sale = self.type.sale_amount
         if delivery_sale:
@@ -72,7 +72,6 @@ class CartDeliveryInfo(models.Model):
                 delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
             if self.type.sale_type == "absolute":
                 delivery_sale = delivery_sale
-
         return delivery_sale
 
     @property

@@ -8,6 +8,7 @@ from apps.company.services.validate_institution import validate_institution_list
 from apps.product.serializers import SimpleModifierPriceSerializer, \
     SimpleAdditiveSerializer
 from apps.order.models import Cart, CartItem, PromoCode, Bonus, UserBonus
+from apps.delivery.serializers import CartDeliveryInfoSerializer
 from apps.order.services.bonus_helper import BonusHelper
 
 
@@ -135,24 +136,24 @@ class CartSerializer(serializers.ModelSerializer):
     promo_code = SimplePromoCodeSerializer(read_only=True, many=False)
     customer = SimpleUserSerializer(read_only=True, many=False)
     items = serializers.SerializerMethodField(read_only=True)
-
-    # delivery = DeliveryInfoCustomerSerializer(read_only=True, many=False)
-    # customer_info = serializers.SerializerMethodField()
-    delivery_info = serializers.SerializerMethodField()
-
-    # todo: nested inst ser and others, not serializer method!
+    delivery_info = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Cart
         fields = (
             'id', 'institution', 'customer', 'delivery_info',
             'payment_type', 'items', 'promo_code', 'customer_bonus',
-            'min_amount', 'get_total_cart', 'get_total_cart_after_sale',
-            'get_promo_code_sale', 'get_bonus_accrual', 'get_bonus_write_off',
+            'min_amount',
+
+            'get_total_cart', 'get_total_with_sale',
+            'get_promo_code_sale',
+            'get_bonus_accrual', 'get_bonus_write_off',
+
             'get_delivery_price', 'get_free_delivery_amount',
             'get_delivery_sale', 'get_min_delivery_order_amount',
-            'get_delivery_zone', 'get_final_sale', 'final_price', 'comment',
-            'created_at', 'updated_at', 'confirmed_date',
+            'get_final_sale', 'final_price',
+
+            'comment', 'created_at', 'updated_at', 'confirmed_date',
             "code", "status", "paid"
         )
 
@@ -161,16 +162,7 @@ class CartSerializer(serializers.ModelSerializer):
         serializer = ItemsSerializer(items, read_only=True, many=True)
         return serializer.data
 
-    def get_delivery_info(self, instance):
-        delivery_info = {
-            "type": instance.delivery.type.delivery_type if instance.delivery else None,
-            "address": instance.delivery.address.address.city if instance.delivery else None,
-            # fixme: json ser
-            "date": instance.delivery_date,
-            # todo: инфа должна быть в delivery_info ?
-            "time_from": instance.time_from,
-            # todo: инфа должна быть в delivery_info ?
-            "time_till": instance.time_till
-            # todo: инфа должна быть в delivery_info ?
-        }
-        return delivery_info
+    def get_delivery_info(self, instance) -> CartDeliveryInfoSerializer:
+        delivery_info = instance.delivery
+        serializer = CartDeliveryInfoSerializer(delivery_info, read_only=True)
+        return serializer.data

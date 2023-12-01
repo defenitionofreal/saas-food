@@ -31,7 +31,7 @@ class CartItem(models.Model):
         return f'{self.item}, {self.quantity}'
 
     @property
-    def get_item_price(self):
+    def get_item_price(self) -> Decimal:
         price = self.item.price
         if self.modifier:
             price = self.modifier.price
@@ -39,7 +39,7 @@ class CartItem(models.Model):
         return Decimal(price)
 
     @property
-    def get_total_item_price(self):
+    def get_total_item_price(self) -> Decimal:
         product_price = self.get_item_price
         quantity = self.quantity
         total_price = (product_price * quantity)

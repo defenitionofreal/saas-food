@@ -5,17 +5,12 @@ from django.contrib.auth import get_user_model
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from apps.delivery.models import DeliveryZone, CartDeliveryInfo
+from apps.delivery.models import CartDeliveryInfo
 from apps.order.models import Bonus
 from apps.order.models.enums.order_status import OrderStatus
 from apps.order.services.coupon_helper import CouponHelper
-
-
-from apps.delivery.models.enums import DeliveryType
 from apps.payment.models.enums import PaymentType
 
-from turfpy.measurement import boolean_point_in_polygon
-from geojson import Point, Polygon
 from decimal import Decimal
 
 
@@ -97,10 +92,10 @@ class Cart(models.Model):
         return self.delivery.delivery_sale if self.delivery else Decimal("0")
 
     @property
-    def get_total_cart(self) -> int:
+    def get_total_cart(self) -> Decimal:
         total = sum(
             [i.get_total_item_price for i in self.products_cart.all()]
-        ) if self.products_cart.all() else 0
+        ) if self.products_cart.all() else Decimal("0")
         return total
 
     @property
@@ -111,7 +106,7 @@ class Cart(models.Model):
         return 0
 
     @property
-    def get_final_sale(self) -> float:
+    def get_final_sale(self) -> int:
         """
         Sale includes coupon and bonus amount if bonus rule exists
         """
@@ -127,46 +122,60 @@ class Cart(models.Model):
         if customer_bonus and not self.promo_code:
             sale = customer_bonus
 
-        return sale
+        total = sale + self.delivery.delivery_sale if self.delivery else sale
+        return total
 
     @property
-    def get_total_with_sale(self) -> float:
+    def get_total_with_sale(self) -> Decimal:
         """ общая скидка с промокодом и бонусами если есть """
         # todo: по сути бессмыслица, удалить это поле и там где оно использется написать total - final_price
-        return self.get_total_cart - self.get_final_sale
+        total = self.get_total_cart - self.get_final_sale
+        return total
+
+    def _get_active_bonus_rule(self) -> Optional[Bonus]:
+        bonus_rule = Bonus.objects.filter(
+            institutions=self.institution, is_active=True
+        ).first()
+        return bonus_rule
 
     @property
-    def get_bonus_accrual(self):
-        """ max accrual amount """
-        bonus = Bonus.objects.get(institutions=self.institution)
-        total_accrual = 0
-        if bonus.is_active:
+    def get_bonus_accrual(self) -> int:
+        """ Max accrual amount """
+        bonus_rule = self._get_active_bonus_rule()
+        total = 0
+        if bonus_rule:
             if self.promo_code:
-                total_accrual = round((bonus.accrual / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
+                total = round((bonus_rule.accrual / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
             else:
-                total_accrual = round((bonus.accrual / Decimal('100')) * self.get_total_cart)
-        return total_accrual
+                total = round((bonus_rule.accrual / Decimal('100')) * self.get_total_cart)
+        return total
 
     @property
-    def get_bonus_write_off(self):
-        """ max write off amount """
-        bonus = Bonus.objects.get(institutions=self.institution)
-        total_write_off = 0
-        if bonus.is_active:
+    def get_bonus_write_off(self) -> int:
+        """ Max write off amount """
+        bonus_rule = self._get_active_bonus_rule()
+        total = 0
+        if bonus_rule:
             if self.promo_code:
-                total_write_off = round((bonus.write_off / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
+                total = round((bonus_rule.write_off / Decimal('100')) * (self.get_total_cart - self.get_promo_code_sale))
             else:
-                total_write_off = round((bonus.write_off / Decimal('100')) * self.get_total_cart)
-        return total_write_off
+                total = round((bonus_rule.write_off / Decimal('100')) * self.get_total_cart)
+        return total
 
     @property
     def final_price(self) -> float:
         """ """
         # TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
-        delivery_sale = self.delivery.delivery_sale if self.delivery else 0
         delivery_price = self.delivery.final_delivery_price if self.delivery else 0
-        total = (self.get_total_with_sale + delivery_price) - delivery_sale
-        return Decimal("1") if total == 0 else total
+        total = self.get_total_with_sale + delivery_price
+        return Decimal("1") if total == 0 else total  # fixme: typing
+
+    @property
+    def get_min_order_amount_for_checkout(self):
+        """
+        вывести все условия мин суммы заказа для чекаута из самого заказа или из доставки
+        """
+        pass
 
     def __str__(self):
         return f'{self.id}: {self.institution}, {self.customer}, ' \

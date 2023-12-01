@@ -7,7 +7,7 @@ from apps.delivery.models import (
 
 @admin.register(DeliveryTypeRule)
 class DeliveryTypeRuleAdmin(admin.ModelAdmin):
-    list_display = ("user",)
+    list_display = ("user", "delivery_type")
     raw_id_field = ("user",)
 
 
