@@ -13,9 +13,6 @@ from apps.payment.models.enums import PaymentType
 
 from decimal import Decimal
 
-
-import json
-
 User = get_user_model()
 
 
@@ -88,8 +85,8 @@ class Cart(models.Model):
         return self.delivery.min_delivery_order_amount if self.delivery else 0
 
     @property
-    def get_delivery_sale(self) -> Decimal:
-        return self.delivery.delivery_sale if self.delivery else Decimal("0")
+    def get_delivery_sale(self) -> int:
+        return self.delivery.delivery_sale if self.delivery else 0
 
     @property
     def get_total_cart(self) -> Decimal:
@@ -106,9 +103,9 @@ class Cart(models.Model):
         return 0
 
     @property
-    def get_final_sale(self) -> int:
+    def get_coupon_and_bonus_sale(self) -> int:
         """
-        Sale includes coupon and bonus amount if bonus rule exists
+        Sale includes coupon, bonus amount
         """
         promo_code_sale = self.get_promo_code_sale
         customer_bonus = self.customer_bonus
@@ -122,11 +119,18 @@ class Cart(models.Model):
         if customer_bonus and not self.promo_code:
             sale = customer_bonus
 
-        total = sale + self.delivery.delivery_sale if self.delivery else sale
+        return sale
+
+    @property
+    def get_final_sale(self) -> int:
+        """
+        Sale includes coupon, bonus amount and delivery sale
+        """
+        total = self.get_coupon_and_bonus_sale + self.get_delivery_sale
         return total
 
     @property
-    def get_total_with_sale(self) -> Decimal:
+    def get_total_with_final_sale(self) -> Decimal:
         """ общая скидка с промокодом и бонусами если есть """
         total = self.get_total_cart - self.get_final_sale
         return total
@@ -166,7 +170,7 @@ class Cart(models.Model):
         """ """
         # TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
         delivery_price = self.delivery.final_delivery_price if self.delivery else 0
-        total = self.get_total_with_sale + delivery_price
+        total = self.get_total_with_final_sale + delivery_price
         return Decimal("1") if total == 0 else total  # fixme: typing
 
     @property
@@ -174,7 +178,10 @@ class Cart(models.Model):
         """
         вывести все условия мин суммы заказа для чекаута из самого заказа или из доставки
         """
-        pass
+        # todo: как учесть два варианта сразу?
+        cart_value = self.min_amount
+        delivery_zone_value = self.get_min_delivery_order_amount
+        return delivery_zone_value if delivery_zone_value else cart_value
 
     def __str__(self):
         return f'{self.id}: {self.institution}, {self.customer}, ' \

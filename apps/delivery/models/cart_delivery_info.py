@@ -67,9 +67,8 @@ class CartDeliveryInfo(models.Model):
         """ sale sum """
         delivery_sale = self.type.sale_amount
         if delivery_sale:
-            # fixme: problem recursion with percent type
             if self.type.sale_type == "percent":
-                total_with_sale = self.cart.get_total_with_sale
+                total_with_sale = self.cart.get_total_cart - self.cart.get_coupon_and_bonus_sale
                 delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
             if self.type.sale_type == "absolute":
                 delivery_sale = delivery_sale
@@ -79,7 +78,7 @@ class CartDeliveryInfo(models.Model):
     def final_delivery_price(self) -> Decimal:
         """ price sum """
         price = self.delivery_price
-        if self.cart.get_total_with_sale >= self.free_delivery_amount:
+        if self.cart.get_total_with_final_sale >= self.free_delivery_amount:
             price = Decimal("0")
         if self.cart.promo_code and self.cart.promo_code.delivery_free:
             price = Decimal("0")
