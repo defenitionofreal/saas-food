@@ -90,50 +90,25 @@ class Cart(models.Model):
 
     @property
     def get_total_cart(self) -> Decimal:
-        total = sum(
-            [i.get_total_item_price for i in self.products_cart.all()]
-        ) if self.products_cart.all() else Decimal("0")
+        total = sum([i.get_total_item_price for i in self.products_cart.all()]
+                    ) if self.products_cart.all() else Decimal("0")
         return total
 
+    #todo: как-то нужно get_promo_code_sale не использовать в других методах а использовать только значение?
     @property
     def get_promo_code_sale(self) -> int:
-        if self.promo_code and self.customer:
-            helper = CouponHelper(self.promo_code, self, self.customer)
-            return helper.final_sale()[0]
+        # if self.promo_code and self.customer:
+        #     return CouponHelper(self.promo_code, self).final_sale()[0]
         return 0
-
-    @property
-    def get_coupon_and_bonus_sale(self) -> int:
-        """
-        Sale includes coupon, bonus amount
-        """
-        promo_code_sale = self.get_promo_code_sale
-        customer_bonus = self.customer_bonus
-        has_coupon_bonus_rule = Bonus.objects.filter(
-            institutions=self.institution,
-            is_active=True,
-            is_promo_code=True
-        ).exists()
-
-        sale = promo_code_sale + customer_bonus if customer_bonus and has_coupon_bonus_rule else promo_code_sale
-        if customer_bonus and not self.promo_code:
-            sale = customer_bonus
-
-        return sale
 
     @property
     def get_final_sale(self) -> int:
         """
         Sale includes coupon, bonus amount and delivery sale
         """
-        total = self.get_coupon_and_bonus_sale + self.get_delivery_sale
-        return total
-
-    @property
-    def get_total_with_final_sale(self) -> Decimal:
-        """ общая скидка с промокодом и бонусами если есть """
-        total = self.get_total_cart - self.get_final_sale
-        return total
+        return sum([self.get_promo_code_sale,
+                    self.customer_bonus,
+                    self.get_delivery_sale])
 
     def _get_active_bonus_rule(self) -> Optional[Bonus]:
         bonus_rule = Bonus.objects.filter(
@@ -144,6 +119,7 @@ class Cart(models.Model):
     @property
     def get_bonus_accrual(self) -> int:
         """ Max accrual amount """
+        # fixme: не учитывается скидка из доставки, нужно ли? (только с промокодом)
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
@@ -156,6 +132,7 @@ class Cart(models.Model):
     @property
     def get_bonus_write_off(self) -> int:
         """ Max write off amount """
+        # fixme: не учитывается скидка из доставки, нужно ли? (только с промокодом)
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
@@ -166,12 +143,12 @@ class Cart(models.Model):
         return total
 
     @property
-    def final_price(self) -> float:
+    def final_price(self) -> Decimal:
         """ """
         # TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
         delivery_price = self.delivery.final_delivery_price if self.delivery else 0
-        total = self.get_total_with_final_sale + delivery_price
-        return Decimal("1") if total == 0 else total  # fixme: typing
+        total = self.get_total_cart - self.get_final_sale + delivery_price
+        return max(total, Decimal("1"))
 
     @property
     def get_min_order_amount_for_checkout(self):

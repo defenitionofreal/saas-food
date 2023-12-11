@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from rest_framework.exceptions import ValidationError
 from apps.delivery.models.enums import (DeliveryType,
                                         SaleType,
                                         PaymentType)
@@ -54,6 +54,11 @@ class DeliveryTypeRule(models.Model):
     is_active = models.BooleanField(
         default=True
     )
+
+    def clean(self):
+        super().clean()
+        if self.sale_type == SaleType.PERCENT and self.sale_amount > 100:
+            raise ValidationError({"detail": "Sale cannot be greater than 100 for percent type"})
 
     def __str__(self):
         return f"{self.id}: {self.delivery_type}"

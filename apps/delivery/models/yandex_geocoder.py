@@ -1,5 +1,6 @@
 from django.db import models
 from apps.base.models.custom_user import CustomUser
+from apps.base.models import SecureCharField
 
 
 class YandexGeocoderToken(models.Model):
@@ -8,11 +9,7 @@ class YandexGeocoderToken(models.Model):
         limit_choices_to={"is_organization": True},
         on_delete=models.CASCADE
     )
-    # todo: tokenize it
-    api_key = models.CharField(
-        max_length=500,
-        unique=True
-    )
+    api_key = SecureCharField(unique=True)
 
     def save(self, *args, **kwargs):
         if self.user.is_organization:

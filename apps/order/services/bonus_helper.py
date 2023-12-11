@@ -72,6 +72,7 @@ class BonusHelper:
         self._validate_input_amount_smaller_user_bonus_balance()
         self._validate_input_amount_smaller_write_off_amount()
         self._validate_use_bonuses_with_applied_coupon()
+        # todo: check final cart price!!!
 
         self.cart.customer_bonus = self.amount
         self.cart.save()

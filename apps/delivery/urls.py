@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 
 from apps.delivery.api import (
     suggestions, delivery_zone_viewset, institution_address_viewset,
-    customer_address_viewset, delivery_type_rule_viewset
+    customer_address_viewset, delivery_type_rule_viewset,
+    yandex_geocoder_viewset
 )
 
 
@@ -13,6 +14,8 @@ router = DefaultRouter()
 router.register('delivery/organization/type-rules', delivery_type_rule_viewset.DeliveryTypeRuleViewSet, basename='delivery-type-rule')
 router.register('delivery/organization/zones', delivery_zone_viewset.OrganizationDeliveryZoneViewSet, basename='delivery-zone')
 router.register('delivery/organization/address', institution_address_viewset.InstitutionAddressViewSet, basename='delivery-address')
+router.register('delivery/organization/geocoder', yandex_geocoder_viewset.YandexGeocoderViewSet, basename='geocoder')
+
 router.register('delivery/customer/address', customer_address_viewset.CustomerAddressViewSet, basename='delivery-customer-zone')
 
 

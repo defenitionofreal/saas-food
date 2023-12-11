@@ -4,9 +4,21 @@ from apps.company.models import Institution
 from apps.company.services.validate_institution import validate_institution_list
 from apps.delivery.models import (
     DeliveryTypeRule, DeliveryZone, CartDeliveryInfo, CustomerAddress,
-    InstitutionAddress
+    InstitutionAddress, YandexGeocoderToken
 )
 from apps.company.serializers import BasicInstitutionSerializer
+
+
+class YandexGeocoderTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YandexGeocoderToken
+        fields = "__all__"
+        read_only_fields = ["user"]
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        kwargs["user"] = user
+        return super().save(**kwargs)
 
 
 class DeliveryTypeRuleSerializer(serializers.ModelSerializer):

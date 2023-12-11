@@ -199,3 +199,6 @@ SMS_AERO_API_SIGN = "SMS Aero"
 
 STRIPE_SK = os.environ.get("STRIPE_SK")
 KLADR_API_KEY = os.environ.get("KLADR_API_KEY")
+
+ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
+SECURE_SALT = os.environ.get("SECURE_SALT")

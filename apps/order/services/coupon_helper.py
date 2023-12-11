@@ -13,20 +13,26 @@ class CouponHelper:
     Main coupon class with all needed funcs and counts
     """
 
-    def __init__(self, coupon, cart, user):
+    def __init__(self, coupon, cart):
         self.coupon = coupon
         self.cart = cart
-        self.user = user
 
     def final_sale(self) -> tuple:
+        """
+
+        """
         final_sale = 0
         amount_for_sale = 0
+
         coupon_sale = self.coupon.sale
         coupon_categories = self.coupon.categories.all()
         coupon_products = self.coupon.products.all()
-        cart_items = self.cart.products_cart.only("item", "quantity", "modifier", "additives")
 
-        print("CART ITEMS QS", cart_items) # fixme: repeats 5 times!
+        cart_items = self.cart.products_cart.only(
+            "item", "quantity", "modifier", "additives"
+        )
+
+        print("CART ITEMS QS", cart_items)  # fixme: repeats 5 times!
 
         # only categories products
         if coupon_categories and not coupon_products:
@@ -55,38 +61,40 @@ class CouponHelper:
 
         # no cats and no products, so look to the cart total
         if not coupon_products and not coupon_categories:
-            amount_for_sale = self.cart.get_total_cart
+            # fixme: final cart price must be!
+            amount_for_sale = self.cart.get_total_cart # - self.cart.get_delivery_sale - self.cart.customer_bonus
 
         if self.coupon.code_type == 'absolute':
             final_sale = coupon_sale if coupon_sale >= 0.0 else 0.0
-            return final_sale, amount_for_sale
-
         if self.coupon.code_type == 'percent':
             final_sale = round((coupon_sale / Decimal('100')) * amount_for_sale)
-            return final_sale, amount_for_sale
 
         return final_sale, amount_for_sale
 
     # RULES
     def validate_coupon_with_bonus(self):
-        bonus = self.cart.institution.bonuses.filter(is_active=True).first()
-        if self.cart.customer_bonus > 0 and bonus and not bonus.is_promo_code:
+        bonus_rule = self.cart.institution.bonuses.filter(
+            is_active=True, is_promo_code=True
+        ).first()
+        if self.cart.customer_bonus > 0 and not bonus_rule:
             raise ValidationError(
                 {"detail": "Use promo code with bonuses is not allowed."})
 
     def validate_sale(self):
         """ Not allowing to write off more than a final price """
+        # todo: recheck
         code_type = self.coupon.code_type
         if code_type == SaleType.ABSOLUTE and (self.final_sale()[1] - self.coupon.sale) <= 0:
             raise ValidationError({"detail": f"Sale {self.final_sale()[0]} is bigger than {self.final_sale()[1]}"})
         if code_type == SaleType.PERCENT and self.coupon.sale > 100:
             raise ValidationError({"detail": "Sale is bigger 100%"})
 
-    def validate_total_cart(self):
+    def validate_final_cart_price(self):
         """
         Not allowing to use coupon if min coupon cart price > actual cart total
         """
-        if self.coupon.cart_total > 0 and self.cart.get_total_cart < self.coupon.cart_total:
+        # fixme: must be final price
+        if self.coupon.cart_total > 0 and self.cart.final_price < self.coupon.cart_total:
             raise ValidationError(
                 {"detail": f"Cart price has to be more {self.coupon.cart_total}"})
 
@@ -135,15 +143,15 @@ class CouponHelper:
         if self.coupon.code_use > 0 and self.coupon.num_uses >= self.coupon.code_use:
             raise ValidationError({"detail": "Max level exceeded for coupon."})
 
-    def validate_user_num_uses(self) -> PromoCodeUser:
+    def validate_user_num_uses(self, user) -> PromoCodeUser:
         coupon_per_user, _ = PromoCodeUser.objects.get_or_create(
-            code=self.coupon, user=self.user
+            code=self.coupon, user=user
         )
         if self.coupon.code_use_by_user > 0 and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
             raise ValidationError({"detail": "User's max level exceeded for coupon."})
         return coupon_per_user
 
-    def main(self):
+    def main(self, user):
 
         if self.cart.promo_code:
             raise ValidationError({"detail": "Promo code already applied."})
@@ -153,14 +161,14 @@ class CouponHelper:
 
         self.validate_coupon_with_bonus()
         self.validate_sale()
-        self.validate_total_cart()
+        self.validate_final_cart_price()
         self.validate_dates()
         self.validate_tied_categories()
         self.validate_tied_products()
         self.validate_tied_products_and_categories_together()
         self.validate_num_uses()
 
-        user_num_uses_rule = self.validate_user_num_uses()
+        user_num_uses_rule = self.validate_user_num_uses(user=user)
         if isinstance(user_num_uses_rule, PromoCodeUser):
             user_num_uses_rule.num_uses += 1
             user_num_uses_rule.save()

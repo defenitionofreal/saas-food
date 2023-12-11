@@ -145,7 +145,7 @@ class CartSerializer(serializers.ModelSerializer):
             'payment_type', 'items', 'promo_code', 'customer_bonus',
             'min_amount',
 
-            'get_total_cart', 'get_total_with_final_sale',
+            'get_total_cart',
             'get_promo_code_sale',
             'get_bonus_accrual', 'get_bonus_write_off',
 

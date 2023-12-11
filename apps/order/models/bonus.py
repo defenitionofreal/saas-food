@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 
 User = get_user_model()
 
@@ -20,8 +21,12 @@ class Bonus(models.Model):
         related_name="bonuses"
     )
     is_active = models.BooleanField(default=False)
-    write_off = models.PositiveIntegerField()  # %
-    accrual = models.PositiveIntegerField()  # %
+    write_off = models.PositiveIntegerField(
+        validators=[MaxValueValidator(100)]
+    )  # %
+    accrual = models.PositiveIntegerField(
+        validators=[MaxValueValidator(100)]
+    )  # %
     is_promo_code = models.BooleanField(default=False)
     is_registration_bonus = models.BooleanField(default=False)
     # TODO: добавить функций для бонуса при регистрации

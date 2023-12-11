@@ -236,8 +236,8 @@ class CartHelper:
 
     def add_coupon(self, code) -> Response:
         cart = self.get_cart()
-        coupon = CouponHelper(code, cart, self.request.user)
-        return coupon.main()
+        coupon = CouponHelper(code, cart)
+        return coupon.main(user=self.request.user)
 
     def add_bonuses(self, amount: int):
         cart = self.get_cart()

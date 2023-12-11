@@ -1,6 +1,8 @@
 from django.db import models
-from apps.delivery.models.enums import SaleType
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+
+from apps.delivery.models.enums import SaleType
 
 User = get_user_model()
 
@@ -34,20 +36,12 @@ class PromoCode(models.Model):
     num_uses = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=False)
 
+    def clean(self):
+        super().clean()
+        if self.code_type == SaleType.PERCENT and self.sale > 100:
+            raise ValidationError(
+                {"detail": "Sale cannot be greater than 100 for percent type"}
+            )
+
     def __str__(self):
         return self.title
-
-
-class PromoCodeUser(models.Model):
-    """
-    Model to tie coupon and a user together.
-    So we can check how many times coupon have been used by user.
-    """
-    code = models.ForeignKey(PromoCode, related_name='users',
-                             on_delete=models.CASCADE)
-    user = models.ForeignKey(User, null=True, blank=True,
-                             on_delete=models.CASCADE)
-    num_uses = models.PositiveIntegerField(default=0, editable=False)
-
-    def __str__(self):
-        return f'{self.user.phone}: {self.code}'
