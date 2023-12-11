@@ -62,7 +62,7 @@ class CouponHelper:
         # no cats and no products, so look to the cart total
         if not coupon_products and not coupon_categories:
             # fixme: final cart price must be!
-            amount_for_sale = self.cart.get_total_cart # - self.cart.get_delivery_sale - self.cart.customer_bonus
+            amount_for_sale = self.cart.get_total_cart - self.cart.customer_bonus  # - self.cart.get_delivery_sale
 
         if self.coupon.code_type == 'absolute':
             final_sale = coupon_sale if coupon_sale >= 0.0 else 0.0

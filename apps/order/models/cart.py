@@ -77,16 +77,16 @@ class Cart(models.Model):
         return self.delivery.delivery_price if self.delivery else Decimal("0")
 
     @property
+    def get_final_delivery_price(self) -> Decimal:
+        return self.delivery.final_delivery_price if self.delivery else Decimal("0")
+
+    @property
     def get_free_delivery_amount(self) -> Decimal:
         return self.delivery.free_delivery_amount if self.delivery else Decimal("0")
 
     @property
     def get_min_delivery_order_amount(self) -> int:
         return self.delivery.min_delivery_order_amount if self.delivery else 0
-
-    @property
-    def get_delivery_sale(self) -> int:
-        return self.delivery.delivery_sale if self.delivery else 0
 
     @property
     def get_total_cart(self) -> Decimal:
@@ -97,8 +97,8 @@ class Cart(models.Model):
     #todo: как-то нужно get_promo_code_sale не использовать в других методах а использовать только значение?
     @property
     def get_promo_code_sale(self) -> int:
-        # if self.promo_code and self.customer:
-        #     return CouponHelper(self.promo_code, self).final_sale()[0]
+        if self.promo_code and self.customer:
+            return CouponHelper(self.promo_code, self).final_sale()[0]
         return 0
 
     @property
@@ -106,9 +106,7 @@ class Cart(models.Model):
         """
         Sale includes coupon, bonus amount and delivery sale
         """
-        return sum([self.get_promo_code_sale,
-                    self.customer_bonus,
-                    self.get_delivery_sale])
+        return sum([self.get_promo_code_sale, self.customer_bonus])
 
     def _get_active_bonus_rule(self) -> Optional[Bonus]:
         bonus_rule = Bonus.objects.filter(
@@ -145,9 +143,8 @@ class Cart(models.Model):
     @property
     def final_price(self) -> Decimal:
         """ """
-        # TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
-        delivery_price = self.delivery.final_delivery_price if self.delivery else 0
-        total = self.get_total_cart - self.get_final_sale + delivery_price
+        #TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
+        total = self.get_total_cart - self.get_final_sale + self.get_final_delivery_price
         return max(total, Decimal("1"))
 
     @property
@@ -155,7 +152,7 @@ class Cart(models.Model):
         """
         вывести все условия мин суммы заказа для чекаута из самого заказа или из доставки
         """
-        # todo: как учесть два варианта сразу?
+        #todo: как учесть два варианта сразу?
         cart_value = self.min_amount
         delivery_zone_value = self.get_min_delivery_order_amount
         return delivery_zone_value if delivery_zone_value else cart_value

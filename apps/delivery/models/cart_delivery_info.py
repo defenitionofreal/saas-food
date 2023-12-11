@@ -62,17 +62,17 @@ class CartDeliveryInfo(models.Model):
     def min_delivery_order_amount(self) -> int:
         return self.zone.min_order_amount if self.zone else self.type.min_order_amount
 
-    @property
-    def delivery_sale(self) -> int:
-        """ sale sum """
-        delivery_sale = self.type.sale_amount
-        if delivery_sale:
-            # if self.type.sale_type == "percent":
-            #     total_with_sale = self.cart.get_total_cart - self.cart.get_promo_code_sale - self.cart.customer_bonus
-            #     delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
-            if self.type.sale_type == "absolute":
-                delivery_sale = delivery_sale
-        return delivery_sale
+    # @property
+    # def delivery_sale(self) -> int:
+    #     """ sale sum """
+    #     delivery_sale = self.type.sale_amount
+    #     if delivery_sale:
+    #         if self.type.sale_type == "percent":
+    #             total_with_sale = self.cart.get_total_cart - self.cart.customer_bonus  # - self.cart.get_promo_code_sale
+    #             delivery_sale = round((delivery_sale / Decimal("100")) * total_with_sale)
+    #         if self.type.sale_type == "absolute":
+    #             delivery_sale = delivery_sale
+    #     return delivery_sale
 
     @property
     def final_delivery_price(self) -> Decimal:
@@ -80,6 +80,6 @@ class CartDeliveryInfo(models.Model):
         price = self.delivery_price
         if self.cart.get_total_cart - self.cart.get_final_sale >= self.free_delivery_amount:
             price = Decimal("0")
-        if self.cart.promo_code and self.cart.promo_code.delivery_free:
+        if self.cart.promo_code and self.cart.promo_code.is_delivery_free:
             price = Decimal("0")
         return price

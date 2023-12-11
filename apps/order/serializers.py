@@ -126,7 +126,7 @@ class SimplePromoCodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PromoCode
-        fields = ["title", "code", "code_type", "sale"]
+        fields = ["title", "code", "code_type", "sale", "is_delivery_free"]
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -145,12 +145,12 @@ class CartSerializer(serializers.ModelSerializer):
             'payment_type', 'items', 'promo_code', 'customer_bonus',
             'min_amount',
 
-            'get_total_cart',
-            'get_promo_code_sale',
+            'get_total_cart', 'get_promo_code_sale',
             'get_bonus_accrual', 'get_bonus_write_off',
 
             'get_delivery_price', 'get_free_delivery_amount',
-            'get_delivery_sale', 'get_min_delivery_order_amount',
+            'get_min_delivery_order_amount', 'get_final_delivery_price',
+
             'get_final_sale', 'final_price',
 
             'comment', 'created_at', 'updated_at', 'confirmed_date',

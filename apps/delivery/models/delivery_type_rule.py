@@ -37,16 +37,17 @@ class DeliveryTypeRule(models.Model):
         help_text="Delivery is free if total cart is bigger than this "
                   "but if delivery_price is bigger than 0 (optional)"
     )
-    sale_type = models.CharField(
-        max_length=20,
-        choices=SaleType.choices,
-        blank=True,
-        null=True,
-        help_text="Sale for a specific delivery type (optional)"
-    )
-    sale_amount = models.PositiveIntegerField(
-        default=0
-    )
+    # fixme: make it work together with get_promo_code_sale !
+    # sale_type = models.CharField(
+    #     max_length=20,
+    #     choices=SaleType.choices,
+    #     blank=True,
+    #     null=True,
+    #     help_text="Sale for a specific delivery type (optional)"
+    # )
+    # sale_amount = models.PositiveIntegerField(
+    #     default=0
+    # )
     min_order_amount = models.PositiveIntegerField(
         default=0,
         help_text="Minimum total cart price to use delivery (optional)"
@@ -55,10 +56,10 @@ class DeliveryTypeRule(models.Model):
         default=True
     )
 
-    def clean(self):
-        super().clean()
-        if self.sale_type == SaleType.PERCENT and self.sale_amount > 100:
-            raise ValidationError({"detail": "Sale cannot be greater than 100 for percent type"})
+    # def clean(self):
+    #     super().clean()
+    #     if self.sale_type == SaleType.PERCENT and self.sale_amount > 100:
+    #         raise ValidationError({"detail": "Sale cannot be greater than 100 for percent type"})
 
     def __str__(self):
         return f"{self.id}: {self.delivery_type}"
