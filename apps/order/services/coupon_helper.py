@@ -5,7 +5,6 @@ from apps.delivery.models.enums import SaleType
 from decimal import Decimal
 
 import datetime
-import itertools
 
 
 class CouponHelper:
@@ -16,58 +15,85 @@ class CouponHelper:
     def __init__(self, coupon, cart):
         self.coupon = coupon
         self.cart = cart
-
-    def final_sale(self) -> tuple:
-        """
-
-        """
-        final_sale = 0
-        amount_for_sale = 0
-
-        coupon_sale = self.coupon.sale
-        coupon_categories = self.coupon.categories.all()
-        coupon_products = self.coupon.products.all()
-
-        cart_items = self.cart.products_cart.only(
+        self.cart_items = self.cart.products_cart.select_related("item").only(
             "item", "quantity", "modifier", "additives"
         )
+        self.coupon_categories = self.coupon.categories.all()
+        self.coupon_products = self.coupon.products.all()
+        self.amount_for_sale = self.cart_items_amount_for_coupon_sale()
+        self.final_sale = self.cart_coupon_final_sale()
 
-        # only categories products
-        if coupon_categories and not coupon_products:
-            for cat in coupon_categories:
-                products = cat.products.filter(is_active=True).only("id")
-                for product, cart_item in itertools.product(products, cart_items):
-                    if product.id == cart_item.item.id:
-                        amount_for_sale += cart_item.get_total_item_price
+    def __coupon_categories_amount(self) -> Decimal:
+        """
+        If coupon has only some categories to apply
+        """
+        amount_for_sale = 0
+        if self.coupon_categories and not self.coupon_products:
+            product_ids = set(
+                product.id for coupon_category in self.coupon_categories for product
+                in coupon_category.products.filter(is_active=True).only("id"))
+            amount_for_sale = sum(cart_item.get_total_item_price
+                                  for cart_item in self.cart_items
+                                  if cart_item.item.id in product_ids)
+        return Decimal(amount_for_sale)
 
-        # only still products
-        if coupon_products and not coupon_categories:
-            for product, cart_item in itertools.product(coupon_products, cart_items):
-                if product.id == cart_item.item.id:
-                    amount_for_sale += cart_item.get_total_item_price
+    def __coupon_products_amount(self) -> Decimal:
+        """
+        If coupon has only some products to apply
+        """
+        amount_for_sale = 0
+        if self.coupon_products and not self.coupon_categories:
+            product_ids = set(product.id for product in self.coupon_products)
+            amount_for_sale += sum(cart_item.get_total_item_price
+                                   for cart_item in self.cart_items
+                                   if cart_item.item.id in product_ids)
+        return Decimal(amount_for_sale)
 
-        # categories and products together
-        if coupon_products and coupon_categories:
-            coupon_items = [product.id
-                            for cat in coupon_categories
-                            for product in cat.products.filter(is_active=True).only("id")]
-            coupon_items += [product.id for product in coupon_products]
-            coupon_items = list(set(coupon_items))
-            matching_items = cart_items.filter(item_id__in=coupon_items)
-            for cart_item in matching_items:
-                amount_for_sale += cart_item.get_total_item_price
+    def __coupon_categories_and_products_amount(self) -> Decimal:
+        """
+        If coupon has only some categories and products to apply
+        """
+        amount_for_sale = 0
+        if self.coupon_products and self.coupon_categories:
+            coupon_item_ids = set(product.id for cat in self.coupon_categories
+                                  for product in cat.products.filter(is_active=True).only("id"))
+            coupon_item_ids.update(product.id for product in self.coupon_products)
+            matching_items = self.cart_items.filter(item_id__in=coupon_item_ids)
+            amount_for_sale += sum(cart_item.get_total_item_price
+                                   for cart_item in matching_items)
+        return Decimal(amount_for_sale)
 
-        # no cats and no products, so look to the cart total
-        if not coupon_products and not coupon_categories:
-            # fixme: final cart price must be!
-            amount_for_sale = self.cart.get_total_cart - self.cart.customer_bonus  # - self.cart.get_delivery_sale
+    def __coupon_default_amount(self):
+        """
+        If coupon is for whole cart items
+        """
+        amount_for_sale = 0
+        if not self.coupon_products and not self.coupon_categories:
+            amount_for_sale = self.cart.get_total_cart - self.cart.customer_bonus
+        return amount_for_sale
 
-        if self.coupon.code_type == 'absolute':
+    def cart_items_amount_for_coupon_sale(self):
+        """
+        Count sum of all items to count sale from
+        """
+        amount_for_sale = 0
+        amount_for_sale += self.__coupon_categories_amount()
+        amount_for_sale += self.__coupon_products_amount()
+        amount_for_sale += self.__coupon_categories_and_products_amount()
+        amount_for_sale += self.__coupon_default_amount()
+        return amount_for_sale
+
+    def cart_coupon_final_sale(self):
+        """
+        Count final sale amount
+        """
+        coupon_sale = self.coupon.sale
+        final_sale = 0
+        if self.coupon.code_type == SaleType.ABSOLUTE:
             final_sale = coupon_sale if coupon_sale >= 0.0 else 0.0
-        if self.coupon.code_type == 'percent':
-            final_sale = round((coupon_sale / Decimal('100')) * amount_for_sale)
-
-        return final_sale, amount_for_sale
+        if self.coupon.code_type == SaleType.PERCENT:
+            final_sale = round((coupon_sale / Decimal('100')) * self.amount_for_sale)
+        return final_sale
 
     # RULES
     def validate_coupon_with_bonus(self):
@@ -80,18 +106,16 @@ class CouponHelper:
 
     def validate_sale(self):
         """ Not allowing to write off more than a final price """
-        # todo: recheck
-        code_type = self.coupon.code_type
-        if code_type == SaleType.ABSOLUTE and (self.final_sale()[1] - self.coupon.sale) <= 0:
-            raise ValidationError({"detail": f"Sale {self.final_sale()[0]} is bigger than {self.final_sale()[1]}"})
-        if code_type == SaleType.PERCENT and self.coupon.sale > 100:
+        coupon_type = self.coupon.code_type
+        if coupon_type == SaleType.ABSOLUTE and (self.amount_for_sale - self.coupon.sale) <= 0:
+            raise ValidationError({"detail": f"Sale {self.final_sale} is bigger than {self.amount_for_sale}"})
+        if coupon_type == SaleType.PERCENT and self.coupon.sale > 100:
             raise ValidationError({"detail": "Sale is bigger 100%"})
 
     def validate_final_cart_price(self):
         """
         Not allowing to use coupon if min coupon cart price > actual cart total
         """
-        # fixme: must be final price
         if self.coupon.cart_total > 0 and self.cart.final_price < self.coupon.cart_total:
             raise ValidationError(
                 {"detail": f"Cart price has to be more {self.coupon.cart_total}"})

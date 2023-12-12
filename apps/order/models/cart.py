@@ -97,10 +97,10 @@ class Cart(models.Model):
         return total
 
     @property
-    def get_promo_code_sale(self) -> int:
-        if not self._promo_code_sale:
-            self._promo_code_sale = CouponHelper(self.promo_code, self).final_sale()[0]
-        return self._promo_code_sale
+    def get_promo_code_sale(self) -> Decimal:
+        if self.promo_code and not self._promo_code_sale:
+            self._promo_code_sale = CouponHelper(self.promo_code, self).final_sale
+        return Decimal(self._promo_code_sale)
 
     @property
     def get_final_sale(self) -> int:
@@ -118,7 +118,6 @@ class Cart(models.Model):
     @property
     def get_bonus_accrual(self) -> int:
         """ Max accrual amount """
-        # fixme: не учитывается скидка из доставки, нужно ли? (только с промокодом)
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
@@ -131,7 +130,6 @@ class Cart(models.Model):
     @property
     def get_bonus_write_off(self) -> int:
         """ Max write off amount """
-        # fixme: не учитывается скидка из доставки, нужно ли? (только с промокодом)
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
