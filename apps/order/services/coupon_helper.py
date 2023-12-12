@@ -32,8 +32,6 @@ class CouponHelper:
             "item", "quantity", "modifier", "additives"
         )
 
-        print("CART ITEMS QS", cart_items)  # fixme: repeats 5 times!
-
         # only categories products
         if coupon_categories and not coupon_products:
             for cat in coupon_categories:

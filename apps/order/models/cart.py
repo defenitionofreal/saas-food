@@ -24,6 +24,8 @@ class Cart(models.Model):
     promo code (coupon) for sale
     add bonus points to a customer profile or he could spend his points
     """
+    _promo_code_sale = 0
+
     institution = models.ForeignKey("company.Institution",
                                     on_delete=models.CASCADE,
                                     related_name="cart_institution")
@@ -94,12 +96,11 @@ class Cart(models.Model):
                     ) if self.products_cart.all() else Decimal("0")
         return total
 
-    #todo: как-то нужно get_promo_code_sale не использовать в других методах а использовать только значение?
     @property
     def get_promo_code_sale(self) -> int:
-        if self.promo_code and self.customer:
-            return CouponHelper(self.promo_code, self).final_sale()[0]
-        return 0
+        if not self._promo_code_sale:
+            self._promo_code_sale = CouponHelper(self.promo_code, self).final_sale()[0]
+        return self._promo_code_sale
 
     @property
     def get_final_sale(self) -> int:
