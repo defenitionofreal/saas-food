@@ -18,4 +18,4 @@ class MinCartCost(models.Model):
     cost = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f'{self.cost} на {self.institution}'
+        return f'{self.cost} на {self.user}'

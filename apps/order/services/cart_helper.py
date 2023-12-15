@@ -119,7 +119,6 @@ class CartHelper:
             if key == "additive_ids" and value else value
             for key, value in kwargs.items()
         }
-        print("!!! HASH FIELD VALUES CHECK:", fields)  # todo: recheck for cart id
         product_fields_json = json.dumps(fields, sort_keys=True)
         hash_obj = hashlib.sha256()
         hash_obj.update(product_fields_json.encode('utf-8'))
@@ -164,8 +163,6 @@ class CartHelper:
 
         modifier_price = self._get_product_modifier(product, modifier_req)
         additives_list = self._get_product_additives(product, additives_req)
-        # todo: проверить одинаковый товар с разных пользователей и разных корзин
-        #  так как хеш теперь не учитывает cart_id!
         item_hash = self._get_cart_item_hash(
             item_id=product.id,
             modifier_id=modifier_price,

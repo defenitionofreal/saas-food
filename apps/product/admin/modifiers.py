@@ -6,7 +6,8 @@ from apps.product.models import Modifier, ModifierPrice
 class ModifierAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     ordering = ("pk", "title")
-    list_display = ("id", "title")
+    list_display = ("id", "user_id", "title")
+    autocomplete_fields = ("user", "institutions")
 
 
 @admin.register(ModifierPrice)
@@ -14,3 +15,5 @@ class ModifierPriceAdmin(admin.ModelAdmin):
     search_fields = ("modifier",)
     ordering = ("pk", "modifier")
     list_display = ("id", "modifier", "product", "price")
+    autocomplete_fields = ("product", "modifier")
+

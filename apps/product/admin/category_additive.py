@@ -6,3 +6,5 @@ from apps.product.models import CategoryAdditive
 class CategoryAdditiveAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     ordering = ("title", "pk")
+    list_display = ("id", "user_id", "title", "is_active")
+    autocomplete_fields = ("user", "institutions")

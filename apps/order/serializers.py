@@ -143,7 +143,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'institution', 'customer', 'delivery_info',
             'payment_type', 'items', 'promo_code', 'customer_bonus',
-            'min_amount',
+            'min_amount_for_checkout',
 
             'get_total_cart', 'get_promo_code_sale',
             'get_bonus_accrual', 'get_bonus_write_off',

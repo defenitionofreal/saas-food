@@ -14,6 +14,7 @@ class CartAdmin(admin.ModelAdmin):
 class CartItemAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     readonly_fields = ("item_hash",)
+    list_display = ('cart_id', 'item_id', 'quantity', 'modifier')
 
 
 @admin.register(PromoCode)

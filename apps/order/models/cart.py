@@ -44,9 +44,6 @@ class Cart(models.Model):
                                    null=True,
                                    blank=True)
     customer_bonus = models.PositiveIntegerField(default=0)
-    # order min amount rule
-    min_amount = models.PositiveIntegerField(default=0)
-
     # user info part
     name = models.CharField(max_length=255, default="имя")
     phone = PhoneNumberField(blank=True,
@@ -118,6 +115,7 @@ class Cart(models.Model):
     @property
     def get_bonus_accrual(self) -> int:
         """ Max accrual amount """
+        # todo: не учитывается стоимость доставки, нужно ли?
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
@@ -130,6 +128,7 @@ class Cart(models.Model):
     @property
     def get_bonus_write_off(self) -> int:
         """ Max write off amount """
+        # todo: не учитывается стоимость доставки, нужно ли?
         bonus_rule = self._get_active_bonus_rule()
         total = 0
         if bonus_rule:
@@ -141,20 +140,17 @@ class Cart(models.Model):
 
     @property
     def final_price(self) -> Decimal:
-        """ """
-        #TODO: CHECK THAT SALE NOT MORE THAN PRICE AMOUNT AFTER ALL (LIMIT BONUS WRITE OFF RULE?!)
         total = self.get_total_cart - self.get_final_sale + self.get_final_delivery_price
         return max(total, Decimal("1"))
 
     @property
-    def get_min_order_amount_for_checkout(self):
+    def min_amount_for_checkout(self):
         """
-        вывести все условия мин суммы заказа для чекаута из самого заказа или из доставки
+        Условия мин суммы заказа для чекаута из заказа или из доставки/зоны
         """
-        #todo: как учесть два варианта сразу?
-        cart_value = self.min_amount
-        delivery_zone_value = self.get_min_delivery_order_amount
-        return delivery_zone_value if delivery_zone_value else cart_value
+        cart_cost = self.institution.min_cart_cost.first().cost if self.institution.min_cart_cost.exists() else 0
+        delivery_cost = self.get_min_delivery_order_amount
+        return delivery_cost if delivery_cost > cart_cost else cart_cost
 
     def __str__(self):
         return f'{self.id}: {self.institution}, {self.customer}, ' \

@@ -72,7 +72,7 @@ class CouponHelper:
             amount_for_sale = self.cart.get_total_cart - self.cart.customer_bonus
         return amount_for_sale
 
-    def cart_items_amount_for_coupon_sale(self):
+    def cart_items_amount_for_coupon_sale(self) -> Decimal:
         """
         Count sum of all items to count sale from
         """
@@ -81,36 +81,34 @@ class CouponHelper:
         amount_for_sale += self.__coupon_products_amount()
         amount_for_sale += self.__coupon_categories_and_products_amount()
         amount_for_sale += self.__coupon_default_amount()
-        return amount_for_sale
+        return Decimal(amount_for_sale)
 
-    def cart_coupon_final_sale(self):
+    def cart_coupon_final_sale(self) -> Decimal:
         """
         Count final sale amount
         """
-        coupon_sale = self.coupon.sale
         final_sale = 0
         if self.coupon.code_type == SaleType.ABSOLUTE:
-            final_sale = coupon_sale if coupon_sale >= 0.0 else 0.0
+            final_sale = self.coupon.sale # if coupon_sale >= 0.0 else 0.0
         if self.coupon.code_type == SaleType.PERCENT:
-            final_sale = round((coupon_sale / Decimal('100')) * self.amount_for_sale)
-        return final_sale
+            final_sale = round((self.coupon.sale / Decimal('100')) * self.amount_for_sale)
+        return Decimal(final_sale)
 
     # RULES
     def validate_coupon_with_bonus(self):
         bonus_rule = self.cart.institution.bonuses.filter(
             is_active=True, is_promo_code=True
-        ).first()
-        if self.cart.customer_bonus > 0 and not bonus_rule:
+        )
+        if self.cart.customer_bonus > 0 and not bonus_rule.exists():
             raise ValidationError(
                 {"detail": "Use promo code with bonuses is not allowed."})
 
     def validate_sale(self):
-        """ Not allowing to write off more than a final price """
-        coupon_type = self.coupon.code_type
-        if coupon_type == SaleType.ABSOLUTE and (self.amount_for_sale - self.coupon.sale) <= 0:
-            raise ValidationError({"detail": f"Sale {self.final_sale} is bigger than {self.amount_for_sale}"})
-        if coupon_type == SaleType.PERCENT and self.coupon.sale > 100:
-            raise ValidationError({"detail": "Sale is bigger 100%"})
+        """ Not allowing to write off more than an amount for sale """
+        # todo: не учитывается стоимость доставки, нужно ли?
+        if self.final_sale >= self.amount_for_sale:
+            raise ValidationError(
+                {"detail": f"Sale is bigger than an amount for sale."})
 
     def validate_final_cart_price(self):
         """
@@ -162,14 +160,14 @@ class CouponHelper:
                 raise ValidationError({"detail": "Cart items are not tied with coupon."})
 
     def validate_num_uses(self):
-        if self.coupon.code_use > 0 and self.coupon.num_uses >= self.coupon.code_use:
+        if self.coupon.code_use and self.coupon.num_uses >= self.coupon.code_use:
             raise ValidationError({"detail": "Max level exceeded for coupon."})
 
     def validate_user_num_uses(self, user) -> PromoCodeUser:
         coupon_per_user, _ = PromoCodeUser.objects.get_or_create(
             code=self.coupon, user=user
         )
-        if self.coupon.code_use_by_user > 0 and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
+        if self.coupon.code_use_by_user and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
             raise ValidationError({"detail": "User's max level exceeded for coupon."})
         return coupon_per_user
 
