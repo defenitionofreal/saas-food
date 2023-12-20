@@ -245,56 +245,6 @@ class StickerSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class ModifierSerializer(serializers.ModelSerializer):
-    """ Modifier serializer """
-
-    price_data = serializers.SerializerMethodField()
-    weight_data = serializers.SerializerMethodField()
-    nutritional_data = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Modifier
-        fields = "__all__"
-
-    def get_price_data(self, instance):
-        qs = instance.modifiers_price.first()
-        data = ModifierPriceSerializer(qs).data
-        return data
-    def get_weight_data(self, instance):
-        qs = instance.weights.first()
-        data = WeightSerializer(qs).data
-        return data
-
-    def get_nutritional_data(self, instance):
-        qs = instance.nutritional_values.first()
-        data = NutritionalValueSerializer(qs).data
-        return data
-
-    def get_institutions(self):
-        qs = Institution.objects.filter(user=self.request.user)
-        serializer = InstitutionSerializer(instance=qs, many=True)
-        return serializer.data
-
-    def validate_institutions_data(self, validated_data):
-        user = self.context["request"].user
-        validated_data["user"] = user
-        institutions_data = validated_data.get("institutions")
-        institution_qs = Institution.objects.filter(user=user)
-        instance_qs = Modifier.objects.filter(user=user)
-        validate_institution_list(
-            institutions_data, institution_qs, instance_qs
-        )
-
-    def create(self, validated_data):
-        self.validate_institutions_data(validated_data)
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        instance.institutions.clear()
-        self.validate_institutions_data(validated_data)
-        return super().update(instance, validated_data)
-
-
 class ModifierPriceSerializer(serializers.ModelSerializer):
     """ Modifier Price serializer """
 
@@ -344,31 +294,46 @@ class ModifierPriceSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ModifierSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Modifier
+        fields = "__all__"
+
+    def get_institutions(self):
+        qs = Institution.objects.filter(user=self.request.user)
+        serializer = InstitutionSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def validate_institutions_data(self, validated_data):
+        user = self.context["request"].user
+        validated_data["user"] = user
+        institutions_data = validated_data.get("institutions")
+        institution_qs = Institution.objects.filter(user=user)
+        instance_qs = Modifier.objects.filter(user=user)
+        validate_institution_list(
+            institutions_data, institution_qs, instance_qs
+        )
+
+    def create(self, validated_data):
+        self.validate_institutions_data(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.institutions.clear()
+        self.validate_institutions_data(validated_data)
+        return super().update(instance, validated_data)
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """ Product serializer """
-    additives = CategoryAdditiveSerializer(many=True, read_only=True)
-    modifiers = ModifierSerializer(many=True, read_only=True)
-    stickers = StickerSerializer(many=True, read_only=True)
-    nutritional_value = serializers.SerializerMethodField()
-    weight_value = serializers.SerializerMethodField()
+    # additives = CategoryAdditiveSerializer(many=True, read_only=True)
+    # modifiers = ModifierSerializer(many=True, read_only=True)
+    # stickers = StickerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = "__all__"
-
-    def get_nutritional_value(self, instance):
-        qs = NutritionalValue.objects.filter(
-            product_id=instance.id, modifier__isnull=True
-        ).first()
-        data = NutritionalValueSerializer(qs).data if qs else None
-        return data
-
-    def get_weight_value(self, instance):
-        qs = Weight.objects.filter(
-            product_id=instance.id, modifier__isnull=True
-        ).first()
-        data = WeightSerializer(qs).data if qs else None
-        return data
 
     def slug_validation(self, data):
         """

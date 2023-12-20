@@ -3,7 +3,11 @@ from rest_framework import serializers
 from apps.company.models import Institution, Banner
 from apps.company.serializers import BannerSerializer
 from apps.product.models import Product, Sticker
-from apps.product.serializers import ProductSerializer, CategorySerializer
+from apps.product.serializers import (
+    ProductSerializer, CategorySerializer, NutritionalValueSerializer,
+    WeightSerializer, CategoryAdditiveSerializer, ModifierPriceSerializer,
+    ModifierSerializer
+)
 
 
 class OpenHoursSerializer(serializers.Serializer):
@@ -34,8 +38,31 @@ class ProductListSerializer(serializers.ModelSerializer):
                   'old_price', 'stickers', 'images', 'row']
 
 
+class CustomModifiersSerializer(serializers.Serializer):
+    modifier_id = serializers.IntegerField(read_only=True)
+    modifier_title = serializers.CharField(read_only=True)
+    price = ModifierPriceSerializer(read_only=True, allow_null=True)
+    nutrition = NutritionalValueSerializer(read_only=True, allow_null=True)
+    weight = WeightSerializer(read_only=True, allow_null=True)
+
+
 class ProductDetailSerializer(ProductSerializer):
-    institutions = SimpleInstitutionSerializer(many=True, read_only=True)
+    additives = CategoryAdditiveSerializer(many=True, read_only=True, allow_null=True)
+    modifiers = serializers.SerializerMethodField(read_only=True)
+    nutrition = NutritionalValueSerializer(read_only=True, allow_null=True)
+    weight = WeightSerializer(read_only=True, allow_null=True)
+
+    def get_modifiers(self, instance) -> CustomModifiersSerializer(many=True):
+        modifiers = instance.modifiers.all()
+        data = [
+            {"modifier_id": modifier.id,
+             "modifier_title": modifier.title,
+             "price": modifier.price(instance.id),
+             "nutrition": modifier.nutrition(instance.id),
+             "weight": modifier.weight(instance.id)}
+            for modifier in modifiers
+        ]
+        return CustomModifiersSerializer(data, many=True).data
 
 
 class CategoryBasicSerializer(CategorySerializer):

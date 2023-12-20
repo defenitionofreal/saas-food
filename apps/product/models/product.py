@@ -34,6 +34,8 @@ class Product(models.Model):
         blank=True,
         related_name="product_additives"
     )
+    # todo: modifiers используется пока как одна группа,
+    #  но нужно будет делать несколько групп модификаторов на продукт.
     modifiers = models.ManyToManyField(
         "product.Modifier",
         blank=True,
@@ -51,6 +53,14 @@ class Product(models.Model):
                                      blank=True, null=True)
     cook_time = models.PositiveIntegerField()
     slug = models.SlugField(blank=True, null=True)
+
+    @property
+    def nutrition(self):
+        return self.nutritional_values.filter(modifier__isnull=True).first()
+
+    @property
+    def weight(self):
+        return self.weights.filter(modifier__isnull=True).first()
 
     def __str__(self):
         return self.title
