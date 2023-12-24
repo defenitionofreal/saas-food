@@ -181,15 +181,9 @@ class CartHelper:
 
     def remove_item(self, item_hash: str):
         cart = self.get_cart()
-        cart_item = cart.products_cart.filter(item_hash=item_hash).first()
-        if not cart_item:
-            raise ValidationError({"detail": "Product not in a cart."})
-
-        if cart_item.quantity > 1:
-            cart_item.quantity = F("quantity") - 1
-            cart_item.save(update_fields=("quantity",))
-        else:
-            cart_item.delete()
+        cart.products_cart.filter(item_hash=item_hash).update(
+            quantity=F("quantity") - 1)
+        cart.products_cart.filter(item_hash=item_hash, quantity=0).delete()
 
     def get_cart(self) -> Cart:
         """ Cart Detail View """

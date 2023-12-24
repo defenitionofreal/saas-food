@@ -63,7 +63,7 @@ class CartViewSet(viewsets.ModelViewSet):
     def remove(self, request, *args, **kwargs):
         domain = self.kwargs.get('domain')
         institution = Institution.objects.get(domain=domain)
-        item_hash = request.data.get("item_hash", None)
+        item_hash = request.data.get("item_hash", "")
         helper = CartHelper(request, institution)
         helper.remove_item(item_hash)
         cart = helper.get_cart()
