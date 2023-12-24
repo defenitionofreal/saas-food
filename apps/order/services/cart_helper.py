@@ -1,4 +1,6 @@
 # core
+import os
+
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 
@@ -15,10 +17,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 # other
-from typing import Optional
+from typing import Optional, List
 
 import json
 import hashlib
+import hmac
 
 
 class CartHelper:
@@ -65,65 +68,57 @@ class CartHelper:
 
         return cart, created
 
-    def _get_product_additives(self, product: Product, additives_req) -> list:
+    def _get_product_additives(self, product_id: int, additives_ids: List[int]) -> list:
         """
         If req is not empty, check that additives exists and related to product
         """
-        additives_list = []
+        additives_qs = Additive.objects.filter(
+            is_active=True,
+            institutions=self.institution,
+            category__is_active=True,
+            category__product_additives__id=product_id
+        ).values("id")
 
-        if additives_req:
-            additives_qs = Additive.objects.filter(
-                is_active=True,
-                institutions=self.institution,
-                category__is_active=True,
-                category__product_additives__id=product.id
-            ).only("id", "title")
+        return list(additives_qs.filter(id__in=additives_ids))
 
-            additives_req_map = {
-                str(additive['title']).lower(): idx
-                for idx, additive in enumerate(additives_req, 1)
-            }
-
-            additives_list = [additive
-                              for additive in additives_qs
-                              if additives_req_map.get(additive.title.lower())]
-
-        return additives_list
-
-    def _get_product_modifier(self, product: Product, modifiers_req) -> Optional[ModifierPrice]:
+    def _get_product_modifier_price(self, product: Product, modifier_id) -> Optional[ModifierPrice]:
         """
         Takes product object and modifiers data from body via POST request.
         If data from request is equal to products modifier relation then
         :return modifier_price.
         """
-        if modifiers_req:
-            product_modifiers = product.modifiers.filter(
-                institutions=self.institution,
-                modifiers_price__product_id=product.id
-            ).only("id", "title")
+        if not modifier_id:
+            return
 
-            for modifier in product_modifiers:
-                if modifiers_req["title"].lower() == modifier.title.lower():
-                    return modifier.modifiers_price.first()
+        product_modifiers = product.modifiers.filter(
+            institutions=self.institution,
+            modifiers_price__product_id=product.id
+        ).only("id", "title")
+
+        for modifier in product_modifiers:
+            if modifier_id == modifier.id:
+                # todo: at future multiple modifiers possible.
+                return modifier.modifiers_price.first()
 
     @staticmethod
-    def _get_cart_item_hash(**kwargs):
+    def _get_cart_item_hash(**kwargs) -> str:
         """
         Generate unique cart item hash to check if item with that parameters
-        already exists at a cart.
-        It helps to add new product or update quantity.
+        already exists. It helps to add new product or update quantity.
         """
         fields = {
-            key: value.id
-            if key == "modifier_id" and value else [i.id for i in value]
-            if key == "additive_ids" and value else value
+            key: value.id if key == "modifier_price" and value else
+            value if key == "product_id" else
+            [additive["id"] for additive in value] if key == "additive_ids" else
+            value
             for key, value in kwargs.items()
         }
         product_fields_json = json.dumps(fields, sort_keys=True)
-        hash_obj = hashlib.sha256()
-        hash_obj.update(product_fields_json.encode('utf-8'))
-        item_hash = hash_obj.hexdigest()
-
+        secret_key = os.environ.get("SECURE_SALT")
+        item_hash = hmac.new(
+            secret_key.encode('utf-8'),
+            product_fields_json.encode('utf-8'),
+            hashlib.sha256).hexdigest()
         return item_hash
 
     @classmethod
@@ -148,39 +143,41 @@ class CartHelper:
 
         order_session.delete()
 
+    def get_product_or_404(self, product_id: int) -> Optional[Product]:
+        return get_object_or_404(Product, id=product_id, institutions=self.institution)
+
     # ======= ACTIONS =======
     def add_item(self):
         """ add new item to cart or update quantity of an item """
         cart, cart_created = self.cart_get_or_create()
 
-        product_slug = self.request.data.get("product_slug", None)
-        modifier_req = self.request.data.get("modifier", None)
-        additives_req = self.request.data.get("additives", [])
+        product_id = self.request.data.get("product", None)
+        modifier_id = self.request.data.get("modifier", None)
+        additives_ids = self.request.data.get("additives", [])
 
-        product = get_object_or_404(
-            Product, slug=product_slug, institutions=self.institution
-        )
+        product = self.get_product_or_404(product_id)
 
-        modifier_price = self._get_product_modifier(product, modifier_req)
-        additives_list = self._get_product_additives(product, additives_req)
+        modifier_price = self._get_product_modifier_price(product, modifier_id)
+        additives = self._get_product_additives(product.id, additives_ids)
+
         item_hash = self._get_cart_item_hash(
-            item_id=product.id,
-            modifier_id=modifier_price,
-            additive_ids=additives_list
+            product_id=product.id,
+            modifier_price=modifier_price,
+            additive_ids=additives
         )
-        existing_cart_item = cart.products_cart.filter(item_hash=item_hash).first()
-        if existing_cart_item:
-            existing_cart_item.quantity = F("quantity") + 1
-            existing_cart_item.save(update_fields=["quantity"])
+
+        cart_item, created = CartItem.objects.update_or_create(
+            cart_id=cart.id,
+            item_hash=item_hash,
+            item_id=product.id,
+            modifier_id=modifier_price.id if modifier_price else None
+        )
+        if not created:
+            CartItem.objects.filter(id=cart_item.id).update(
+                quantity=F("quantity") + 1)
         else:
-            cart_item, cart_item_created = CartItem.objects.get_or_create(
-                item=product,
-                modifier=modifier_price,
-                cart=cart,
-                item_hash=item_hash
-            )
-            cart_item.additives.add(*additives_list)
-            cart_item.save()
+            additive_ids = list(map(lambda additive: additive["id"], additives))
+            cart_item.additives.set(additive_ids)
 
     def remove_item(self, item_hash: str):
         cart = self.get_cart()

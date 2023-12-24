@@ -16,6 +16,8 @@ class CartItem(models.Model):
                              on_delete=models.CASCADE,
                              blank=True,
                              null=True)
+    # todo: modifiers используется пока как одна группа,
+    #  но нужно будет делать несколько групп модификаторов на продукт.
     modifier = models.ForeignKey("product.ModifierPrice",
                                  on_delete=models.CASCADE,
                                  blank=True,
@@ -32,15 +34,10 @@ class CartItem(models.Model):
 
     @property
     def get_item_price(self) -> Decimal:
-        price = self.item.price
-        if self.modifier:
-            price = self.modifier.price
+        price = self.modifier.price if self.modifier else self.item.price
         price += sum(additive.price for additive in self.additives.only("price"))
         return Decimal(price)
 
     @property
     def get_total_item_price(self) -> Decimal:
-        product_price = self.get_item_price
-        quantity = self.quantity
-        total_price = (product_price * quantity)
-        return Decimal(total_price)
+        return Decimal(self.get_item_price * self.quantity)

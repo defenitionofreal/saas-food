@@ -35,7 +35,7 @@ class Product(models.Model):
         related_name="product_additives"
     )
     # todo: modifiers используется пока как одна группа,
-    #  но нужно будет делать несколько групп модификаторов на продукт.
+    #  но нужно будет делать несколько групп модификаторов на продукт. (смотри CartItem)
     modifiers = models.ManyToManyField(
         "product.Modifier",
         blank=True,

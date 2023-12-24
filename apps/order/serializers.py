@@ -9,18 +9,34 @@ from apps.product.serializers import SimpleModifierPriceSerializer, \
     SimpleAdditiveSerializer
 from apps.order.models import Cart, CartItem, PromoCode, Bonus, UserBonus
 from apps.delivery.serializers import CartDeliveryInfoSerializer
+from apps.product.models import ModifierPrice, Additive
 from apps.order.services.bonus_helper import BonusHelper
 
 
+class ItemModifierSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source="modifier.title", read_only=True)
+
+    class Meta:
+        model = ModifierPrice
+        fields = ("title", "price")
+
+
+class ItemAdditiveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Additive
+        fields = ("title", "price")
+
+
 class ItemsSerializer(serializers.ModelSerializer):
-    modifier = SimpleModifierPriceSerializer(read_only=True)
-    additives = SimpleAdditiveSerializer(read_only=True, many=True)
-    item_title = serializers.SlugRelatedField(source="item", slug_field="title", read_only=True)
+    modifier = ItemModifierSerializer(read_only=True)
+    additives = ItemAdditiveSerializer(read_only=True, many=True)
+    title = serializers.CharField(source="item.title", read_only=True)
 
     class Meta:
         model = CartItem
-        fields = ("id", "cart", "item_title", "modifier", "additives", "quantity",
-                  "get_item_price", "get_total_item_price", "item_hash")
+        fields = ("id", "cart", "title", "modifier", "additives",
+                  "quantity", "get_item_price", "get_total_item_price",
+                  "item_hash")
 
 
 class CartDashboardSerializer(serializers.ModelSerializer):
