@@ -80,6 +80,8 @@ class BonusHelper:
         # TODO: начислять бонусы если статус в заказе оплачен,
         #  забирать обратно бонусы если статус в заказе отменен
 
-        user_balance = self._get_user_bonuses()
-        user_balance.bonus -= self.amount
-        user_balance.save()
+
+        # TODO: списывать бонусы по факту оплаты!
+        # user_balance = self._get_user_bonuses()
+        # user_balance.bonus -= self.amount
+        # user_balance.save()

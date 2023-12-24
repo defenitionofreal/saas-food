@@ -185,6 +185,17 @@ class CartHelper:
             quantity=F("quantity") - 1)
         cart.products_cart.filter(item_hash=item_hash, quantity=0).delete()
 
+    def valid_coupon_sale_and_total_cart(self, cart):
+        if cart.get_total_cart < cart.get_promo_code_sale:
+            self.remove_coupon(cart)
+
+    @staticmethod
+    def valid_customer_bonuses_used_and_max_bonus_write_off(cart):
+        """ Check and fix that amount couldn't be more than bonus_write_off """
+        if cart.customer_bonus > cart.get_bonus_write_off:
+            cart.customer_bonus = cart.get_bonus_write_off
+            cart.save()
+
     def get_cart(self) -> Cart:
         """ Cart Detail View """
         cart = None
@@ -219,12 +230,18 @@ class CartHelper:
                 ).first()
                 cart = session_cart
 
+        self.valid_coupon_sale_and_total_cart(cart)
+        self.valid_customer_bonuses_used_and_max_bonus_write_off(cart)
         return cart
 
     def add_coupon(self, code) -> Response:
         cart = self.get_cart()
         coupon = CouponHelper(code, cart)
         return coupon.main(user=self.request.user)
+
+    @staticmethod
+    def remove_coupon(cart):
+        return CouponHelper.remove_coupon(cart)
 
     def add_bonuses(self, amount: int):
         cart = self.get_cart()

@@ -94,19 +94,7 @@ class CartViewSet(viewsets.ModelViewSet):
         institution = Institution.objects.get(domain=domain)
         helper = CartHelper(request, institution)
         cart = helper.get_cart()
-
-        coupon = cart.promo_code
-        if coupon:
-            user_coupon = PromoCodeUser.objects.get(
-                code_id=coupon.id, user_id=cart.customer.id
-            )
-            user_coupon.num_uses -= 1
-            user_coupon.save()
-            coupon.num_uses -= 1
-            coupon.save()
-            cart.promo_code = None
-            cart.save()
-
+        helper.remove_coupon(cart)
         serializer = self.get_serializer(
             cart, many=False, context={"request": request}
         )

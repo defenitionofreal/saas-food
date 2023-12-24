@@ -141,7 +141,7 @@ class Cart(models.Model):
     @property
     def final_price(self) -> Decimal:
         total = self.get_total_cart - self.get_final_sale + self.get_final_delivery_price
-        return max(total, Decimal("1"))
+        return max(total, Decimal("1")) if self.products_cart.all() else Decimal("0")
 
     @property
     def min_amount_for_checkout(self):

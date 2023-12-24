@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
 from apps.order.models import PromoCodeUser
@@ -69,7 +70,9 @@ class CouponHelper:
         """
         amount_for_sale = 0
         if not self.coupon_products and not self.coupon_categories:
-            amount_for_sale = self.cart.get_total_cart - self.cart.customer_bonus
+            total_cart = self.cart.get_total_cart
+            bonuses = self.cart.customer_bonus
+            amount_for_sale = total_cart - bonuses if total_cart else 0
         return amount_for_sale
 
     def cart_items_amount_for_coupon_sale(self) -> Decimal:
@@ -89,7 +92,7 @@ class CouponHelper:
         """
         final_sale = 0
         if self.coupon.code_type == SaleType.ABSOLUTE:
-            final_sale = self.coupon.sale # if coupon_sale >= 0.0 else 0.0
+            final_sale = self.coupon.sale  # if coupon_sale >= 0.0 else 0.0
         if self.coupon.code_type == SaleType.PERCENT:
             final_sale = round((self.coupon.sale / Decimal('100')) * self.amount_for_sale)
         return Decimal(final_sale)
@@ -170,6 +173,23 @@ class CouponHelper:
         if self.coupon.code_use_by_user and coupon_per_user.num_uses >= self.coupon.code_use_by_user:
             raise ValidationError({"detail": "User's max level exceeded for coupon."})
         return coupon_per_user
+
+    @staticmethod
+    def remove_coupon(cart):
+        """ """
+        coupon = cart.promo_code
+        if not coupon:
+            return
+        user_coupon = PromoCodeUser.objects.get(
+            code_id=coupon.id, user_id=cart.customer.id
+        )
+        with transaction.atomic():
+            user_coupon.num_uses -= 1
+            user_coupon.save()
+            coupon.num_uses -= 1
+            coupon.save()
+            cart.promo_code = None
+            cart.save()
 
     def main(self, user):
 
