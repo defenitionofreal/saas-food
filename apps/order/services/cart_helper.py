@@ -188,10 +188,9 @@ class CartHelper:
     def get_cart(self) -> Cart:
         """ Cart Detail View """
         cart = None
-        user_cart = None
-        session_cart = None
 
         if self.request.user.is_authenticated:
+            session_cart = None
             user_cart = Cart.objects.filter(
                 institution=self.institution,
                 customer_id=self.request.user.id,

@@ -31,10 +31,13 @@ class ItemsSerializer(serializers.ModelSerializer):
     modifier = ItemModifierSerializer(read_only=True)
     additives = ItemAdditiveSerializer(read_only=True, many=True)
     title = serializers.CharField(source="item.title", read_only=True)
+    price = serializers.DecimalField(
+        source="item.price", max_digits=10, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = CartItem
-        fields = ("id", "cart", "title", "modifier", "additives",
+        fields = ("id", "cart", "title", "price", "modifier", "additives",
                   "quantity", "get_item_price", "get_total_item_price",
                   "item_hash")
 
