@@ -134,7 +134,17 @@ class CustomerAddressViewSet(viewsets.ModelViewSet):
             if not customer_address_id:
                 raise ValidationError({"detail": "Wrong customer address"})
 
-            customer_address = CustomerAddress.objects.get(id=customer_address_id)
+            custom_filter = {"id": customer_address_id}
+            if self.request.user.is_authenticated:
+                custom_filter["user_id"] = self.request.user.id
+            else:
+                custom_filter["session_id"] = self.request.session.session_key
+
+            try:
+                customer_address = CustomerAddress.objects.get(**custom_filter)
+            except CustomerAddress.DoesNotExist:
+                raise ValidationError({"detail": "Address not found."})
+
             has_active_zones, delivery_zone = has_zones_and_delivery_zone_object(
                 institution,
                 customer_address.latitude,

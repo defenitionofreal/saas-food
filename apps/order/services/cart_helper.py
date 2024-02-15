@@ -12,10 +12,13 @@ from apps.order.services.bonus_helper import BonusHelper
 from apps.product.models.modifiers_price import ModifierPrice
 from apps.product.models.additive import Additive
 from apps.product.models import Product
+from apps.delivery.models import CartDeliveryInfo
+
 # rest framework
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+
 # other
 from typing import Optional, List
 
@@ -122,7 +125,7 @@ class CartHelper:
         return item_hash
 
     @classmethod
-    def merge_cart_items(cls, order_user: Cart = None, order_session: Cart = None):
+    def merge_cart_items(cls, order_user: Cart, order_session: Cart):
         """ Merge guest session cart with auth user cart """
         guest_items = order_session.products_cart.all()
         user_items = order_user.products_cart.all()
@@ -140,6 +143,9 @@ class CartHelper:
         if order_session.promo_code and not order_user.promo_code:
             order_user.promo_code = order_session.promo_code
             order_user.save()
+
+        if order_session.cartdeliveryinfo_set.all() and not order_user.cartdeliveryinfo_set.all():
+            CartDeliveryInfo.objects.filter(cart=order_session).update(cart=order_user)
 
         order_session.delete()
 
@@ -186,52 +192,49 @@ class CartHelper:
         cart.products_cart.filter(item_hash=item_hash, quantity=0).delete()
 
     def valid_coupon_sale_and_total_cart(self, cart):
-        if cart.get_total_cart < cart.get_promo_code_sale:
+        if cart and cart.get_total_cart < cart.get_promo_code_sale:
             self.remove_coupon(cart)
 
     @staticmethod
     def valid_customer_bonuses_used_and_max_bonus_write_off(cart):
         """ Check and fix that amount couldn't be more than bonus_write_off """
-        if cart.customer_bonus > cart.get_bonus_write_off:
+        if cart and cart.customer_bonus > cart.get_bonus_write_off:
             cart.customer_bonus = cart.get_bonus_write_off
             cart.save()
 
     def get_cart(self) -> Cart:
         """ Cart Detail View """
-        cart = None
-
         if self.request.user.is_authenticated:
-            session_cart = None
+            session_cart = Cart.objects.filter(
+                institution=self.institution,
+                session_id=self.request.session.session_key,
+                status=OrderStatus.DRAFT
+            ).first()
+
             user_cart = Cart.objects.filter(
                 institution=self.institution,
                 customer_id=self.request.user.id,
                 status=OrderStatus.DRAFT
             ).first()
 
-            if self.request.session.session_key:
-                session_cart = Cart.objects.filter(
-                    institution=self.institution,
-                    session_id=self.request.session.session_key,
-                    status=OrderStatus.DRAFT
-                ).first()
+            if not user_cart:
+                user_cart, _ = self.cart_get_or_create()
 
             if session_cart:
-                if not user_cart:
-                    user_cart, _ = self.cart_get_or_create()
                 self.merge_cart_items(user_cart, session_cart)
 
             cart = user_cart
         else:
-            if self.request.session.session_key:
-                session_cart = Cart.objects.filter(
-                    institution=self.institution,
-                    session_id=self.request.session.session_key,
-                    status=OrderStatus.DRAFT
-                ).first()
-                cart = session_cart
+            session_cart = Cart.objects.filter(
+                institution=self.institution,
+                session_id=self.request.session.session_key,
+                status=OrderStatus.DRAFT
+            ).first()
+            cart = session_cart
 
         self.valid_coupon_sale_and_total_cart(cart)
         self.valid_customer_bonuses_used_and_max_bonus_write_off(cart)
+
         return cart
 
     def add_coupon(self, code) -> Response:
