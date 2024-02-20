@@ -11,12 +11,12 @@ from apps.delivery.api import (
 app_name = 'delivery'
 
 router = DefaultRouter()
-router.register('delivery/organization/type-rules', delivery_type_rule_viewset.DeliveryTypeRuleViewSet, basename='delivery-type-rule')
-router.register('delivery/organization/zones', delivery_zone_viewset.OrganizationDeliveryZoneViewSet, basename='delivery-zone')
-router.register('delivery/organization/address', institution_address_viewset.InstitutionAddressViewSet, basename='delivery-address')
-router.register('delivery/organization/geocoder', yandex_geocoder_viewset.YandexGeocoderViewSet, basename='geocoder')
+router.register('organization/type-rules', delivery_type_rule_viewset.DeliveryTypeRuleViewSet, basename='delivery-type-rule')
+router.register('organization/zones', delivery_zone_viewset.OrganizationDeliveryZoneViewSet, basename='delivery-zone')
+router.register('organization/address', institution_address_viewset.InstitutionAddressViewSet, basename='delivery-address')
+router.register('organization/geocoder', yandex_geocoder_viewset.YandexGeocoderViewSet, basename='geocoder')
 
-router.register('delivery/customer/address', customer_address_viewset.CustomerAddressViewSet, basename='delivery-customer-zone')
+router.register('customer/address', customer_address_viewset.CustomerAddressViewSet, basename='delivery-customer-zone')
 
 
 organization_urlpatterns = [
@@ -32,5 +32,5 @@ showcase_urlpatterns = [
 urlpatterns = [
     path('', include(router.urls)),
     # suggestions to get right address string for a geocoder
-    path('delivery/suggestions/', suggestions.KladrSuggestionsAPIView.as_view()),
+    path('suggestions/', suggestions.KladrSuggestionsAPIView.as_view()),
 ]

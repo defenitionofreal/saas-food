@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class MenuViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
+    queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     http_method_names = ["get"]
     lookup_field = "slug"
@@ -22,7 +22,8 @@ class MenuViewSet(viewsets.ModelViewSet):
             Institution.objects.only("id", "domain"), domain=domain
         )
         queryset = super().get_queryset()
-        return queryset.filter(institutions=institution).order_by('row')
+        return queryset.filter(is_active=True,
+                               institutions=institution).order_by('row')
 
     def retrieve(self, request, domain=None, slug=None):
         try:

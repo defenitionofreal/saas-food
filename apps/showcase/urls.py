@@ -34,9 +34,9 @@ urlpatterns = [
     path('<str:domain>/extra-phones/', extra_phone_client_list.ExtraPhoneClientListAPIView.as_view()),
     path('<str:domain>/requisites/', requisites.RequisitesAPIView.as_view()),
     # order (cart) detail/add/delete
-    path('<str:domain>/order/', include('apps.order.urls', namespace='order')),
+    # path('<str:domain>/order/', include('apps.order.urls', namespace='order')),
     # payment
-    path('payment/', include('apps.payment.urls', namespace='payment')),
+    # path('payment/', include('apps.payment.urls', namespace='payment')),
     # payment
     path('<str:domain>/payment/type/', payment_type_list.PaymentTypeClientListAPIView.as_view()),
 ]

@@ -9,15 +9,15 @@ from project.yasg import urlpatterns as swagger_urls
 #  delivery/organization... ,  delivery/customer... и так далее  !!!
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/base/', include('apps.base.urls', namespace='base')),
-    path('api/authentication/', include('apps.authentication.urls', namespace='authentication')),
-    # split users
-    path('api/customer/', include('apps.customer.urls', namespace='customer')),
-    path('api/organization/', include('apps.organization.urls', namespace='organization')),
-    # showcase site
-    path('api/showcase/', include('apps.showcase.urls', namespace='showcase')),
-    # payment (for webhooks)
-    path('webhook/', include('apps.payment.urls', namespace='payment')),
+    path('base/', include('apps.base.urls', namespace='base')),
+    path('authentication/', include('apps.authentication.urls', namespace='authentication')),
+    path('customer/', include('apps.customer.urls', namespace='customer')),
+    path('showcase/', include('apps.showcase.urls', namespace='showcase')),  # todo? оставить или попереносить вьюшки?
+    path('order/', include('apps.order.urls', namespace='order')),
+    path('company/', include('apps.company.urls', namespace='company')),
+    path('delivery/', include('apps.delivery.urls', namespace='delivery')),
+    path('product/', include('apps.product.urls', namespace='product')),
+    path('payment/', include('apps.payment.urls', namespace='payment')), # webhook?
 ]
 
 urlpatterns += swagger_urls

@@ -3,13 +3,17 @@ from rest_framework import viewsets
 
 from apps.company.serializers import AnalyticsSerializer
 from apps.company.models import Analytics
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class AnalyticsViewSet(viewsets.ModelViewSet):
     queryset = Analytics.objects.all()
     serializer_class = AnalyticsSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(institution__user_id=self.request.user.id)

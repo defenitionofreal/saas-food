@@ -3,13 +3,17 @@ from rest_framework import viewsets
 
 from apps.product.serializers import NutritionalValueSerializer
 from apps.product.models import NutritionalValue
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class NutritionalValueViewSet(viewsets.ModelViewSet):
     queryset = NutritionalValue.objects.all()
     serializer_class = NutritionalValueSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(product__user=self.request.user)

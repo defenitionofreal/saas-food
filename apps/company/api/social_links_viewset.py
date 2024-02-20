@@ -3,7 +3,9 @@ from rest_framework import viewsets
 
 from apps.company.serializers import SocialLinksSerializer
 from apps.company.models import SocialLinks
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class SocialLinksViewSet(viewsets.ModelViewSet):

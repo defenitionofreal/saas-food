@@ -9,7 +9,7 @@ from apps.payment.api import paymnet_viewset
 app_name = 'payment'
 
 router = DefaultRouter()
-router.register('payment/organization', paymnet_viewset.PaymentTypeInstitutionViewSet, basename='payment')
+router.register('organization/payment', paymnet_viewset.PaymentTypeInstitutionViewSet, basename='payment')
 
 # TODO: (yoomoney) пока беспонтовая вьюшка
 urlpatterns = [

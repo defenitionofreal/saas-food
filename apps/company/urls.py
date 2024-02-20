@@ -13,17 +13,17 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register('institutions', institution_viewset.InstitutionViewSet, basename='institutions')
-router.register('designs', design_viewset.DesignViewSet, basename='designs')
-router.register('analytics', analytics_viewset.AnalyticsViewSet, basename='analytics')
-router.register('social-links', social_links_viewset.SocialLinksViewSet, basename='social_links')
-router.register('requisites', requisites_viewset.RequisitesViewSet, basename='requisites')
-router.register('banners', banner_viewset.BannerViewSet, basename='banners')
-router.register('extra-phones', extra_phone_viewset.ExtraPhoneViewSet, basename='extra_phones')
-router.register('cart-cost', min_cart_cost_viewset.MinCartCostViewSet, basename='cart_cost')
-router.register('week-days', week_day_viewset.WeekDayViewSet, basename='week_days')
-router.register('work-hours', work_hours_viewset.WorkHoursViewSet, basename='work_hours')
-router.register('time-zones', timezone_viewset.OrganizationTimeZoneViewSet, basename='time-zones')
+router.register('organization/institutions', institution_viewset.InstitutionViewSet, basename='institutions')
+router.register('organization/designs', design_viewset.DesignViewSet, basename='designs')
+router.register('organization/analytics', analytics_viewset.AnalyticsViewSet, basename='analytics')
+router.register('organization/social-links', social_links_viewset.SocialLinksViewSet, basename='social_links')
+router.register('organization/requisites', requisites_viewset.RequisitesViewSet, basename='requisites')
+router.register('organization/banners', banner_viewset.BannerViewSet, basename='banners')
+router.register('organization/extra-phones', extra_phone_viewset.ExtraPhoneViewSet, basename='extra_phones')
+router.register('organization/cart-cost', min_cart_cost_viewset.MinCartCostViewSet, basename='cart_cost')
+router.register('organization/week-days', week_day_viewset.WeekDayViewSet, basename='week_days')
+router.register('organization/work-hours', work_hours_viewset.WorkHoursViewSet, basename='work_hours')
+router.register('organization/time-zones', timezone_viewset.OrganizationTimeZoneViewSet, basename='time-zones')
 
 
 app_name = 'company'

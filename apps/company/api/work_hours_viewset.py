@@ -3,13 +3,17 @@ from rest_framework import viewsets
 
 from apps.company.serializers import WorkHoursSerializer
 from apps.company.models import WorkHours
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class WorkHoursViewSet(viewsets.ModelViewSet):
     queryset = WorkHours.objects.all()
     serializer_class = WorkHoursSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

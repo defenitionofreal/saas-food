@@ -3,7 +3,9 @@ from rest_framework import viewsets
 
 from apps.order.serializers import PromoCodeSerializer
 from apps.order.models import PromoCode
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class PromoCodeViewSet(viewsets.ModelViewSet):
@@ -12,7 +14,9 @@ class PromoCodeViewSet(viewsets.ModelViewSet):
     """
     queryset = PromoCode.objects.all()
     serializer_class = PromoCodeSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user).order_by("-id")

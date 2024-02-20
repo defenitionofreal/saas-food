@@ -10,7 +10,9 @@ from apps.company.serializers import (
     OrganizationTimeZoneSerializer, TimeZoneListSerializer
 )
 from apps.company.models import OrganizationTimeZone
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 import pytz
 
@@ -18,7 +20,9 @@ import pytz
 class OrganizationTimeZoneViewSet(viewsets.ModelViewSet):
     queryset = OrganizationTimeZone.objects.all()
     serializer_class = OrganizationTimeZoneSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

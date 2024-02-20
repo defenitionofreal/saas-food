@@ -22,13 +22,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
     (read/update: profile, delivery addresses, phone numbers, past orders,
      bonuses, order status, repeat order, live queue status...)
     """
-    queryset = User.objects.filter(is_customer=True, is_organization=False)
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user
-        return user if user.is_customer else None
+        return user if user.is_customer and not user.is_organization else None
 
     def get_serializer_class(self):
         pass

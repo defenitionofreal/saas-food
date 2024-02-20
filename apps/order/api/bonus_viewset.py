@@ -3,7 +3,9 @@ from rest_framework import viewsets
 
 from apps.order.serializers import BonusSerializer
 from apps.order.models import Bonus
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class BonusViewSet(viewsets.ModelViewSet):
@@ -12,7 +14,9 @@ class BonusViewSet(viewsets.ModelViewSet):
     """
     queryset = Bonus.objects.all()
     serializer_class = BonusSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user).order_by("-id")

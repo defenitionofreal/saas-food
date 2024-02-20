@@ -3,13 +3,17 @@ from rest_framework import viewsets
 
 from apps.company.serializers import ExtraPhoneSerializer
 from apps.company.models import ExtraPhone
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class ExtraPhoneViewSet(viewsets.ModelViewSet):
     queryset = ExtraPhone.objects.all()
     serializer_class = ExtraPhoneSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

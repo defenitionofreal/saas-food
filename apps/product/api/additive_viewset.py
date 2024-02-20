@@ -3,13 +3,17 @@ from rest_framework import viewsets
 
 from apps.product.serializers import AdditiveSerializer
 from apps.product.models import Additive
-from apps.authentication.permissions import ConfirmedAccountPermission
+from apps.authentication.permissions import (
+    ConfirmedAccountPermission, OrganizationPermission
+)
 
 
 class AdditiveViewSet(viewsets.ModelViewSet):
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
-    permission_classes = [IsAuthenticated, ConfirmedAccountPermission]
+    permission_classes = [IsAuthenticated,
+                          ConfirmedAccountPermission,
+                          OrganizationPermission]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
