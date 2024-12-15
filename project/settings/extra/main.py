@@ -65,10 +65,7 @@ INTERNAL_APPS = [
     'apps.que',
     'apps.mail',
     'apps.sms',
-
-    # separate users
     'apps.customer',
-    'apps.organization',
 ]
 
 INSTALLED_APPS = CORE_APPS + THIRD_PART_APPS + INTERNAL_APPS
